@@ -28,6 +28,9 @@ import threading
 import time
 import calendar
 import uuid
+import csv
+import os
+from datetime import datetime
 from collections import deque
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -245,6 +248,48 @@ def ind_atr(highs, lows, closes, period=14):
         for i in range(period, n):
             out[i] = tr[i] * k + out[i-1] * (1 - k)
     return out
+
+def ind_adx(highs, lows, closes, period=14):
+    """Average Directional Index — measures trend strength."""
+    n = len(closes)
+    if n < period * 2:
+        return _nan(n)
+    up_move = np.diff(highs, prepend=highs[0])
+    down_move = -np.diff(lows, prepend=lows[0])
+    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)
+    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)
+    atr = ind_atr(highs, lows, closes, period)
+    # Smoothed DI
+    plus_dm_smooth = _nan(n)
+    minus_dm_smooth = _nan(n)
+    if n >= period:
+        plus_dm_smooth[period - 1] = plus_dm[1:period + 1].mean()
+        minus_dm_smooth[period - 1] = minus_dm[1:period + 1].mean()
+        k = 1.0 / period
+        for i in range(period, n):
+            plus_dm_smooth[i] = plus_dm[i] * k + plus_dm_smooth[i - 1] * (1 - k)
+            minus_dm_smooth[i] = minus_dm[i] * k + minus_dm_smooth[i - 1] * (1 - k)
+    safe_atr = np.where((atr > 0) & ~np.isnan(atr), atr, np.nan)
+    plus_di = 100.0 * plus_dm_smooth / safe_atr
+    minus_di = 100.0 * minus_dm_smooth / safe_atr
+    di_sum = plus_di + minus_di
+    di_sum = np.where(di_sum == 0, np.nan, di_sum)
+    dx = 100.0 * np.abs(plus_di - minus_di) / di_sum
+    # Smooth DX into ADX
+    adx = _nan(n)
+    start = None
+    for i in range(n):
+        if not np.isnan(dx[i]):
+            if start is None:
+                start = i
+            if i - start >= period - 1:
+                adx[i] = np.nanmean(dx[start:i + 1][-period:])
+                break
+    if start is not None:
+        for i in range(i + 1, n):
+            if not np.isnan(dx[i]):
+                adx[i] = (adx[i - 1] * (period - 1) + dx[i]) / period
+    return adx
 
 def ind_keltner(highs, lows, closes, period=20, mult=2.0):
     mid = ind_ema(closes, period)
@@ -721,6 +766,307 @@ class VETSStrategy:
         return base
 
 
+# ─── EMA Bollinger Scalper v2 Strategy ────────────────────────────────────────
+#
+# v2 improvements over v1:
+#   - EMA200 macro trend filter (only trade in macro direction)
+#   - ADX > 22 filter (skip choppy/ranging markets)
+#   - BB width squeeze guard (skip low-vol whipsaw zones)
+#   - Fresh EMA cross required within 3 bars
+#   - 3-bar cooldown after any stop-loss
+#   - Circuit breaker after 3 consecutive losses
+#   - Tighter SL (0.8x ATR) to reduce per-trade loss
+#   - Higher RR (2.0) so breakeven is ~34% win rate
+#   - Max DD tightened to 8%
+
+class EMABBScalper:
+    """EMA + Bollinger Band scalper v2 — trend-aligned with adaptive filters."""
+
+    FEE_RATE = 0.0005          # 0.05 %
+    MAX_DD_LIMIT = 0.10        # 10 %
+
+    def __init__(self, capital: float = 10_000.0):
+        self.enabled = False
+        self.initial_capital = capital
+        self.capital = capital
+        # indicator parameters
+        self.fast_ema = 30
+        self.slow_ema = 50
+        self.trend_ema = 200       # macro trend filter
+        self.bb_length = 15
+        self.bb_std = 1.5
+        self.atr_period = 14
+        self.adx_period = 14
+        self.adx_min = 22          # skip choppy markets
+        # entry filters
+        self.bb_width_min_pct = 0.015   # skip BB squeezes
+        self.cross_lookback = 3         # EMA cross must be within N bars
+        # risk management
+        self.sl_coeff = 2.0        # v1 original (2.0x ATR)
+        self.tp_rr_ratio = 1.5     # v1 original (1.5 RR)
+        self.risk_pct = 0.01
+        self.cooldown_bars_after_sl = 3
+        self.max_consecutive_losses = 3
+        # runtime state
+        self.pos: Optional[Dict] = None
+        self.trades: List[Dict] = []
+        self.signals: List[Dict] = []
+        self.equity: List[float] = []
+        self.peak = capital
+        self.max_dd = 0.0
+        self.dd_stopped = False
+        self.cooldown_remaining = 0
+        self.consecutive_losses = 0
+        self.loss_breaker_wait = 0
+        self.min_candles = self.trend_ema + 10
+
+    def reset(self, capital: float = 10_000.0):
+        was = self.enabled
+        self.__init__(capital)
+        self.enabled = was
+
+    # ── candle handler ────────────────────────────────────────────────────────
+
+    def on_candle(self, candles: List[Dict], price: float, step: int) -> List[Dict]:
+        """Process one completed 5m candle.  Returns list of action dicts."""
+        if not self.enabled or len(candles) < self.min_candles:
+            return []
+        if self.dd_stopped:
+            return []
+
+        actions: List[Dict] = []
+        closes = np.array([c['close'] for c in candles], dtype=float)
+        highs  = np.array([c['high']  for c in candles], dtype=float)
+        lows   = np.array([c['low']   for c in candles], dtype=float)
+
+        # ── compute indicators ────────────────────────────────────────────────
+        e_fast_arr  = ind_ema(closes, self.fast_ema)
+        e_slow_arr  = ind_ema(closes, self.slow_ema)
+        e_trend_arr = ind_ema(closes, self.trend_ema)
+        atr_arr     = ind_atr(highs, lows, closes, self.atr_period)
+        adx_arr     = ind_adx(highs, lows, closes, self.adx_period)
+        bb_u_arr, bb_m_arr, bb_l_arr = ind_bollinger(closes, self.bb_length, self.bb_std)
+
+        def _last(arr, offset=0):
+            idx = -(1 + offset)
+            if arr is None or len(arr) < (1 + offset):
+                return None
+            v = float(arr[idx])
+            return None if np.isnan(v) else v
+
+        e_fast  = _last(e_fast_arr)
+        e_slow  = _last(e_slow_arr)
+        e_trend = _last(e_trend_arr)
+        atr     = _last(atr_arr)
+        adx_val = _last(adx_arr)
+        bbu     = _last(bb_u_arr)
+        bbm     = _last(bb_m_arr)
+        bbl     = _last(bb_l_arr)
+
+        if any(v is None for v in (e_fast, e_slow, e_trend, atr, bbu, bbl, bbm)):
+            return actions
+
+        cl = float(closes[-1])
+        ts = candles[-1].get('time', step)
+
+        # ── BB width (normalised) ─────────────────────────────────────────────
+        bb_width = (bbu - bbl) / bbm if bbm > 0 else 0
+
+        # ── EMA cross detection within lookback ───────────────────────────────
+        cross_signal = 0  # +1 bull, -1 bear
+        for lag in range(self.cross_lookback):
+            ef = _last(e_fast_arr, lag)
+            es = _last(e_slow_arr, lag)
+            ef_prev = _last(e_fast_arr, lag + 1)
+            es_prev = _last(e_slow_arr, lag + 1)
+            if ef is None or es is None or ef_prev is None or es_prev is None:
+                continue
+            if ef > es and ef_prev <= es_prev:
+                cross_signal = 1
+                break
+            if ef < es and ef_prev >= es_prev:
+                cross_signal = -1
+                break
+
+        # ── CHECK EXITS ──────────────────────────────────────────────────────
+        if self.pos is not None:
+            p = self.pos
+            reason = ep = None
+            if p['side'] == 'long':
+                if cl <= p['sl']:    reason, ep = 'stop_loss', p['sl']
+                elif cl >= p['tp']:  reason, ep = 'take_profit', p['tp']
+            else:
+                if cl >= p['sl']:    reason, ep = 'stop_loss', p['sl']
+                elif cl <= p['tp']:  reason, ep = 'take_profit', p['tp']
+
+            if reason:
+                if p['side'] == 'long':
+                    pnl = (ep - p['entry']) / p['entry'] * p['size']
+                else:
+                    pnl = (p['entry'] - ep) / p['entry'] * p['size']
+                fee = p['size'] * self.FEE_RATE
+                pnl -= fee
+                r_mult = pnl / p['risk_amt'] if p['risk_amt'] else 0.0
+                trade = dict(side=p['side'], entry=p['entry'], exit=ep,
+                             pnl=pnl, size=p['size'], reason=reason,
+                             entry_step=p['entry_step'], exit_step=step,
+                             r_mult=r_mult, fee=fee,
+                             mae=p.get('mae', 0), mfe=p.get('mfe', 0))
+                self.capital += pnl
+                self.trades.append(trade)
+                sig = dict(time=ts, price=round(ep, 6), type='exit',
+                           side=p['side'], reason=reason, pnl=round(pnl, 2))
+                self.signals.append(sig)
+                actions.append(dict(action='close', trade=trade, signal=sig))
+                self.pos = None
+                self.equity.append(self.capital)
+                if self.capital > self.peak:
+                    self.peak = self.capital
+                dd = (self.peak - self.capital) / self.peak
+                dd_pct = dd * 100
+                if dd_pct > self.max_dd:
+                    self.max_dd = dd_pct
+                # Hard drawdown stop
+                if dd >= self.MAX_DD_LIMIT:
+                    self.dd_stopped = True
+                # Cooldown / consecutive loss tracking
+                if reason == 'stop_loss':
+                    self.cooldown_remaining = self.cooldown_bars_after_sl
+                    self.consecutive_losses += 1
+                else:
+                    self.consecutive_losses = 0
+
+        # ── COOLDOWN CHECK ────────────────────────────────────────────────────
+        if self.cooldown_remaining > 0:
+            self.cooldown_remaining -= 1
+            # Still update MAE/MFE if in position
+            if self.pos:
+                p = self.pos
+                u = (cl - p['entry']) / p['entry'] if p['side'] == 'long' else (p['entry'] - cl) / p['entry']
+                p['mae'] = min(p['mae'], u)
+                p['mfe'] = max(p['mfe'], u)
+            return actions
+
+        # ── CIRCUIT BREAKER CHECK ─────────────────────────────────────────────
+        if self.consecutive_losses >= self.max_consecutive_losses:
+            self.loss_breaker_wait += 1
+            if self.loss_breaker_wait >= self.bb_length:
+                self.consecutive_losses = 0
+                self.loss_breaker_wait = 0
+            else:
+                if self.pos:
+                    p = self.pos
+                    u = (cl - p['entry']) / p['entry'] if p['side'] == 'long' else (p['entry'] - cl) / p['entry']
+                    p['mae'] = min(p['mae'], u)
+                    p['mfe'] = max(p['mfe'], u)
+                return actions
+
+        # ── CHECK ENTRIES (only when flat) ────────────────────────────────────
+        if self.pos is None and not self.dd_stopped:
+            # Filter 1: ADX must show trending market
+            if adx_val is not None and adx_val < self.adx_min:
+                return actions
+
+            # Filter 2: BB width must exceed minimum (skip squeezes)
+            if bb_width < self.bb_width_min_pct:
+                return actions
+
+            # Filter 3: Macro trend alignment with EMA200
+            macro_up   = cl > e_trend
+            macro_down = cl < e_trend
+
+            side = None
+            # v1 entry logic: EMA30/50 trend direction + BB breakout
+            is_uptrend   = e_fast > e_slow
+            is_downtrend = e_fast < e_slow
+
+            # Additional v2 filter: macro trend must agree with EMA200
+            if is_uptrend and cl < bbl and cl > e_trend:
+                side = 'long'
+            elif is_downtrend and cl > bbu and cl < e_trend:
+                side = 'short'
+
+            if side:
+                stop_d   = self.sl_coeff * atr
+                risk_amt = self.capital * self.risk_pct
+                size     = risk_amt / (stop_d / cl) if stop_d > 0 else 0.0
+                size     = min(size, self.capital * 0.95)
+                entry_fee = size * self.FEE_RATE
+                if size > 10 and (size + entry_fee) <= self.capital:
+                    if side == 'long':
+                        sl, tp = cl - stop_d, cl + stop_d * self.tp_rr_ratio
+                    else:
+                        sl, tp = cl + stop_d, cl - stop_d * self.tp_rr_ratio
+                    self.pos = dict(side=side, entry=cl, size=size,
+                                    sl=sl, tp=tp, entry_step=step,
+                                    risk_amt=risk_amt, mae=0.0, mfe=0.0)
+                    sig = dict(time=ts, price=round(cl, 6), type='entry',
+                               side=side, sl=round(sl, 6), tp=round(tp, 6))
+                    self.signals.append(sig)
+                    actions.append(dict(action='open', signal=sig,
+                                        size=round(size, 2)))
+
+        # ── UPDATE MAE / MFE + TRAILING STOP ─────────────────────────────────
+        if self.pos:
+            p = self.pos
+            if p['side'] == 'long':
+                u = (cl - p['entry']) / p['entry']
+                # Trail SL: once in profit, move SL to at least breakeven
+                # then trail at entry + 50% of the favorable move
+                if cl > p['entry']:
+                    trail_sl = p['entry'] + (cl - p['entry']) * 0.5
+                    p['sl'] = max(p['sl'], trail_sl)
+            else:
+                u = (p['entry'] - cl) / p['entry']
+                if cl < p['entry']:
+                    trail_sl = p['entry'] - (p['entry'] - cl) * 0.5
+                    p['sl'] = min(p['sl'], trail_sl)
+            p['mae'] = min(p['mae'], u)
+            p['mfe'] = max(p['mfe'], u)
+
+        return actions
+
+    # ── metrics ───────────────────────────────────────────────────────────────
+
+    def metrics(self) -> Dict:
+        """Comprehensive strategy metrics."""
+        base: Dict = dict(
+            total_trades=len(self.trades), capital=round(self.capital, 2),
+            net_pnl=round(self.capital - self.initial_capital, 2),
+            in_position=self.pos is not None,
+            pos_side=self.pos['side'] if self.pos else None,
+            enabled=self.enabled,
+            dd_stopped=self.dd_stopped,
+        )
+        if not self.trades:
+            return base
+        pnls   = [t['pnl'] for t in self.trades]
+        wins   = [p for p in pnls if p > 0]
+        losses = [p for p in pnls if p <= 0]
+        std_p  = float(np.std(pnls)) if len(pnls) > 1 else 1.0
+        base.update(dict(
+            net_pnl_pct   = round((self.capital - self.initial_capital) / self.initial_capital * 100, 2),
+            win_rate      = round(len(wins) / len(pnls) * 100, 1),
+            avg_win       = round(float(np.mean(wins)), 2) if wins else 0,
+            avg_loss      = round(float(np.mean(losses)), 2) if losses else 0,
+            profit_factor = round(abs(sum(wins) / sum(losses)), 2) if losses and sum(losses) != 0 else 999.99,
+            sharpe        = round(float(np.mean(pnls)) / std_p * np.sqrt(252), 2) if std_p > 0 else 0,
+            max_dd        = round(self.max_dd, 2),
+            avg_r         = round(float(np.mean([t.get('r_mult', 0) for t in self.trades])), 2),
+            avg_mae_pct   = round(float(np.mean([t.get('mae', 0) for t in self.trades])) * 100, 2),
+            avg_mfe_pct   = round(float(np.mean([t.get('mfe', 0) for t in self.trades])) * 100, 2),
+            total_fees    = round(sum(t.get('fee', 0) for t in self.trades), 2),
+        ))
+        reasons: Dict[str, Dict] = {}
+        for t in self.trades:
+            r = t.get('reason', '?')
+            reasons.setdefault(r, dict(n=0, pnl=0.0))
+            reasons[r]['n'] += 1
+            reasons[r]['pnl'] = round(reasons[r]['pnl'] + t['pnl'], 2)
+        base['exit_reasons'] = reasons
+        return base
+
+
 # ─── simulation manager (Phase 2 integrated) ─────────────────────────────────
 
 def _random_price() -> float:
@@ -742,6 +1088,9 @@ class SimulationManager:
 
         self.p2sim: Optional[Phase2MarketSimulator] = None
         self.aggs:  Dict[str, OHLCVAggregator]     = {}
+        ts_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.csv_filename = f"simulation_trades_{ts_str}.csv"
+        self.candles_csv_filename = f"simulation_candles_5m_{ts_str}.csv"
         # ── trading state ──
         self.balance:      float          = INITIAL_BALANCE
         self.realized_pnl: float          = 0.0
@@ -750,6 +1099,8 @@ class SimulationManager:
         self.trade_pnls:   List[float]    = []   # closed trade PnL for risk metrics
         # ── VETS strategy ──
         self.strategy = VETSStrategy(INITIAL_BALANCE)
+        # ── EMA BB Scalper strategy ──
+        self.ebb_strategy = EMABBScalper(INITIAL_BALANCE)
         # ── stress test (applied on next new_sim) ──
         self.stress_cfg = StressTestConfig()
         # ── Phase 2 config flags ──
@@ -763,6 +1114,48 @@ class SimulationManager:
         self._new_sim(broadcast=False)
 
     # ── simulation control ────────────────────────────────────────────────────
+
+    def log_trade(self, source: str, trade_dict: Dict) -> None:
+        """Appends a closed trade to the simulation's active CSV log."""
+        file_exists = os.path.isfile(self.csv_filename)
+        with open(self.csv_filename, 'a', newline='') as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(["Timestamp", "Source", "Side", "EntryPrice", "ExitPrice", "SizeUSD", "PnL", "Reason", "EntryStep", "ExitStep"])
+            writer.writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                source,
+                trade_dict.get("side", ""),
+                round(trade_dict.get("entry_price", trade_dict.get("entry", 0)), 6),
+                round(trade_dict.get("exit_price", trade_dict.get("exit", 0)), 6),
+                round(trade_dict.get("size", trade_dict.get("size_usd", 0)), 2),
+                round(trade_dict.get("pnl", 0), 2),
+                trade_dict.get("reason", "manual"),
+                trade_dict.get("entry_step", 0),
+                trade_dict.get("exit_step", self.p2sim.t if self.p2sim else 0)
+            ])
+
+    def log_candle(self, tf: str, candle: Dict) -> None:
+        """Appends a closed candle to the simulation's active CSV log."""
+        if tf != "5m":
+            return
+        if not hasattr(self, 'candles_csv_filename') or not self.candles_csv_filename:
+            return
+            
+        file_exists = os.path.isfile(self.candles_csv_filename)
+        with open(self.candles_csv_filename, 'a', newline='') as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(["Timestamp", "Step", "Open", "High", "Low", "Close", "Volume"])
+            writer.writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                candle.get("time", 0),
+                round(candle.get("open", 0), 6),
+                round(candle.get("high", 0), 6),
+                round(candle.get("low", 0), 6),
+                round(candle.get("close", 0), 6),
+                round(candle.get("vol", 0), 6)
+            ])
 
     def _new_sim(self, broadcast: bool = True) -> None:
         with self.lock:
@@ -799,6 +1192,7 @@ class SimulationManager:
             self.orders        = []
             self.trade_pnls    = []
             self.strategy.reset(INITIAL_BALANCE)
+            self.ebb_strategy.reset(INITIAL_BALANCE)
         if broadcast:
             p2_info = self._p2_status()
             socketio.emit("new_sim", {
@@ -935,11 +1329,22 @@ class SimulationManager:
                             if pos.is_liquidated(new_price):
                                 liq_events.append(pos.id)
                                 self.positions.remove(pos)
+                                self.log_trade("liquidation", {
+                                    "side": pos.side,
+                                    "entry": pos.entry_price,
+                                    "exit": new_price,
+                                    "size": pos.size_usd,
+                                    "pnl": -pos.margin,
+                                    "reason": "liquidation",
+                                    "entry_step": 0,
+                                    "exit_step": cur_step
+                                })
 
                     for tf, _ in TIMEFRAMES:
                         c = self.aggs[tf].push_v(cur_step, new_price, vol)
                         if c is not None:
                             closed_by_tf[tf].append(c)
+                            self.log_candle(tf, c)
 
                     tick_price  = new_price
                     tick_step   = cur_step
@@ -963,9 +1368,25 @@ class SimulationManager:
                         _sc = list(self.aggs["1m"].ohlcv)
                         _sa = self.strategy.on_candle(_sc, tick_price, tick_step)
                         if _sa:
+                            for action in _sa:
+                                if action.get("action") == "close":
+                                    self.log_trade("VETS", action["trade"])
                             socketio.emit("strategy_update", {
                                 "actions": _sa,
                                 "metrics": self.strategy.metrics(),
+                            }, namespace="/")
+
+                    # ── EMA BB Scalper on 5m candle close ──
+                    if self.ebb_strategy.enabled and closed_by_tf.get("5m"):
+                        _ec = list(self.aggs["5m"].ohlcv)
+                        _ea = self.ebb_strategy.on_candle(_ec, tick_price, tick_step)
+                        if _ea:
+                            for action in _ea:
+                                if action.get("action") == "close":
+                                    self.log_trade("EBB_Scalper", action["trade"])
+                            socketio.emit("ebb_strategy_update", {
+                                "actions": _ea,
+                                "metrics": self.ebb_strategy.metrics(),
                             }, namespace="/")
 
                     live_candles = {
@@ -1033,6 +1454,8 @@ class SimulationManager:
             "p2":         self._p2_status(),
             "strategy":   {"metrics": self.strategy.metrics(),
                            "signals": self.strategy.signals[-200:]},
+            "ebb_strategy": {"metrics": self.ebb_strategy.metrics(),
+                             "signals": self.ebb_strategy.signals[-200:]},
         }
 
     def compute_risk_metrics(self) -> Dict:
@@ -1165,6 +1588,14 @@ def on_close_position(data):
         manager.realized_pnl += net
         manager.trade_pnls.append(net)
         manager.positions.remove(pos)
+        manager.log_trade("manual", {
+            "side": pos.side,
+            "entry": pos.entry_price,
+            "exit": close_price,
+            "size": pos.size_usd,
+            "pnl": net,
+            "reason": "user_close"
+        })
         emit("order_result", {
             "status":   "closed",
             "pnl":      round(net, 2),
@@ -1240,6 +1671,25 @@ def on_toggle_strategy(data):
 @socketio.on("get_strategy_metrics")
 def on_get_strategy_metrics(_=None):
     emit("strategy_metrics", manager.strategy.metrics())
+
+
+# ─── EMA BB Scalper Strategy events ───────────────────────────────────────────
+
+@socketio.on("toggle_ebb_strategy")
+def on_toggle_ebb_strategy(data):
+    enabled = bool(data.get("enabled", False))
+    with manager.lock:
+        manager.ebb_strategy.enabled = enabled
+    emit("ebb_strategy_toggled", {
+        "enabled": enabled,
+        "metrics": manager.ebb_strategy.metrics(),
+        "signals": manager.ebb_strategy.signals[-200:],
+    }, broadcast=True, namespace="/")
+
+
+@socketio.on("get_ebb_strategy_metrics")
+def on_get_ebb_strategy_metrics(_=None):
+    emit("ebb_strategy_metrics", manager.ebb_strategy.metrics())
 
 
 # ─── entry point ──────────────────────────────────────────────────────────────

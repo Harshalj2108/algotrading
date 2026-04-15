@@ -159,8 +159,11 @@ html,body{height:100%;overflow:hidden;background:#131722;color:#d1d4dc;font-fami
   <button id="btn-metrics" class="btn ctrl-purple" title="Risk Metrics">📊 Metrics</button>
   <button id="btn-stress"  class="btn" title="Stress Test Config">⚡ Stress</button>
   <div class="sep"></div>
-  <button id="btn-vets" class="btn" title="Click=toggle  |  Right-click=metrics">🤖 VETS</button>
+  <button id="btn-vets" class="btn" title="Click=toggle  |  Right-click=metrics">VETS</button>
   <span id="vets-status" style="display:none;font-size:11px;color:#d1d4dc;margin-left:4px"></span>
+  <div class="sep"></div>
+  <button id="btn-ebb" class="btn" title="Click=toggle  |  Right-click=metrics" style="background:#1a3327;color:#26a69a">EBB Scalper</button>
+  <span id="ebb-status" style="display:none;font-size:11px;color:#d1d4dc;margin-left:4px"></span>
 </div>
 
 <!-- Indicator bar -->
@@ -332,6 +335,16 @@ html,body{height:100%;overflow:hidden;background:#131722;color:#d1d4dc;font-fami
     <h3 style="margin:0 0 12px;color:#d1d4dc;font-size:14px">🤖 VETS Strategy — Volatility Expansion Trend Swing</h3>
     <div id="vets-body" style="font-size:12px"><div class="tp-empty">Enable strategy to see metrics</div></div>
     <button id="vets-close" style="margin-top:10px;padding:6px 16px;background:#2a2e39;color:#d1d4dc;border:none;border-radius:4px;cursor:pointer">Close</button>
+  </div>
+</div>
+
+<!-- EBB Scalper Strategy Overlay -->
+<div id="ebb-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:100;display:none;align-items:center;justify-content:center">
+  <div id="ebb-panel" style="background:#1e222d;border:1px solid #2a2e39;border-radius:8px;padding:20px;width:460px;max-height:80vh;overflow-y:auto">
+    <h3 style="margin:0 0 4px;color:#d1d4dc;font-size:14px">EMA Bollinger Scalper v2</h3>
+    <p style="color:#787b86;font-size:10px;margin:0 0 12px">EMA30/50 trend + BB breakout | EMA200 + ADX + squeeze guard | 2.0 ATR SL | 1.5 R:R | 5m</p>
+    <div id="ebb-body" style="font-size:12px"><div class="tp-empty">Enable strategy to see metrics</div></div>
+    <button id="ebb-close" style="margin-top:10px;padding:6px 16px;background:#2a2e39;color:#d1d4dc;border:none;border-radius:4px;cursor:pointer">Close</button>
   </div>
 </div>
 
@@ -1323,6 +1336,183 @@ function _rebuildMarkers(signals) {
   });
   vetsMarkers.sort((a,b) => a.time - b.time);
   if (currentTF === '1m') candleSeries.setMarkers(vetsMarkers);
+}
+
+// ─── EMA BB Scalper Strategy ───────────────────────────────────────────────────
+let ebbEnabled = false;
+let ebbMarkers = [];
+
+// Toggle: click to enable/disable
+document.getElementById('btn-ebb').addEventListener('click', () => {
+  ebbEnabled = !ebbEnabled;
+  socket.emit('toggle_ebb_strategy', { enabled: ebbEnabled });
+  document.getElementById('btn-ebb').classList.toggle('active', ebbEnabled);
+  showToast(ebbEnabled ? 'EBB Scalper ENABLED (5m)' : 'EBB Scalper disabled', 'ok');
+});
+
+// Right-click to open metrics panel
+document.getElementById('btn-ebb').addEventListener('contextmenu', e => {
+  e.preventDefault();
+  document.getElementById('ebb-overlay').style.display = 'flex';
+  socket.emit('get_ebb_strategy_metrics');
+});
+
+document.getElementById('ebb-close').addEventListener('click', () => {
+  document.getElementById('ebb-overlay').style.display = 'none';
+});
+document.getElementById('ebb-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+});
+
+// Server tells us strategy was toggled
+socket.on('ebb_strategy_toggled', data => {
+  ebbEnabled = data.enabled;
+  document.getElementById('btn-ebb').classList.toggle('active', data.enabled);
+  if (!data.enabled) {
+    ebbMarkers = [];
+    if (currentTF === '5m') candleSeries.setMarkers([]);
+    document.getElementById('ebb-status').style.display = 'none';
+  }
+  if (data.metrics) updateEBBBadge(data.metrics);
+  if (data.signals) _rebuildEBBMarkers(data.signals);
+});
+
+// Live strategy updates (5m candle close)
+socket.on('ebb_strategy_update', data => {
+  if (data.actions) {
+    data.actions.forEach(a => {
+      const s = a.signal;
+      if (s.type === 'entry') {
+        ebbMarkers.push({
+          time: s.time,
+          position: s.side === 'long' ? 'belowBar' : 'aboveBar',
+          color: s.side === 'long' ? '#26a69a' : '#ef5350',
+          shape: s.side === 'long' ? 'arrowUp' : 'arrowDown',
+          text: 'EBB ' + (s.side === 'long' ? 'BUY ' : 'SELL ') + fmtPrice(s.price),
+        });
+      } else {
+        ebbMarkers.push({
+          time: s.time,
+          position: s.side === 'long' ? 'aboveBar' : 'belowBar',
+          color: (s.pnl||0) >= 0 ? '#26a69a' : '#ef5350',
+          shape: 'circle',
+          text: 'EBB ' + (s.reason||'exit').replace(/_/g,' ') + ' ' + ((s.pnl||0)>=0?'+':'') + '$' + Math.abs(s.pnl||0).toFixed(0),
+        });
+      }
+    });
+    ebbMarkers.sort((a,b) => a.time - b.time);
+    if (currentTF === '5m') candleSeries.setMarkers(ebbMarkers);
+  }
+  if (data.metrics) updateEBBBadge(data.metrics);
+});
+
+// Metrics panel response
+socket.on('ebb_strategy_metrics', renderEBBPanel);
+
+// Restore strategy state from init / tf_data payloads
+socket.on('init', data => {
+  if (data.ebb_strategy) {
+    ebbEnabled = data.ebb_strategy.metrics?.enabled || false;
+    document.getElementById('btn-ebb').classList.toggle('active', ebbEnabled);
+    if (data.ebb_strategy.metrics) updateEBBBadge(data.ebb_strategy.metrics);
+    if (data.ebb_strategy.signals) _rebuildEBBMarkers(data.ebb_strategy.signals);
+  }
+});
+socket.on('tf_data', data => {
+  if (data.tf === '5m' && data.ebb_strategy && data.ebb_strategy.signals) {
+    _rebuildEBBMarkers(data.ebb_strategy.signals);
+  } else if (data.tf !== '5m') {
+    // different TF: clear EBB markers (they only apply on 5m)
+    // but keep VETS markers on 1m (handled separately)
+  }
+  if (data.ebb_strategy && data.ebb_strategy.metrics) updateEBBBadge(data.ebb_strategy.metrics);
+});
+
+// Clear markers on new sim
+socket.on('new_sim', () => {
+  ebbMarkers = [];
+  if (currentTF === '5m') candleSeries.setMarkers([]);
+  updateEBBBadge({enabled: ebbEnabled, net_pnl: 0, total_trades: 0, in_position: false});
+});
+
+// ── helper functions ─────────────────────────────────────────────────────────
+function updateEBBBadge(m) {
+  const el = document.getElementById('ebb-status');
+  if (!el) return;
+  if (!m || !m.enabled) { el.style.display='none'; return; }
+  const pos = m.in_position
+    ? `<span class="${m.pos_side==='long'?'up':'dn'}">${m.pos_side.toUpperCase()}</span>`
+    : '<span style="color:#787b86">FLAT</span>';
+  const pC = (m.net_pnl||0) >= 0 ? 'up' : 'dn';
+  let extra = '';
+  if (m.dd_stopped) extra = ' <span style="color:#f38720;font-size:10px">DD-STOP</span>';
+  el.innerHTML = `${pos} <span class="${pC}">${(m.net_pnl||0)>=0?'+':''}$${Math.abs(m.net_pnl||0).toFixed(2)}</span> | ${m.total_trades||0}T${extra}`;
+  el.style.display = 'inline';
+}
+
+function renderEBBPanel(m) {
+  const b = document.getElementById('ebb-body');
+  if (!b) return;
+  if (!m || m.total_trades === 0) {
+    const cap = m ? '$'+m.capital.toFixed(2) : '—';
+    let msg = `No completed trades yet — Capital: ${cap}`;
+    if (m && m.dd_stopped) msg += '<br><span style="color:#f38720;font-weight:700">Max drawdown limit hit (10%) — strategy halted</span>';
+    b.innerHTML = `<div class="tp-empty">${msg}</div>`;
+    return;
+  }
+  const vc = v => v >= 0 ? 'color:#26a69a' : 'color:#ef5350';
+  const row = (l,v,style) => `<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#787b86">${l}</span><span style="${style||'color:#d1d4dc'}">${v}</span></div>`;
+  let h = '<div style="border-bottom:1px solid #2a2e39;padding-bottom:8px;margin-bottom:8px"><div style="color:#787b86;font-size:10px;text-transform:uppercase;margin-bottom:4px">Performance</div>';
+  h += row('Net P&L', `${m.net_pnl>=0?'+':''}$${Math.abs(m.net_pnl).toFixed(2)} (${m.net_pnl_pct}%)`, vc(m.net_pnl));
+  h += row('Capital', '$'+m.capital.toFixed(2));
+  h += row('Total Trades', m.total_trades);
+  h += row('Win Rate', m.win_rate+'%');
+  h += row('Profit Factor', m.profit_factor);
+  h += row('Sharpe Ratio', m.sharpe, vc(m.sharpe));
+  h += '</div>';
+  h += '<div style="border-bottom:1px solid #2a2e39;padding-bottom:8px;margin-bottom:8px"><div style="color:#787b86;font-size:10px;text-transform:uppercase;margin-bottom:4px">Risk</div>';
+  h += row('Max Drawdown', m.max_dd+'%', 'color:#ef5350');
+  if (m.dd_stopped) h += row('Status', 'DD LIMIT HIT — HALTED', 'color:#f38720;font-weight:700');
+  h += row('Avg Win', '+$'+Math.abs(m.avg_win).toFixed(2), 'color:#26a69a');
+  h += row('Avg Loss', '-$'+Math.abs(m.avg_loss).toFixed(2), 'color:#ef5350');
+  h += row('Avg R-Multiple', m.avg_r+'R', vc(m.avg_r));
+  h += row('Avg MAE', m.avg_mae_pct+'%', 'color:#ef5350');
+  h += row('Avg MFE', m.avg_mfe_pct+'%', 'color:#26a69a');
+  h += row('Total Fees', '$'+m.total_fees, 'color:#787b86');
+  h += '</div>';
+  if (m.exit_reasons) {
+    h += '<div><div style="color:#787b86;font-size:10px;text-transform:uppercase;margin-bottom:4px">Exit Reasons</div>';
+    Object.entries(m.exit_reasons).forEach(([r, d]) => {
+      h += row(r.replace(/_/g,' '), `${d.n}\u00d7 \u2192 $${d.pnl.toFixed(2)}`, vc(d.pnl));
+    });
+    h += '</div>';
+  }
+  b.innerHTML = h;
+}
+
+function _rebuildEBBMarkers(signals) {
+  if (!signals || !signals.length) { ebbMarkers=[]; if (currentTF==='5m') candleSeries.setMarkers([]); return; }
+  ebbMarkers = signals.map(s => {
+    if (s.type === 'entry') {
+      return {
+        time: s.time,
+        position: s.side === 'long' ? 'belowBar' : 'aboveBar',
+        color: s.side === 'long' ? '#26a69a' : '#ef5350',
+        shape: s.side === 'long' ? 'arrowUp' : 'arrowDown',
+        text: 'EBB ' + (s.side === 'long' ? 'BUY ' : 'SELL ') + fmtPrice(s.price),
+      };
+    } else {
+      return {
+        time: s.time,
+        position: s.side === 'long' ? 'aboveBar' : 'belowBar',
+        color: (s.pnl||0) >= 0 ? '#26a69a' : '#ef5350',
+        shape: 'circle',
+        text: 'EBB ' + (s.reason||'exit').replace(/_/g,' ') + ' ' + ((s.pnl||0)>=0?'+':'') + '$' + Math.abs(s.pnl||0).toFixed(0),
+      };
+    }
+  });
+  ebbMarkers.sort((a,b) => a.time - b.time);
+  if (currentTF === '5m') candleSeries.setMarkers(ebbMarkers);
 }
 
 </script>

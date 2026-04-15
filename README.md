@@ -18,10 +18,22 @@ SynthCrypto is an advanced synthetic cryptocurrency market simulator designed to
 - **Unified Runner (`synthetic_market_simulator_unified.py`)**: Designed for headless benchmarking, automated unit tests, and large-scale, standalone strategy evaluations.
 
 ## Included Trading Strategies
-The simulator includes built-in testbed strategies such as the **VETS (Volatility Expansion Trend Swing) Strategy**. 
+
+### VETS (Volatility Expansion Trend Swing) Strategy
 - Evaluates volatility compression through Bollinger Band width percentile and Average True Range (ATR).
 - Tracks long-term macroeconomic alignment (EMA 50 vs EMA 200).
 - Dynamically manages stop-loss (SL) and take-profit (TP) multiples, complete with real-time logging and marker rendering on the UI.
+
+### EMA Bollinger Scalper (v2 Hybrid)
+An adaptive, high-frequency mean-reversion and trend-following strategy heavily optimized for 5-minute candles.
+- **Trend Alignment**: Executes entries only when the short-term trend (EMA 30 crossing EMA 50) completely aligns with the macroeconomic trend (EMA 200).
+- **Advanced Market Filtering**: Incorporates an ADX (Average Directional Index) filter set to greater than 22 to bypass choppy, directionless markets, and dynamically screens Bollinger Band width (greater than 1.5%) to avoid low-volatility whipsaws (squeezes).
+- **Entry Logic**: Triggers long positions upon a bullish EMA 30/EMA 50 trend configuration while price breaks below the lower Bollinger Band (mean reversion). Triggers short positions upon a bearish trend configuration while price breaks above the upper extreme.
+- **Dynamic Risk Management**: 
+  - Standard Stop-Loss is initially placed at a 2.0x ATR distance.
+  - **Trailing Logic**: Once a position turns profitable, the system automatically shifts the Stop-Loss to absolute breakeven. It continues to trail progressively at 50% of the maximum unrealized favorable excursion to secure profits over time.
+  - The standard Take-Profit exit is programmed at a rigid 1.5 R:R (Risk-to-Reward) geometric extension.
+- **Capital Preservation Protocols**: Introduces an uncompromising 3-bar entry cooldown immediately following any Stop-Loss sequence, alongside a hard circuit breaker that disables new entries for a full volatility cycle after three back-to-back losses. A global kill switch also terminates the strategy logic entirely if a 10% maximum portfolio drawdown is sustained.
 
 ## Getting Started
 
