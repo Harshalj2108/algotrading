@@ -31,7 +31,7 @@ An adaptive, high-frequency mean-reversion and trend-following strategy heavily 
 - **Entry Logic**: Triggers long positions upon a bullish EMA 30/EMA 50 trend configuration while price breaks below the lower Bollinger Band (mean reversion). Triggers short positions upon a bearish trend configuration while price breaks above the upper extreme.
 - **Dynamic Risk Management**: 
   - Standard Stop-Loss is initially placed at a 2.0x ATR distance.
-  - **Trailing Logic**: Once a position turns profitable, the system automatically shifts the Stop-Loss to absolute breakeven. It continues to trail progressively at 50% of the maximum unrealized favorable excursion to secure profits over time.
+  - **Trailing Logic**: Once a position turns profitable, the system automatically shifts the Stop-Loss to absolute breakeven. It continues to trail progressively at 75% of the maximum unrealized favorable excursion to secure profits over time.
   - The standard Take-Profit exit is programmed at a rigid 1.5 R:R (Risk-to-Reward) geometric extension.
 - **Capital Preservation Protocols**: Introduces an uncompromising 3-bar entry cooldown immediately following any Stop-Loss sequence, alongside a hard circuit breaker that disables new entries for a full volatility cycle after three back-to-back losses. A global kill switch also terminates the strategy logic entirely if a 10% maximum portfolio drawdown is sustained.
 

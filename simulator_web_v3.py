@@ -35,8 +35,16 @@ from collections import deque
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, make_response
 from flask_socketio import SocketIO, emit
+from functools import wraps
+
+try:
+    import jwt as pyjwt
+except ImportError:
+    pyjwt = None
+    print("WARNING: PyJWT not installed. Run: pip install PyJWT")
+    print("         Auth verification will be disabled.")
 
 from synthetic_market_simulator import (
     MarketSimulator,
@@ -1012,14 +1020,14 @@ class EMABBScalper:
             if p['side'] == 'long':
                 u = (cl - p['entry']) / p['entry']
                 # Trail SL: once in profit, move SL to at least breakeven
-                # then trail at entry + 50% of the favorable move
+                # then trail at entry + 75% of the favorable move
                 if cl > p['entry']:
-                    trail_sl = p['entry'] + (cl - p['entry']) * 0.5
+                    trail_sl = p['entry'] + (cl - p['entry']) * 0.75
                     p['sl'] = max(p['sl'], trail_sl)
             else:
                 u = (p['entry'] - cl) / p['entry']
                 if cl < p['entry']:
-                    trail_sl = p['entry'] - (p['entry'] - cl) * 0.5
+                    trail_sl = p['entry'] - (p['entry'] - cl) * 0.75
                     p['sl'] = min(p['sl'], trail_sl)
             p['mae'] = min(p['mae'], u)
             p['mfe'] = max(p['mfe'], u)
@@ -1477,10 +1485,42 @@ socketio = SocketIO(app, cors_allowed_origins="*",
 
 manager = SimulationManager()
 
+# ─── authentication ───────────────────────────────────────────────────────────
+
+JWT_SECRET   = "synthcrypto-jwt-secret-change-me-in-production"   # must match auth-server/.env
+LOGIN_URL    = "http://localhost:5173"                            # React login page
+
+
+def login_required(f):
+    """Decorator that verifies JWT cookie before allowing access."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if pyjwt is None:
+            # PyJWT not installed — allow access (dev convenience)
+            return f(*args, **kwargs)
+        token = request.cookies.get("token")
+        if not token:
+            return redirect(LOGIN_URL)
+        try:
+            payload = pyjwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            request.user = payload
+        except (pyjwt.ExpiredSignatureError, pyjwt.InvalidTokenError):
+            return redirect(LOGIN_URL)
+        return f(*args, **kwargs)
+    return decorated
+
 
 @app.route("/")
+@login_required
 def index():
     return render_template("index_v3.html")
+
+
+@app.route("/logout")
+def logout():
+    resp = make_response(redirect(LOGIN_URL))
+    resp.delete_cookie("token", path="/")
+    return resp
 
 
 @socketio.on("connect")
