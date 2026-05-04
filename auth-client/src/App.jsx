@@ -1,20 +1,20 @@
 /**
- * App.jsx — SynthCrypto v3 Auth Page
+ * App.jsx — SynthCrypto v3 Auth + Navigation
  * 
- * Premium dark login/register page with:
- *   • Glassmorphism card
- *   • Animated particle background
- *   • Google OAuth 2.0 button
- *   • Tab-switched login / register forms
- *   • Fake crypto ticker for ambiance
+ * Single-page app with state-based routing:
+ *   • "auth"      → Glassmorphism login/register page
+ *   • "dashboard"  → Portfolio dashboard
+ *   • "simulator"  → Live trading simulator
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import GoogleButton from "./components/GoogleButton";
+import Dashboard from "./components/Dashboard";
+import SimulatorPage from "./components/SimulatorPage";
 
-const SIMULATOR_URL = "http://localhost:5000";
+const AUTH_SERVER = "http://localhost:3001";
 
 // ── Ticker data ──────────────────────────────────────────────────────────────
 const TICKERS = [
@@ -133,12 +133,30 @@ function useParticles(canvasRef) {
 // ── Main App ─────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [tab, setTab] = useState("login");      // "login" | "register"
+  const [page, setPage] = useState(() => localStorage.getItem("synthcrypto_page") || "auth");      // "auth" | "dashboard" | "simulator"
+  const [tab, setTab] = useState("login");        // "login" | "register"
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const canvasRef = useRef(null);
 
   useParticles(canvasRef);
+
+  useEffect(() => {
+    localStorage.setItem("synthcrypto_page", page);
+  }, [page]);
+
+  // On mount: check if already logged in
+  useEffect(() => {
+    fetch(`${AUTH_SERVER}/api/auth/me`, { credentials: "include" })
+      .then((r) => { 
+        if (r.ok) {
+          setPage(prev => prev === "auth" ? "dashboard" : prev);
+        } else {
+          setPage("auth");
+        }
+      })
+      .catch(() => setPage("auth"));
+  }, []);
 
   // Check URL for OAuth error param
   useEffect(() => {
@@ -146,17 +164,22 @@ export default function App() {
     const oauthError = params.get("error");
     if (oauthError) {
       setError(decodeURIComponent(oauthError.replace(/\+/g, " ")));
-      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    // If redirected back from Google OAuth with a token cookie, go to dashboard
+    const oauthSuccess = params.get("auth");
+    if (oauthSuccess === "success") {
+      setPage("dashboard");
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
 
   const handleSuccess = useCallback((user) => {
     setError("");
-    setSuccess(`Welcome, ${user.username || user.email}! Redirecting to simulator...`);
+    setSuccess(`Welcome, ${user.username || user.email}!`);
     setTimeout(() => {
-      window.location.href = SIMULATOR_URL;
-    }, 1200);
+      setPage("dashboard");
+    }, 800);
   }, []);
 
   const handleError = useCallback((msg) => {
@@ -171,6 +194,21 @@ export default function App() {
     setSuccess("");
   };
 
+  // ── Render dashboard or simulator pages ──
+  if (page === "simulator") {
+    return <SimulatorPage onBack={() => setPage("dashboard")} />;
+  }
+
+  if (page === "dashboard") {
+    return (
+      <Dashboard
+        onLogout={() => setPage("auth")}
+        onLaunchSimulator={() => setPage("simulator")}
+      />
+    );
+  }
+
+  // ── Auth page ──
   return (
     <>
       {/* Background layers */}

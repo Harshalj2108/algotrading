@@ -250,7 +250,7 @@ router.get("/google/callback", async (req, res) => {
     // Issue JWT & redirect to simulator
     const token = signToken(user);
     res.cookie("token", token, COOKIE_OPTS);
-    res.redirect(`${SIMULATOR_URL || "http://localhost:5000"}`);
+    res.redirect(`${CLIENT_URL}?auth=success`);
   } catch (err) {
     console.error("Google OAuth callback error:", err.response?.data || err.message);
     res.redirect(`${CLIENT_URL}?error=Google+authentication+failed`);

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "lightweight-charts": "^5.2.0",
+    "uvicorn": "^0.0.1-security"
+  }
+}
