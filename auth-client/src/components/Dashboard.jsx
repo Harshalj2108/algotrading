@@ -178,6 +178,8 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
           isLive: true,
         };
         setLiveTrades(prev => [trade, ...prev]);
+        // Also update balance from the close event
+        if (d.balance !== undefined) setBalance(d.balance);
       }
     });
 

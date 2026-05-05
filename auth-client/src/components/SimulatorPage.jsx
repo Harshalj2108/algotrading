@@ -79,6 +79,7 @@ export default function SimulatorPage({ onBack }) {
   const [activeInds, setActiveInds] = useState(new Set(["volume"]));
   const [activeOsc, setActiveOsc] = useState("rsi14");
   const [indicatorData, setIndicatorData] = useState({});
+  const [simLoading, setSimLoading] = useState(false);
   const toastTimer = useRef();
 
   const showToastMsg = useCallback((msg, type="ok") => {
@@ -138,9 +139,12 @@ export default function SimulatorPage({ onBack }) {
       if(d.price){setPrice(d.price);setPrevPrice(d.price);}
       setStep(0);if(d.regime)setRegime(d.regime);if(d.p2)setP2(d.p2);
       setBalance(d.balance||10000);setRpnl(0);setPositions([]);setOrders([]);
-      // Clear chart data and request fresh candles for current TF
+      setEbbMetrics(null);
+      // Clear chart data — server will follow up with tf_data containing fresh candles
       setCandles([]);setVolData([]);setLiveCandle(null);setIndicatorData({});
-      socket.emit("switch_tf",{tf:tfRef.current});
+      // Reset TF to 1m
+      setTf("1m");tfRef.current="1m";
+      setSimLoading(false);
     });
     socket.on("paused",()=>setPaused(true));
     socket.on("resumed",()=>setPaused(false));
@@ -162,7 +166,16 @@ export default function SimulatorPage({ onBack }) {
   const switchTf=t=>{setTf(t);tfRef.current=t;socket.emit("switch_tf",{tf:t});};
   const setSpd=s=>{setSpeed(s);socket.emit("set_speed",{speed:s});};
   const togglePause=()=>{paused?socket.emit("resume"):socket.emit("pause");};
-  const newSim=()=>{socket.emit("new_sim");switchTf("1m");};
+  const newSim=()=>{
+    if(simLoading) return; // prevent double clicks
+    setSimLoading(true);
+    showToastMsg("⏳ Initializing new simulation...","ok");
+    // Clear chart immediately for visual feedback
+    setCandles([]);setVolData([]);setLiveCandle(null);setIndicatorData({});
+    socket.emit("new_sim");
+    // Safety timeout in case server doesn't respond
+    setTimeout(()=>setSimLoading(false), 5000);
+  };
   const placeOrder=()=>{
     const sz=+sizeUsd;if(sz<=0)return showToastMsg("Size must be > 0","err");
     socket.emit("place_order",{type:otype,side,size_usd:sz,leverage:+lev,
@@ -214,7 +227,7 @@ export default function SimulatorPage({ onBack }) {
         </div>
         <div className="sep"/>
         <button className={`btn ${paused?"ctrl-red":"ctrl-green"}`} onClick={togglePause}>{paused?"▶ Resume":"❚❚ Pause"}</button>
-        <button className="btn ctrl-orange" onClick={newSim}>⊕ New Sim</button>
+        <button className={`btn ctrl-orange${simLoading?" loading":""}`} onClick={newSim} disabled={simLoading}>{simLoading?"⏳ Loading...":"⊕ New Sim"}</button>
         <div className="sep"/>
         <button className="btn ctrl-purple" onClick={openMetrics}>📊 Metrics</button>
         <button className="btn" onClick={()=>setShowStress(true)}>⚡ Stress</button>

@@ -52,6 +52,13 @@
 .btn.ctrl-red { background: #ef5350; color: #fff; }
 .btn.ctrl-red:hover { background: #f26663; }
 .btn.ctrl-orange { background: #f38720; color: #fff; }
+.btn.ctrl-orange:hover { background: #ff9a3c; }
+.btn.ctrl-orange:disabled, .btn.ctrl-orange.loading {
+  background: #5d3a10;
+  color: #a0764c;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
 .btn.ctrl-purple { background: #7c3aed; color: #fff; }
 .btn.ctrl-purple:hover { background: #8b5cf6; }
 .label-sm { color: #4c5166; font-size: 10px; text-transform: uppercase; letter-spacing: .6px; flex-shrink: 0; }

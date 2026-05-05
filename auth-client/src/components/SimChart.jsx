@@ -92,6 +92,27 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData, i
     }
   }, []);
 
+  // Reset loaded flag when candles go empty (new sim or TF switch)
+  useEffect(() => {
+    if (!candles || candles.length === 0) {
+      dataLoadedRef.current = false;
+      // Clear existing chart data to avoid stale visuals
+      if (candleSeriesRef.current) {
+        try { candleSeriesRef.current.setData([]); } catch (_e) {}
+      }
+      if (volSeriesRef.current) {
+        try { volSeriesRef.current.setData([]); } catch (_e) {}
+      }
+      // Also clear indicator overlays
+      if (chartRef.current) {
+        for (const key of Object.keys(overlaySeriesRef.current)) {
+          try { chartRef.current.removeSeries(overlaySeriesRef.current[key]); } catch (_e) {}
+        }
+        overlaySeriesRef.current = {};
+      }
+    }
+  }, [candles]);
+
   // Load full candle data when candles array or timeframe changes
   useEffect(() => {
     const cs = candleSeriesRef.current;
@@ -112,7 +133,7 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData, i
         console.warn("SimChart: setData error", e);
       }
     } else if (candles.length > 0) {
-      try { cs.update(candles[candles.length - 1]); } catch (_) {}
+      try { cs.update(candles[candles.length - 1]); } catch (_e) {}
     }
   }, [candles, timeframe, volumeData]);
 
