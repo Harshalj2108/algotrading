@@ -96,7 +96,7 @@ function Sparkline({ data, color = "#26a69a", width = 120, height = 32 }) {
 }
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
-export default function Dashboard({ onLogout, onLaunchSimulator }) {
+export default function Dashboard({ onLogout, onLaunchSimulator, liveTrades = [], onResetTrades }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -106,9 +106,6 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
   const [rpnl, setRpnl] = useState(0);
   const [positions, setPositions] = useState([]);
   const [connected, setConnected] = useState(false);
-
-  // Live trades closed during this session (from order_result)
-  const [liveTrades, setLiveTrades] = useState([]);
 
   // Persisted trades from auth-server DB
   const [dbTrades, setDbTrades] = useState([]);
@@ -139,7 +136,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
     }
   }, [goToLogin]);
 
-  // Connect to simulator socket for live data
+  // Connect to simulator socket for live balance/positions data
   useEffect(() => {
     simSocket.connect();
 
@@ -160,26 +157,11 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
       setBalance(d.balance || 10000);
       setRpnl(0);
       setPositions([]);
-      setLiveTrades([]);
     });
 
-    // When a trade is closed, capture full details for the trades table
     simSocket.on("order_result", d => {
-      if (d.status === "closed") {
-        const trade = {
-          id: `live-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          side: d.side || "—",
-          symbol: d.symbol || "SIM",
-          entry_price: d.entry_price || 0,
-          exit_price: d.exit_price || 0,
-          size_usd: d.size_usd || 0,
-          pnl: d.pnl || 0,
-          closed_at: new Date().toISOString(),
-          isLive: true,
-        };
-        setLiveTrades(prev => [trade, ...prev]);
-        // Also update balance from the close event
-        if (d.balance !== undefined) setBalance(d.balance);
+      if (d.status === "closed" && d.balance !== undefined) {
+        setBalance(d.balance);
       }
     });
 
@@ -195,6 +177,45 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
   const handleLogout = async () => {
     await fetch(`${AUTH_SERVER}/api/auth/logout`, { method: "POST", credentials: "include" });
     goToLogin();
+  };
+
+  // ── Reset portfolio ──
+  const [resetting, setResetting] = useState(false);
+
+  const handleReset = async () => {
+    if (!window.confirm(
+      "Reset your entire portfolio?\n\nThis will:\n• Delete all trade history\n• Reset balance to $10,000\n• Start a new simulation\n\nThis cannot be undone."
+    )) return;
+
+    setResetting(true);
+    try {
+      // 1. Reset DB trades + balance
+      const res = await fetch(`${AUTH_SERVER}/api/portfolio/reset`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Reset failed");
+
+      // 2. Clear local state
+      setDbTrades([]);
+      setBalance(10000);
+      setRpnl(0);
+      setPositions([]);
+
+      // 3. Clear App-level live trades
+      if (onResetTrades) onResetTrades();
+
+      // 4. Trigger a new simulation on the backend
+      simSocket.emit("new_sim");
+
+      // 5. Re-fetch user data to confirm reset
+      await fetchUserData();
+    } catch (err) {
+      console.error("Reset failed:", err);
+      alert("Failed to reset portfolio. Please try again.");
+    } finally {
+      setResetting(false);
+    }
   };
 
   // ── Loading state ──────────────────────────────────────────────────────────
@@ -231,8 +252,9 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
   }
 
   // ── Computed values ────────────────────────────────────────────────────────
+  const INITIAL_CAPITAL = 10000;
   const pnlPositive = rpnl >= 0;
-  const pnlPercent = balance > 0 ? ((rpnl / (balance - rpnl)) * 100).toFixed(2) : "0.00";
+  const pnlPercent = ((rpnl / INITIAL_CAPITAL) * 100).toFixed(2);
   const activePositions = positions.length;
   const totalUpnl = positions.reduce((s, p) => s + (p.upnl || 0), 0);
   const totalPositionValue = positions.reduce((s, p) => s + (p.size_usd || 0), 0);
@@ -402,8 +424,17 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
         />
       </div>
 
-      {/* Logout — top right */}
-      <button className="dash-logout-btn" onClick={handleLogout}>Logout</button>
+      {/* Logout + Reset — top right */}
+      <div className="dash-top-right-actions">
+        <button
+          className="dash-reset-btn"
+          onClick={handleReset}
+          disabled={resetting}
+        >
+          {resetting ? "⏳ Resetting..." : "↺ Reset"}
+        </button>
+        <button className="dash-logout-btn" onClick={handleLogout}>Logout</button>
+      </div>
 
       {/* Connection indicator */}
       <div className={`dash-conn-dot ${connected ? "live" : ""}`}>

@@ -129,4 +129,29 @@ router.get("/balance/:userId", async (req, res) => {
   }
 });
 
+// ─── POST /api/portfolio/reset ───────────────────────────────────────────────
+// Resets the user's portfolio: deletes all trades and sets balance to 10000.
+
+router.post("/reset", requireAuth, async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("DELETE FROM trades WHERE user_id = $1", [user_id]);
+      await client.query("UPDATE users SET balance = 10000 WHERE id = $1", [user_id]);
+      await client.query("COMMIT");
+      res.json({ success: true, balance: 10000, message: "Portfolio reset to initial state" });
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error("POST /portfolio/reset error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;

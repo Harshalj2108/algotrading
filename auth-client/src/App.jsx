@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { io } from "socket.io-client";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import GoogleButton from "./components/GoogleButton";
@@ -16,6 +17,10 @@ import SimulatorPage from "./components/SimulatorPage";
 import LandingPage from "./components/LandingPage";
 
 const AUTH_SERVER = "http://localhost:3001";
+const SIMULATOR_URL = "http://localhost:8000";
+
+// Persistent socket for capturing trade events across page navigations
+const appSocket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" });
 
 // ── Ticker data ──────────────────────────────────────────────────────────────
 const TICKERS = [
@@ -145,6 +150,36 @@ export default function App() {
 
   useParticles(canvasRef);
 
+  // ── Persistent trade tracking (survives Dashboard ↔ Simulator navigation) ──
+  const [liveTrades, setLiveTrades] = useState([]);
+
+  useEffect(() => {
+    appSocket.connect();
+
+    appSocket.on("order_result", d => {
+      if (d.status === "closed") {
+        const trade = {
+          id: `live-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          side: d.side || "—",
+          symbol: d.symbol || "SIM",
+          entry_price: d.entry_price || 0,
+          exit_price: d.exit_price || 0,
+          size_usd: d.size_usd || 0,
+          pnl: d.pnl || 0,
+          closed_at: new Date().toISOString(),
+          isLive: true,
+        };
+        setLiveTrades(prev => [trade, ...prev]);
+      }
+    });
+
+    appSocket.on("new_sim", () => {
+      setLiveTrades([]);
+    });
+
+    return () => { appSocket.off(); appSocket.disconnect(); };
+  }, []);
+
   useEffect(() => {
     localStorage.setItem("synthcrypto_page", page);
   }, [page]);
@@ -212,6 +247,8 @@ export default function App() {
       <Dashboard
         onLogout={() => setPage("landing")}
         onLaunchSimulator={() => setPage("simulator")}
+        liveTrades={liveTrades}
+        onResetTrades={() => setLiveTrades([])}
       />
     );
   }

@@ -8,12 +8,19 @@
   z-index: 50;
 }
 
-/* ── Logout button top-right ── */
-.dash-logout-btn {
+/* ── Top-right action buttons ── */
+.dash-top-right-actions {
   position: fixed;
   top: 28px;
   right: 28px;
   z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-logout-btn,
+.dash-reset-btn {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #787b86;
@@ -23,6 +30,7 @@
   font-size: 13px;
   font-weight: 600;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .dash-logout-btn:hover {
@@ -31,11 +39,23 @@
   border-color: rgba(239, 83, 80, 0.3);
 }
 
+.dash-reset-btn:hover {
+  background: rgba(243, 135, 32, 0.1);
+  color: #f38720;
+  border-color: rgba(243, 135, 32, 0.3);
+}
+
+.dash-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #5d606b;
+}
+
 /* ── Connection indicator ── */
 .dash-conn-dot {
   position: fixed;
   top: 32px;
-  right: 120px;
+  right: 210px;
   z-index: 50;
   font-size: 11px;
   color: #787b86;
