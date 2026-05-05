@@ -264,10 +264,6 @@ def close_position(pos_id: str, user=Depends(require_auth)):
         manager.realized_pnl += net
         manager.trade_pnls.append(net)
         manager.positions.remove(pos)
-        manager.log_trade("manual", {
-            "side": pos.side, "entry": pos.entry_price, "exit": cp,
-            "size": pos.size_usd, "pnl": net, "reason": "user_close",
-        })
     return {"status": "closed", "pnl": round(net, 2),
             "balance": round(manager.balance, 2), "slippage": round(slip, 6)}
 
@@ -594,13 +590,12 @@ async def close_position(sid, data):
         manager.realized_pnl += net
         manager.trade_pnls.append(net)
         manager.positions.remove(pos)
-        manager.log_trade("manual", {
-            "side": pos.side, "entry": pos.entry_price, "exit": cp,
-            "size": pos.size_usd, "pnl": net, "reason": "user_close",
-        })
     await sio.emit("order_result", {
         "status": "closed", "pnl": round(net, 2),
         "balance": round(manager.balance, 2), "slippage": round(slip, 6),
+        "side": pos.side, "entry_price": round(pos.entry_price, 6),
+        "exit_price": round(cp, 6), "size_usd": round(pos.size_usd, 2),
+        "leverage": pos.leverage, "symbol": "SIM",
     })
 
 

@@ -1133,7 +1133,7 @@ class SimulationManager:
         self.aggs:  Dict[str, OHLCVAggregator]      = {}
 
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.csv_trades  = f"simulation_trades_{ts}.csv"
+
         # trading state
         self.balance:      float          = INITIAL_BALANCE
         self.realized_pnl: float          = 0.0
@@ -1155,23 +1155,7 @@ class SimulationManager:
 
     # ── logging ───────────────────────────────────────────────────────────────
 
-    def log_trade(self, source: str, t: Dict) -> None:
-        exists = os.path.isfile(self.csv_trades)
-        with open(self.csv_trades, "a", newline="") as f:
-            w = csv.writer(f)
-            if not exists:
-                w.writerow(["Timestamp","Source","Side","EntryPrice",
-                             "ExitPrice","SizeUSD","PnL","Reason",
-                             "EntryStep","ExitStep"])
-            w.writerow([
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"), source,
-                t.get("side",""), round(t.get("entry_price", t.get("entry",0)),6),
-                round(t.get("exit_price",  t.get("exit",0)),6),
-                round(t.get("size", t.get("size_usd",0)),2),
-                round(t.get("pnl",0),2), t.get("reason","manual"),
-                t.get("entry_step",0),
-                t.get("exit_step", self.p2sim.t if self.p2sim else 0),
-            ])
+
 
     def log_candle(self, tf: str, candle: Dict) -> None:
         if tf != "5m":
@@ -1337,12 +1321,6 @@ class SimulationManager:
                             if pos.is_liquidated(new_price):
                                 liq_events.append(pos.id)
                                 self.positions.remove(pos)
-                                self.log_trade("liquidation", {
-                                    "side": pos.side, "entry": pos.entry_price,
-                                    "exit": new_price, "size": pos.size_usd,
-                                    "pnl": -pos.margin, "reason": "liquidation",
-                                    "entry_step": 0, "exit_step": cur_step,
-                                })
 
                     for tf, _ in TIMEFRAMES:
                         c = self.aggs[tf].push_v(cur_step, new_price, vol)
@@ -1370,9 +1348,6 @@ class SimulationManager:
                         ec  = list(self.aggs["5m"].ohlcv)
                         ea  = self.ebb_strategy.on_candle(ec, tick_price, tick_step)
                         if ea:
-                            for a in ea:
-                                if a.get("action") == "close":
-                                    self.log_trade("EBB_Scalper", a["trade"])
                             self._emit("ebb_strategy_update", {
                                 "actions": ea,
                                 "metrics": self.ebb_strategy.metrics(),
@@ -1383,9 +1358,6 @@ class SimulationManager:
                         dc  = list(self.aggs["5m"].ohlcv)
                         da  = self.dynamic_strategy.on_candle(dc, tick_price, tick_step)
                         if da or self.dynamic_strategy.error:
-                            for a in da or []:
-                                if a.get("action") == "close":
-                                    self.log_trade("UserStrategy", a.get("trade", {}))
                             self._emit("dynamic_strategy_update", {
                                 "actions": da or [],
                                 "metrics": self.dynamic_strategy.metrics(),

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback } from "react";
-import { createChart, CandlestickSeries, HistogramSeries } from "lightweight-charts";
+import { useEffect, useRef } from "react";
+import { createChart, CandlestickSeries, HistogramSeries, LineSeries } from "lightweight-charts";
 
 const CHART_OPTS = {
   layout: { background: { type: "solid", color: "#131722" }, textColor: "#787b86" },
@@ -10,13 +10,41 @@ const CHART_OPTS = {
   handleScale: true,
 };
 
-export default function SimChart({ candles, timeframe, liveCandle, volumeData }) {
+// Indicator colors
+const IND_COLORS = {
+  sma20: "#f5c878", sma50: "#e066ff", sma200: "#ff6b6b",
+  ema9: "#4fc3f7", ema20: "#ba68c8", ema50: "#ffa726",
+  wma20: "#aed581", vwap: "#ffd54f",
+  bb_upper: "#7e57c2", bb_middle: "#9575cd", bb_lower: "#7e57c2",
+  kc_upper: "#26c6da", kc_middle: "#4dd0e1", kc_lower: "#26c6da",
+  ichi_tenkan: "#26a69a", ichi_kijun: "#ef5350", ichi_span_a: "rgba(38,166,154,0.3)", ichi_span_b: "rgba(239,83,80,0.3)", ichi_chikou: "#9e9e9e",
+};
+
+// Keys for each indicator button
+const IND_KEY_MAP = {
+  sma20: ["sma20"], sma50: ["sma50"], sma200: ["sma200"],
+  ema9: ["ema9"], ema20: ["ema20"], ema50: ["ema50"],
+  wma20: ["wma20"], vwap: ["vwap"],
+  bb: ["bb_upper", "bb_middle", "bb_lower"],
+  keltner: ["kc_upper", "kc_middle", "kc_lower"],
+  ichimoku: ["ichi_tenkan", "ichi_kijun", "ichi_span_a", "ichi_span_b", "ichi_chikou"],
+};
+
+function dedup(arr) {
+  if (!arr || !arr.length) return [];
+  const seen = new Map();
+  for (const item of arr) seen.set(item.time, item);
+  return Array.from(seen.values()).sort((a, b) => a.time - b.time);
+}
+
+export default function SimChart({ candles, timeframe, liveCandle, volumeData, indicatorData, activeInds, activeOsc }) {
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
   const volSeriesRef = useRef(null);
   const prevTFRef = useRef(timeframe);
   const dataLoadedRef = useRef(false);
+  const overlaySeriesRef = useRef({}); // key -> series reference
 
   // Create chart once on mount — never re-create
   useEffect(() => {
@@ -31,17 +59,12 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData })
       });
 
       const cs = chart.addSeries(CandlestickSeries, {
-        upColor: "#26a69a",
-        downColor: "#ef5350",
-        borderVisible: false,
-        wickUpColor: "#26a69a",
-        wickDownColor: "#ef5350",
+        upColor: "#26a69a", downColor: "#ef5350",
+        borderVisible: false, wickUpColor: "#26a69a", wickDownColor: "#ef5350",
       });
 
       const vs = chart.addSeries(HistogramSeries, {
-        color: "rgba(38,166,154,0.35)",
-        priceFormat: { type: "volume" },
-        priceScaleId: "vol",
+        color: "rgba(38,166,154,0.35)", priceFormat: { type: "volume" }, priceScaleId: "vol",
       });
       chart.priceScale("vol").applyOptions({ scaleMargins: { top: 0.80, bottom: 0 } });
 
@@ -61,7 +84,8 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData })
         chartRef.current = null;
         candleSeriesRef.current = null;
         volSeriesRef.current = null;
-        try { chart.remove(); } catch (e) {}
+        overlaySeriesRef.current = {};
+        try { chart.remove(); } catch (_) {}
       };
     } catch (err) {
       console.error("SimChart: failed to create chart", err);
@@ -75,21 +99,11 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData })
     if (!cs || !candles || candles.length === 0) return;
 
     const tfChanged = prevTFRef.current !== timeframe;
-    // Only do full setData on TF change or initial load
     if (tfChanged || !dataLoadedRef.current) {
       try {
-        // Deduplicate by time (keep last entry per timestamp) — lightweight-charts
-        // v5 throws if duplicate or non-ascending timestamps exist
-        const seen = new Map();
-        for (const c of candles) {
-          seen.set(c.time, c);
-        }
-        const deduped = Array.from(seen.values()).sort((a, b) => a.time - b.time);
-        cs.setData(deduped);
+        cs.setData(dedup(candles));
         if (volumeData && volumeData.length > 0) {
-          const vSeen = new Map();
-          for (const v of volumeData) vSeen.set(v.time, v);
-          vs.setData(Array.from(vSeen.values()).sort((a, b) => a.time - b.time));
+          vs.setData(dedup(volumeData));
         }
         dataLoadedRef.current = true;
         prevTFRef.current = timeframe;
@@ -98,23 +112,63 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData })
         console.warn("SimChart: setData error", e);
       }
     } else if (candles.length > 0) {
-      // Incremental: just update the last candle
-      try {
-        cs.update(candles[candles.length - 1]);
-      } catch (e) {}
+      try { cs.update(candles[candles.length - 1]); } catch (_) {}
     }
   }, [candles, timeframe, volumeData]);
-
 
   // Handle live candle updates (ticks between candle closes)
   useEffect(() => {
     if (!candleSeriesRef.current || !liveCandle) return;
-    try {
-      candleSeriesRef.current.update(liveCandle);
-    } catch (e) {
-      // Silently ignore — stale time errors are harmless
-    }
+    try { candleSeriesRef.current.update(liveCandle); } catch (_) {}
   }, [liveCandle]);
+
+  // ── Render indicator overlays ──────────────────────────────────────────────
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !indicatorData) return;
+
+    // Determine which overlay keys should be visible
+    const wantedKeys = new Set();
+    if (activeInds) {
+      for (const ind of activeInds) {
+        const keys = IND_KEY_MAP[ind];
+        if (keys) keys.forEach(k => wantedKeys.add(k));
+      }
+    }
+
+    // Remove series that are no longer wanted
+    for (const key of Object.keys(overlaySeriesRef.current)) {
+      if (!wantedKeys.has(key)) {
+        try { chart.removeSeries(overlaySeriesRef.current[key]); } catch (_) {}
+        delete overlaySeriesRef.current[key];
+      }
+    }
+
+    // Add or update series that are wanted
+    for (const key of wantedKeys) {
+      const data = indicatorData[key];
+      if (!data || data.length === 0) continue;
+
+      const color = IND_COLORS[key] || "#9e9e9e";
+
+      if (!overlaySeriesRef.current[key]) {
+        try {
+          const s = chart.addSeries(LineSeries, {
+            color,
+            lineWidth: 1,
+            priceScaleId: "right",
+            lastValueVisible: false,
+            priceLineVisible: false,
+          });
+          overlaySeriesRef.current[key] = s;
+        } catch (_) { continue; }
+      }
+
+      try {
+        overlaySeriesRef.current[key].setData(dedup(data));
+      } catch (_) {}
+    }
+  }, [indicatorData, activeInds]);
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }

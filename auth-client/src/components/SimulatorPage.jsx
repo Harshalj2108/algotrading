@@ -78,6 +78,7 @@ export default function SimulatorPage({ onBack }) {
   // Indicators
   const [activeInds, setActiveInds] = useState(new Set(["volume"]));
   const [activeOsc, setActiveOsc] = useState("rsi14");
+  const [indicatorData, setIndicatorData] = useState({});
   const toastTimer = useRef();
 
   const showToastMsg = useCallback((msg, type="ok") => {
@@ -91,7 +92,7 @@ export default function SimulatorPage({ onBack }) {
     socket.connect();
     socket.on("init", d => {
       if(d.candles) setCandles(d.candles);
-      if(d.indicators?.volume) setVolData(d.indicators.volume);
+      if(d.indicators) { setIndicatorData(d.indicators); if(d.indicators.volume) setVolData(d.indicators.volume); }
       if(d.price){setPrice(d.price);setPrevPrice(d.price);}
       if(d.regime) setRegime(d.regime);
       if(d.step) setStep(d.step);
@@ -101,7 +102,7 @@ export default function SimulatorPage({ onBack }) {
     });
     socket.on("tf_data", d => {
       if(d.candles) setCandles(d.candles);
-      if(d.indicators?.volume) setVolData(d.indicators.volume);
+      if(d.indicators) { setIndicatorData(d.indicators); if(d.indicators.volume) setVolData(d.indicators.volume); }
       if(d.price){setPrevPrice(price);setPrice(d.price);}
       if(d.regime) setRegime(d.regime);
       if(d.step) setStep(d.step);
@@ -136,7 +137,10 @@ export default function SimulatorPage({ onBack }) {
     socket.on("new_sim", d => {
       if(d.price){setPrice(d.price);setPrevPrice(d.price);}
       setStep(0);if(d.regime)setRegime(d.regime);if(d.p2)setP2(d.p2);
-      setBalance(10000);setRpnl(0);setPositions([]);setOrders([]);
+      setBalance(d.balance||10000);setRpnl(0);setPositions([]);setOrders([]);
+      // Clear chart data and request fresh candles for current TF
+      setCandles([]);setVolData([]);setLiveCandle(null);setIndicatorData({});
+      socket.emit("switch_tf",{tf:tfRef.current});
     });
     socket.on("paused",()=>setPaused(true));
     socket.on("resumed",()=>setPaused(false));
@@ -265,7 +269,7 @@ export default function SimulatorPage({ onBack }) {
         <div className="charts-col">
           <div className="main-wrap">
             <ChartErrorBoundary>
-              <SimChart candles={candles} timeframe={tf} liveCandle={liveCandle} volumeData={activeInds.has("volume")?volData:[]}/>
+              <SimChart candles={candles} timeframe={tf} liveCandle={liveCandle} volumeData={activeInds.has("volume")?volData:[]} indicatorData={indicatorData} activeInds={activeInds} activeOsc={activeOsc}/>
             </ChartErrorBoundary>
           </div>
           <div className="osc-wrap">

@@ -1,0 +1,212 @@
+:root {
+  --border-color: rgba(255, 255, 255, 0.05);
+  --background-dark: rgba(19, 23, 34, 0.6);
+}
+
+.card-grid {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  width: 100%;
+}
+
+.magic-bento-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  padding: 1.2em;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background: var(--background-dark);
+  font-weight: 300;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-intensity: 0;
+  --glow-radius: 200px;
+}
+
+.magic-bento-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.magic-bento-card__header,
+.magic-bento-card__content {
+  display: flex;
+  position: relative;
+  color: #fff;
+}
+
+.magic-bento-card__header {
+  gap: 0.75em;
+  justify-content: space-between;
+}
+
+.magic-bento-card__content {
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.magic-bento-card__label {
+  font-size: 12px;
+  color: #787b86;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.magic-bento-card--text-autohide .magic-bento-card__content {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Mobile: single column ── */
+@media (max-width: 599px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .magic-bento-card {
+    min-height: 140px;
+  }
+}
+
+/* ── Tablet: 2 columns ── */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Desktop: 4 columns with explicit placement ──
+ *
+ *  ┌──────────┬──────────┬─────────────────────┐
+ *  │ Card 1   │ Card 2   │ Card 3              │
+ *  │ P&L      │ Trades   │ Positions (2×2)     │
+ *  ├──────────┴──────────┤                     │
+ *  │ Card 4              │                     │
+ *  │ Portfolio Value      ├──────────┬──────────┤
+ *  ├─────────────────────┤ Card 6   │          │
+ *  │ Card 5              │ Balance  │          │
+ *  │ Simulator           │          │          │
+ *  └─────────────────────┴──────────┴──────────┘
+ */
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 180px 160px 160px;
+  }
+
+  /* Card 1 (P&L): square — auto-placed to col 1 row 1 */
+
+  /* Card 2 (Trades): square — auto-placed to col 2 row 1 */
+
+  /* Card 3 (Positions): large square, top-right */
+  .magic-bento-card:nth-child(3) {
+    grid-column: 3 / span 2;
+    grid-row: 1 / span 2;
+  }
+
+  /* Card 4 (Portfolio Value): wide rectangle */
+  .magic-bento-card:nth-child(4) {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+  }
+
+  /* Card 5 (Simulator): wide rectangle */
+  .magic-bento-card:nth-child(5) {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+  }
+
+  /* Card 6 (Available Balance): rectangle */
+  .magic-bento-card:nth-child(6) {
+    grid-column: 3 / span 2;
+    grid-row: 3;
+  }
+}
+
+/* ── Border glow effect ── */
+.magic-bento-card--border-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(38, 166, 154, calc(var(--glow-intensity) * 0.8)) 0%,
+    rgba(38, 166, 154, calc(var(--glow-intensity) * 0.4)) 30%,
+    transparent 60%
+  );
+  border-radius: inherit;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.magic-bento-card--border-glow:hover::after {
+  opacity: 1;
+}
+
+.magic-bento-card--border-glow:hover {
+  box-shadow:
+    0 4px 20px rgba(38, 166, 154, 0.1),
+    0 0 30px rgba(38, 166, 154, 0.15);
+}
+
+.particle-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.particle::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: rgba(38, 166, 154, 0.2);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.particle-container:hover {
+  box-shadow:
+    0 4px 20px rgba(38, 166, 154, 0.1),
+    0 0 30px rgba(38, 166, 154, 0.15);
+}
+
+/* Global spotlight */
+.global-spotlight {
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+  z-index: 200 !important;
+  pointer-events: none;
+}
+
+.bento-section {
+  position: relative;
+  user-select: none;
+}

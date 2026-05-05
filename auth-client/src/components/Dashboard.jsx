@@ -1,20 +1,21 @@
 /**
  * Dashboard.jsx — SynthCrypto v3 Portfolio Dashboard
  *
- * Premium glassmorphism dashboard with:
- *   • Animated balance counter
- *   • PnL summary with trend indicators
- *   • Recent trade history with side badges
- *   • Glowing "Launch Simulator" CTA
- *   • Auto-refresh portfolio data
+ * Live portfolio with MagicBento cards + trade history table.
+ * Connects to the simulator via Socket.IO for real-time updates.
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { io } from "socket.io-client";
 import "./Dashboard.css";
+import "./LandingPage.css";
+import MagicBento from "./MagicBento";
+import CircularText from "./CircularText";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
-const LOGIN_URL = "http://localhost:5173";
+
+const simSocket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" });
 
 async function readJsonResponse(res) {
   const contentType = res.headers.get("content-type") || "";
@@ -26,6 +27,15 @@ async function readJsonResponse(res) {
   return res.json();
 }
 
+function fmtPrice(v) {
+  if (v == null) return "—";
+  v = +v;
+  if (v >= 10000) return v.toFixed(2);
+  if (v >= 100) return v.toFixed(3);
+  if (v >= 1) return v.toFixed(4);
+  return v.toFixed(6);
+}
+
 // ── Animated counter ─────────────────────────────────────────────────────────
 function AnimatedValue({ value, prefix = "$", decimals = 2, duration = 800 }) {
   const [display, setDisplay] = useState(0);
@@ -35,16 +45,13 @@ function AnimatedValue({ value, prefix = "$", decimals = 2, duration = 800 }) {
     const start = display;
     const diff = value - start;
     const startTime = performance.now();
-
     function tick(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setDisplay(start + diff * eased);
       if (progress < 1) ref.current = requestAnimationFrame(tick);
     }
-
     ref.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(ref.current);
   }, [value, duration]);
@@ -60,7 +67,7 @@ function AnimatedValue({ value, prefix = "$", decimals = 2, duration = 800 }) {
   );
 }
 
-// ── Sparkline (tiny SVG chart) ───────────────────────────────────────────────
+// ── Sparkline ────────────────────────────────────────────────────────────────
 function Sparkline({ data, color = "#26a69a", width = 120, height = 32 }) {
   if (!data || data.length < 2) return null;
   const min = Math.min(...data);
@@ -75,70 +82,56 @@ function Sparkline({ data, color = "#26a69a", width = 120, height = 32 }) {
     .join(" ");
 
   return (
-    <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      style={{ display: "block" }}
-    >
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: "block" }}>
       <defs>
         <linearGradient id={`sp-${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polyline
-        fill="none"
-        stroke={color}
-        strokeWidth="1.5"
-        points={points}
-        strokeLinejoin="round"
-      />
-      {/* area fill */}
-      <polygon
-        fill={`url(#sp-${color.replace("#", "")})`}
-        points={`0,${height} ${points} ${width},${height}`}
-      />
+      <polyline fill="none" stroke={color} strokeWidth="1.5" points={points} strokeLinejoin="round" />
+      <polygon fill={`url(#sp-${color.replace("#", "")})`} points={`0,${height} ${points} ${width},${height}`} />
     </svg>
   );
 }
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard({ onLogout, onLaunchSimulator }) {
-  const [portfolio, setPortfolio] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Live data from simulator
+  const [balance, setBalance] = useState(10000);
+  const [rpnl, setRpnl] = useState(0);
+  const [positions, setPositions] = useState([]);
+  const [connected, setConnected] = useState(false);
+
+  // Live trades closed during this session (from order_result)
+  const [liveTrades, setLiveTrades] = useState([]);
+
+  // Persisted trades from auth-server DB
+  const [dbTrades, setDbTrades] = useState([]);
 
   const goToLogin = useCallback(() => {
     if (onLogout) onLogout();
   }, [onLogout]);
 
-  const fetchPortfolio = useCallback(async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setError("");
-      // Fetch user info
-      const userRes = await fetch(`${AUTH_SERVER}/api/auth/me`, {
-        credentials: "include",
-      });
-      if (userRes.status === 401) {
-        goToLogin();
-        return;
-      }
+      const userRes = await fetch(`${AUTH_SERVER}/api/auth/me`, { credentials: "include" });
+      if (userRes.status === 401) { goToLogin(); return; }
       const userData = await readJsonResponse(userRes);
       setUser(userData.user || userData);
 
-      // Fetch portfolio
-      const res = await fetch(`${AUTH_SERVER}/api/portfolio/me`, {
-        credentials: "include",
-      });
-      if (res.status === 401) {
-        goToLogin();
-        return;
-      }
-      const data = await readJsonResponse(res);
-      if (!res.ok) throw new Error(data.error || "Failed to load portfolio");
-      setPortfolio(data);
+      try {
+        const res = await fetch(`${AUTH_SERVER}/api/portfolio/me`, { credentials: "include" });
+        if (res.ok) {
+          const data = await readJsonResponse(res);
+          if (data.trades) setDbTrades(data.trades);
+        }
+      } catch { /* portfolio endpoint optional */ }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -146,18 +139,59 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
     }
   }, [goToLogin]);
 
+  // Connect to simulator socket for live data
   useEffect(() => {
-    fetchPortfolio();
-    // Auto-refresh every 15 seconds
-    const interval = setInterval(fetchPortfolio, 15000);
+    simSocket.connect();
+
+    simSocket.on("connect", () => setConnected(true));
+    simSocket.on("disconnect", () => setConnected(false));
+
+    simSocket.on("init", d => {
+      if (d.balance !== undefined) setBalance(d.balance);
+    });
+
+    simSocket.on("tick", d => {
+      if (d.balance !== undefined) setBalance(d.balance);
+      if (d.rpnl !== undefined) setRpnl(d.rpnl);
+      if (d.positions !== undefined) setPositions(d.positions);
+    });
+
+    simSocket.on("new_sim", d => {
+      setBalance(d.balance || 10000);
+      setRpnl(0);
+      setPositions([]);
+      setLiveTrades([]);
+    });
+
+    // When a trade is closed, capture full details for the trades table
+    simSocket.on("order_result", d => {
+      if (d.status === "closed") {
+        const trade = {
+          id: `live-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          side: d.side || "—",
+          symbol: d.symbol || "SIM",
+          entry_price: d.entry_price || 0,
+          exit_price: d.exit_price || 0,
+          size_usd: d.size_usd || 0,
+          pnl: d.pnl || 0,
+          closed_at: new Date().toISOString(),
+          isLive: true,
+        };
+        setLiveTrades(prev => [trade, ...prev]);
+      }
+    });
+
+    return () => { simSocket.off(); simSocket.disconnect(); };
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+    const interval = setInterval(fetchUserData, 30000);
     return () => clearInterval(interval);
-  }, [fetchPortfolio]);
+  }, [fetchUserData]);
 
   const handleLogout = async () => {
-    await fetch(`${AUTH_SERVER}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    await fetch(`${AUTH_SERVER}/api/auth/logout`, { method: "POST", credentials: "include" });
     goToLogin();
   };
 
@@ -187,191 +221,292 @@ export default function Dashboard({ onLogout, onLaunchSimulator }) {
         <div className="dash-wrapper">
           <div className="dash-card">
             <div className="error-msg">⚠ {error}</div>
-            <button className="btn-primary" onClick={goToLogin}>
-              Back to Login
-            </button>
+            <button className="btn-primary" onClick={goToLogin}>Back to Login</button>
           </div>
         </div>
       </>
     );
   }
 
-  const pnlPositive = portfolio.total_pnl >= 0;
-  const pnlPercent =
-    portfolio.balance > 0
-      ? ((portfolio.total_pnl / (portfolio.balance - portfolio.total_pnl)) * 100).toFixed(2)
-      : "0.00";
+  // ── Computed values ────────────────────────────────────────────────────────
+  const pnlPositive = rpnl >= 0;
+  const pnlPercent = balance > 0 ? ((rpnl / (balance - rpnl)) * 100).toFixed(2) : "0.00";
+  const activePositions = positions.length;
+  const totalUpnl = positions.reduce((s, p) => s + (p.upnl || 0), 0);
+  const totalPositionValue = positions.reduce((s, p) => s + (p.size_usd || 0), 0);
+  const portfolioValue = balance + totalUpnl;
 
-  // Build equity sparkline from trades
+  // Merge live + DB trades (live first, then DB)
+  const allTrades = [...liveTrades, ...dbTrades];
+  const allTradeCount = allTrades.length;
+  const wins = allTrades.filter(t => parseFloat(t.pnl) > 0).length;
+  const losses = allTrades.filter(t => parseFloat(t.pnl) <= 0).length;
+  const winRate = allTradeCount > 0 ? ((wins / allTradeCount) * 100).toFixed(1) : "—";
+
+  // Equity sparkline
   const equityData = [10000];
   let running = 10000;
-  if (portfolio.trades && portfolio.trades.length > 0) {
-    const reversed = [...portfolio.trades].reverse();
-    for (const t of reversed) {
-      running += parseFloat(t.pnl || 0);
-      equityData.push(running);
-    }
-  }
+  for (const t of [...allTrades].reverse()) { running += parseFloat(t.pnl || 0); equityData.push(running); }
 
-  const wins = portfolio.trades?.filter((t) => parseFloat(t.pnl) > 0).length || 0;
-  const losses = portfolio.trades?.filter((t) => parseFloat(t.pnl) <= 0).length || 0;
-  const totalTrades = portfolio.trades?.length || 0;
-  const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : "—";
+  /* ─────────────────────────────────────────────────────────────────────────
+   *  BENTO CARD ORDER (matches the CSS grid layout):
+   *
+   *  ┌──────────┬──────────┬─────────────────────┐
+   *  │ 1. P&L   │ 2. Trades│ 3. Positions (2×2)  │
+   *  │ (square) │ (square) │                     │
+   *  ├──────────┴──────────┤                     │
+   *  │ 4. Portfolio Value  │                     │
+   *  │ (rectangle 2×1)     ├──────────┬──────────┤
+   *  ├─────────────────────┤ 6. Avail │          │
+   *  │ 5. Simulator        │ Balance  │  (empty) │
+   *  │ (rectangle 2×1)     │ (rect)   │          │
+   *  └─────────────────────┴──────────┴──────────┘
+   * ───────────────────────────────────────────────────────────────────────── */
+
+  const bentoCards = [
+    // Card 1: Realized P&L (square, top-left)
+    {
+      label: 'Realized P&L',
+      content: (
+        <>
+          <div className={`dash-stat-value ${pnlPositive ? "pnl-up" : "pnl-dn"}`}>
+            {pnlPositive ? "+" : ""}<AnimatedValue value={rpnl} prefix="$" />
+          </div>
+          <div className="dash-stat-sub">
+            <span className={pnlPositive ? "pnl-up" : "pnl-dn"}>
+              {pnlPositive ? "▲" : "▼"} {pnlPercent}%
+            </span>
+          </div>
+        </>
+      ),
+      color: 'rgba(19, 23, 34, 0.4)'
+    },
+    // Card 2: Total Trades (square, top-left col 2)
+    {
+      label: 'Total Trades',
+      content: (
+        <>
+          <div className="dash-stat-value">{allTradeCount}</div>
+          <div className="dash-stat-sub">
+            <span className="pnl-up">{wins}W</span>
+            <span className="dash-stat-muted"> / </span>
+            <span className="pnl-dn">{losses}L</span>
+          </div>
+        </>
+      ),
+      color: 'rgba(19, 23, 34, 0.4)'
+    },
+    // Card 3: Current Positions (large 2×2 square, top-right)
+    {
+      label: 'Current Positions',
+      content: (
+        <div className="bento-positions-list">
+          {activePositions === 0 ? (
+            <div className="bento-pos-empty">
+              <div style={{fontSize: 28, marginBottom: 8, opacity: 0.4}}>📭</div>
+              <div className="dash-stat-muted">No open positions</div>
+            </div>
+          ) : (
+            positions.map(p => (
+              <div key={p.id} className="bento-pos-card">
+                <div className="bento-pos-row">
+                  <span className={p.side === "long" ? "pnl-up" : "pnl-dn"}>
+                    {p.side?.toUpperCase()} {p.leverage}×
+                  </span>
+                  <span className={(p.upnl || 0) >= 0 ? "pnl-up" : "pnl-dn"}>
+                    {(p.upnl || 0) >= 0 ? "+" : ""}${(p.upnl || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="bento-pos-row bento-pos-detail">
+                  <span>Entry: {fmtPrice(p.entry_price)}</span>
+                  <span>Size: ${(p.size_usd || 0).toFixed(0)}</span>
+                </div>
+                <div className="bento-pos-row bento-pos-detail">
+                  <span>Liq: <span className="pnl-dn">{fmtPrice(p.liq_price)}</span></span>
+                  <span>Margin: ${(p.margin || 0).toFixed(2)}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ),
+      color: 'rgba(19, 23, 34, 0.4)'
+    },
+    // Card 4: Portfolio Value (wide rectangle, row 2 col 1-2)
+    {
+      label: 'Portfolio Value',
+      content: (
+        <>
+          <div className="dash-stat-value">
+            <AnimatedValue value={portfolioValue} />
+          </div>
+          <div className="dash-stat-sub" style={{marginTop: '6px'}}>
+            <span className="dash-stat-muted">Cash: ${balance.toFixed(2)}</span>
+            {totalPositionValue > 0 && (
+              <span className="dash-stat-muted"> + Positions: ${totalPositionValue.toFixed(0)}</span>
+            )}
+          </div>
+          <div className="dash-stat-sparkline" style={{marginTop: '8px'}}>
+            <Sparkline data={equityData} color={pnlPositive ? "#26a69a" : "#ef5350"} width={200} height={32} />
+          </div>
+        </>
+      ),
+      color: 'rgba(19, 23, 34, 0.4)'
+    },
+    // Card 5: Simulator (wide rectangle, row 3 col 1-2)
+    {
+      label: 'Simulator',
+      content: (
+        <div style={{display: 'flex', alignItems: 'center', gap: '16px', height: '100%'}}>
+           <div style={{fontSize: '36px'}}>🚀</div>
+           <div>
+             <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#26a69a' }}>Launch Simulator</div>
+             <div style={{ fontSize: '12px', color: '#787b86', marginTop: 4 }}>Open the live trading engine</div>
+           </div>
+        </div>
+      ),
+      color: 'rgba(38, 166, 154, 0.05)',
+      onClick: onLaunchSimulator
+    },
+    // Card 6: Available Balance (rectangle, row 3 col 3-4)
+    {
+      label: 'Available Balance',
+      content: (
+        <div className="dash-stat-value">
+          <AnimatedValue value={balance} />
+        </div>
+      ),
+      color: 'rgba(19, 23, 34, 0.4)'
+    },
+  ];
+
+  // Recent trades: live trades first, then DB trades
+  const recentTrades = allTrades.slice(0, 50);
 
   return (
     <>
-      {/* Background */}
       <div className="orb orb-1" />
       <div className="orb orb-2" />
       <div className="orb orb-3" />
 
-      <div className="dash-wrapper">
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="dash-header">
-          <div className="dash-brand">
-            <div className="brand-icon" style={{ width: 40, height: 40, fontSize: 20, marginBottom: 0, borderRadius: 12 }}>
-              ⬡
-            </div>
-            <div>
-              <h1 className="dash-title">
-                SynthCrypto <span className="brand-tag">v3</span>
-              </h1>
-              <div className="dash-subtitle">
-                {user?.username || user?.email || "Trader"}
-              </div>
+      {/* Circular brand — top left */}
+      <div className="top-left-brand dash-brand-pos">
+        <div className="top-left-logo">⬡</div>
+        <CircularText
+          text="SYNTHCRYPTO*SIMULATOR*"
+          onHover="speedUp"
+          spinDuration={20}
+          className="brand-circular-text"
+        />
+      </div>
+
+      {/* Logout — top right */}
+      <button className="dash-logout-btn" onClick={handleLogout}>Logout</button>
+
+      {/* Connection indicator */}
+      <div className={`dash-conn-dot ${connected ? "live" : ""}`}>
+        {connected ? "● live" : "○ offline"}
+      </div>
+
+      {/* Main: two-column layout */}
+      <div className="dash-split-wrapper">
+        {/* Left: Bento cards */}
+        <div className="dash-left-col">
+          <div className="dash-welcome">
+            <h1 className="dash-title">
+              Portfolio <span className="brand-tag">v3</span>
+            </h1>
+            <div className="dash-subtitle">
+              {user?.username || user?.email || "Trader"}
             </div>
           </div>
-          <div className="dash-header-actions">
-            <button className="dash-btn-ghost" onClick={fetchPortfolio} title="Refresh">
-              ↻
-            </button>
-            <button onClick={onLaunchSimulator} className="dash-btn-ghost dash-btn-link">
-              Simulator
-            </button>
-            <button className="dash-btn-ghost" onClick={goToLogin}>
-              Logout
-            </button>
-          </div>
+
+          <MagicBento
+            cards={bentoCards}
+            glowColor="38, 166, 154"
+            enableStars={true}
+            enableTilt={true}
+            enableMagnetism={true}
+            clickEffect={true}
+            particleCount={12}
+          />
         </div>
 
-        {/* ── Stat Cards ─────────────────────────────────────────────────── */}
-        <div className="dash-stats-grid">
-          {/* Balance Card */}
-          <div className="dash-stat-card dash-stat-primary">
-            <div className="dash-stat-label">Available Balance</div>
-            <div className="dash-stat-value">
-              <AnimatedValue value={portfolio.balance} />
+        {/* Right: Trades summary + scrollable trade table */}
+        <div className="dash-right-col">
+          <div className="trades-summary-bar">
+            <div className="trades-summary-item">
+              <span className="trades-summary-label">Win Rate</span>
+              <span className="trades-summary-val">{winRate !== "—" ? `${winRate}%` : "—"}</span>
             </div>
-            <div className="dash-stat-sparkline">
-              <Sparkline
-                data={equityData}
-                color={pnlPositive ? "#26a69a" : "#ef5350"}
-                width={140}
-                height={36}
-              />
-            </div>
-          </div>
-
-          {/* PnL Card */}
-          <div className={`dash-stat-card ${pnlPositive ? "dash-stat-green" : "dash-stat-red"}`}>
-            <div className="dash-stat-label">Realized P&L</div>
-            <div className={`dash-stat-value ${pnlPositive ? "pnl-up" : "pnl-dn"}`}>
-              {pnlPositive ? "+" : ""}
-              <AnimatedValue value={portfolio.total_pnl} prefix="$" />
-            </div>
-            <div className="dash-stat-sub">
-              <span className={pnlPositive ? "pnl-up" : "pnl-dn"}>
-                {pnlPositive ? "▲" : "▼"} {pnlPercent}%
-              </span>
-              <span className="dash-stat-muted"> from initial</span>
-            </div>
-          </div>
-
-          {/* Trades Card */}
-          <div className="dash-stat-card">
-            <div className="dash-stat-label">Total Trades</div>
-            <div className="dash-stat-value">{totalTrades}</div>
-            <div className="dash-stat-sub">
+            <div className="trades-summary-item">
               <span className="pnl-up">{wins}W</span>
               <span className="dash-stat-muted"> / </span>
               <span className="pnl-dn">{losses}L</span>
-              <span className="dash-stat-muted"> · {winRate}% WR</span>
+            </div>
+            <div className="trades-summary-item">
+              <span className="trades-summary-label">Trades</span>
+              <span className="trades-summary-val">{allTradeCount}</span>
             </div>
           </div>
-        </div>
 
-        {/* ── Launch CTA ─────────────────────────────────────────────────── */}
-        <div className="dash-launch-link" id="launch-simulator-btn" onClick={onLaunchSimulator} style={{cursor: 'pointer'}}>
-          <button className="dash-launch-btn" style={{pointerEvents: 'none'}}>
-            <span className="dash-launch-icon">🚀</span>
-            <span>Launch Simulator</span>
-            <span className="dash-launch-arrow">→</span>
-          </button>
-        </div>
-
-        {/* ── Trade History ───────────────────────────────────────────────── */}
-        <div className="dash-card dash-trades-card">
-          <div className="dash-trades-header">
-            <h2 className="dash-trades-title">Recent Trades</h2>
-            <span className="dash-trades-count">{totalTrades} total</span>
-          </div>
-
-          {totalTrades === 0 ? (
-            <div className="dash-trades-empty">
-              <div className="dash-trades-empty-icon">📊</div>
-              <p>No trades yet</p>
-              <p className="dash-trades-empty-sub">
-                Jump into the simulator to start trading!
-              </p>
+          <div className="dash-trades-panel">
+            <div className="dash-trades-header">
+              <h2 className="dash-trades-title">Recent Trades</h2>
+              <span className="dash-trades-count">{recentTrades.length} shown</span>
             </div>
-          ) : (
-            <div className="dash-trades-list">
-              {/* Table header */}
-              <div className="dash-trade-row dash-trade-header-row">
-                <span>Side</span>
-                <span>Symbol</span>
-                <span>Entry</span>
-                <span>Exit</span>
-                <span>Size</span>
-                <span className="dash-trade-pnl-col">P&L</span>
-                <span>Date</span>
+
+            {recentTrades.length === 0 ? (
+              <div className="dash-trades-empty">
+                <div className="dash-trades-empty-icon">📊</div>
+                <p>No trades yet</p>
+                <p className="dash-trades-empty-sub">Jump into the simulator to start trading!</p>
               </div>
-              {portfolio.trades.map((trade) => {
-                const pnl = parseFloat(trade.pnl);
-                const isWin = pnl >= 0;
-                return (
-                  <div className="dash-trade-row" key={trade.id}>
-                    <span>
-                      <span className={`dash-side-badge ${trade.side}`}>
-                        {trade.side.toUpperCase()}
-                      </span>
-                    </span>
-                    <span className="dash-trade-symbol">{trade.symbol || "SIM"}</span>
-                    <span className="dash-trade-mono">
-                      ${parseFloat(trade.entry_price).toFixed(2)}
-                    </span>
-                    <span className="dash-trade-mono">
-                      ${parseFloat(trade.exit_price).toFixed(2)}
-                    </span>
-                    <span className="dash-trade-mono">
-                      ${parseFloat(trade.size_usd).toFixed(0)}
-                    </span>
-                    <span className={`dash-trade-pnl-col ${isWin ? "pnl-up" : "pnl-dn"}`}>
-                      {isWin ? "+" : ""}${pnl.toFixed(2)}
-                    </span>
-                    <span className="dash-trade-date">
-                      {new Date(trade.closed_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+            ) : (
+              <div className="dash-trades-table-wrap">
+                <table className="dash-trades-table">
+                  <thead>
+                    <tr>
+                      <th>Side</th>
+                      <th>Symbol</th>
+                      <th>Entry</th>
+                      <th>Exit</th>
+                      <th>Size</th>
+                      <th>P&L</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentTrades.map((trade) => {
+                      const pnl = parseFloat(trade.pnl);
+                      const isWin = pnl >= 0;
+                      return (
+                        <tr key={trade.id} className={`dash-trade-row ${trade.isLive ? "dash-trade-live" : ""}`}>
+                          <td>
+                            <span className={`dash-side-badge ${trade.side}`}>
+                              {(trade.side || "—").toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="dash-trade-symbol">{trade.symbol || "SIM"}</td>
+                          <td className="dash-trade-mono">${parseFloat(trade.entry_price || 0).toFixed(2)}</td>
+                          <td className="dash-trade-mono">${parseFloat(trade.exit_price || 0).toFixed(2)}</td>
+                          <td className="dash-trade-mono">${parseFloat(trade.size_usd || 0).toFixed(0)}</td>
+                          <td className={`dash-trade-pnl ${isWin ? "pnl-up" : "pnl-dn"}`}>
+                            {isWin ? "+" : ""}${pnl.toFixed(2)}
+                          </td>
+                          <td className="dash-trade-date">
+                            {new Date(trade.closed_at).toLocaleDateString("en-US", {
+                              month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+                            })}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

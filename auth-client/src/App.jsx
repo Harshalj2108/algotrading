@@ -13,6 +13,7 @@ import RegisterForm from "./components/RegisterForm";
 import GoogleButton from "./components/GoogleButton";
 import Dashboard from "./components/Dashboard";
 import SimulatorPage from "./components/SimulatorPage";
+import LandingPage from "./components/LandingPage";
 
 const AUTH_SERVER = "http://localhost:3001";
 
@@ -133,7 +134,10 @@ function useParticles(canvasRef) {
 // ── Main App ─────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [page, setPage] = useState(() => localStorage.getItem("synthcrypto_page") || "auth");      // "auth" | "dashboard" | "simulator"
+  const [page, setPage] = useState(() => {
+    const saved = localStorage.getItem("synthcrypto_page");
+    return (saved === "simulator" || saved === "dashboard") ? saved : "landing";
+  });      // "landing" | "auth" | "dashboard" | "simulator"
   const [tab, setTab] = useState("login");        // "login" | "register"
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -150,12 +154,12 @@ export default function App() {
     fetch(`${AUTH_SERVER}/api/auth/me`, { credentials: "include" })
       .then((r) => { 
         if (r.ok) {
-          setPage(prev => prev === "auth" ? "dashboard" : prev);
+          setPage(prev => (prev === "auth" || prev === "landing") ? "dashboard" : prev);
         } else {
-          setPage("auth");
+          setPage(prev => prev === "dashboard" ? "landing" : prev);
         }
       })
-      .catch(() => setPage("auth"));
+      .catch(() => setPage(prev => prev === "dashboard" ? "landing" : prev));
   }, []);
 
   // Check URL for OAuth error param
@@ -194,7 +198,11 @@ export default function App() {
     setSuccess("");
   };
 
-  // ── Render dashboard or simulator pages ──
+  // ── Render pages ──
+  if (page === "landing") {
+    return <LandingPage onGetStarted={() => setPage("auth")} />;
+  }
+
   if (page === "simulator") {
     return <SimulatorPage onBack={() => setPage("dashboard")} />;
   }
@@ -202,7 +210,7 @@ export default function App() {
   if (page === "dashboard") {
     return (
       <Dashboard
-        onLogout={() => setPage("auth")}
+        onLogout={() => setPage("landing")}
         onLaunchSimulator={() => setPage("simulator")}
       />
     );
