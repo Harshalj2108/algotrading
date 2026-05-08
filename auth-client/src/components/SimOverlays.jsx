@@ -1,4 +1,5 @@
 import { useState } from "react";
+import StarBorder from "./StarBorder";
 
 /* ── Risk Metrics Overlay ── */
 export function MetricsOverlay({ data, onClose }) {
@@ -19,7 +20,7 @@ export function MetricsOverlay({ data, onClose }) {
         {rows ? rows.map(([l, v], i) => (
           <div className="metric-row" key={i}><span>{l}</span><span>{v}</span></div>
         )) : <div className="tp-empty">Not enough data yet</div>}
-        <button className="overlay-close" onClick={onClose}>Close</button>
+        <StarBorder as="button" className="overlay-close" onClick={onClose} color="#ef5350">Close</StarBorder>
       </div>
     </div>
   );
@@ -44,8 +45,8 @@ export function StressOverlay({ socket, onClose }) {
         <div className="stress-row"><label>Spread multiplier</label><input type="number" value={spread} min={0.5} max={10} step={0.1} onChange={e => setSpread(+e.target.value)} /></div>
         <div className="stress-row"><label>Vol multiplier</label><input type="number" value={vol} min={0.5} max={10} step={0.1} onChange={e => setVol(+e.target.value)} /></div>
         <div className="stress-row"><label>Latency (steps)</label><input type="number" value={latency} min={0} max={100} step={1} onChange={e => setLatency(+e.target.value)} /></div>
-        <button className="stress-apply" onClick={apply}>Apply &amp; Save</button>
-        <button className="overlay-close" onClick={onClose}>Cancel</button>
+        <StarBorder as="button" className="stress-apply" onClick={apply} color="#26a69a">Apply &amp; Save</StarBorder>
+        <StarBorder as="button" className="overlay-close" onClick={onClose} color="#ef5350">Cancel</StarBorder>
       </div>
     </div>
   );
@@ -88,7 +89,7 @@ export function EBBOverlay({ metrics, onClose }) {
             </div>
           </div>
         )}
-        <button className="overlay-close" onClick={onClose}>Close</button>
+        <StarBorder as="button" className="overlay-close" onClick={onClose} color="#ef5350">Close</StarBorder>
       </div>
     </div>
   );

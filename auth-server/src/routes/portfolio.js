@@ -53,10 +53,10 @@ router.get("/me", requireAuth, async (req, res) => {
 // For security in a real app, this should be protected by an internal secret,
 // but for this simulator, we'll verify it via the user's token or just accept it if internal.
 
-router.post("/trade", async (req, res) => {
+router.post("/trade", requireAuth, async (req, res) => {
   try {
-    // For now, we expect Flask to pass the user_id and trade details
-    const { user_id, symbol, side, size_usd, entry_price, exit_price, pnl } = req.body;
+    const user_id = req.user.id;
+    const { symbol, side, size_usd, entry_price, exit_price, pnl } = req.body;
 
     if (!user_id || !symbol || !side || size_usd === undefined || pnl === undefined) {
       return res.status(400).json({ error: "Missing required fields" });

@@ -4,6 +4,7 @@ import SimChart from "./SimChart";
 import StrategyEditor from "./StrategyEditor";
 import { MetricsOverlay, StressOverlay, EBBOverlay } from "./SimOverlays";
 import "./SimulatorPage.css";
+import StarBorder from "./StarBorder";
 
 class ChartErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
@@ -14,7 +15,7 @@ class ChartErrorBoundary extends Component {
       return (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#787b86", fontSize: 13, flexDirection: "column", gap: 8 }}>
           <span>Chart encountered an error</span>
-          <button className="btn" onClick={() => this.setState({ hasError: false })}>Retry</button>
+          <StarBorder as="button" className="btn" onClick={() => this.setState({ hasError: false })}>Retry</StarBorder>
         </div>
       );
     }
@@ -52,7 +53,7 @@ export default function SimulatorPage({ onBack }) {
   const [prevPrice, setPrevPrice] = useState(null);
   const [regime, setRegime] = useState("bull");
   const [step, setStep] = useState(0);
-  const [ohlc, setOhlc] = useState({o:"—",h:"—",l:"—",c:"—"});
+  const ohlc = {o:"—",h:"—",l:"—",c:"—"};
   // Phase 2
   const [p2, setP2] = useState({});
   // Trading
@@ -74,7 +75,7 @@ export default function SimulatorPage({ onBack }) {
   const [showEbb, setShowEbb] = useState(false);
   const [ebbEnabled, setEbbEnabled] = useState(false);
   const [ebbMetrics, setEbbMetrics] = useState(null);
-  const [ebbBadge, setEbbBadge] = useState(null);
+  
   // Indicators
   const [activeInds, setActiveInds] = useState(new Set(["volume"]));
   const [activeOsc, setActiveOsc] = useState("rsi14");
@@ -112,7 +113,7 @@ export default function SimulatorPage({ onBack }) {
     });
     socket.on("tick", d => {
       setStep(d.step);
-      setPrevPrice(p=>d.price);
+      setPrevPrice(d.price);
       setPrice(d.price);
       setRegime(d.regime);
       if(d.live){const lc=d.live[tfRef.current];if(lc)setLiveCandle({...lc});}
@@ -160,10 +161,15 @@ export default function SimulatorPage({ onBack }) {
     socket.on("ebb_strategy_update",d=>{if(d.metrics)setEbbMetrics(d.metrics);});
     socket.on("ebb_strategy_metrics",d=>setEbbMetrics(d));
     return()=>{socket.off();socket.disconnect();};
-  }, []);
+  }, [price, showToastMsg]);
 
   // Actions
-  const switchTf=t=>{setTf(t);tfRef.current=t;socket.emit("switch_tf",{tf:t});};
+  const switchTf=t=>{
+    if(t===tfRef.current) return;
+    setTf(t);tfRef.current=t;
+    setCandles([]);setVolData([]);setLiveCandle(null);setIndicatorData({});
+    socket.emit("switch_tf",{tf:t});
+  };
   const setSpd=s=>{setSpeed(s);socket.emit("set_speed",{speed:s});};
   const togglePause=()=>{paused?socket.emit("resume"):socket.emit("pause");};
   const newSim=()=>{
@@ -197,12 +203,12 @@ export default function SimulatorPage({ onBack }) {
   if(tab==="lab") return (
     <div className="sim-page">
       <div className="toolbar">
-        {onBack&&<button className="btn" onClick={onBack} style={{marginRight:4}}>← Back</button>}
+        {onBack&&<StarBorder as="button" className="btn" onClick={onBack} style={{marginRight:4}}>← Back</StarBorder>}
         <span className="logo">⬡ SynthCrypto</span><span className="v3-tag">v3</span>
         <div className="sep"/>
-        <button className="btn active" onClick={()=>setTab("chart")}>Dashboard</button>
-        <button className="btn ctrl-purple" onClick={()=>setTab("lab")}>Strategy Lab</button>
-        {onBack&&<><div className="sep"/><button className="btn" onClick={onBack}>📁 Portfolio</button></>}
+        <StarBorder as="button" className="btn active" onClick={()=>setTab("chart")}>Dashboard</StarBorder>
+        <StarBorder as="button" className="btn ctrl-purple" onClick={()=>setTab("lab")}>Strategy Lab</StarBorder>
+        {onBack&&<><div className="sep"/><StarBorder as="button" className="btn" onClick={onBack}>📁 Portfolio</StarBorder></>}
       </div>
       <div className="strategy-lab-container">
         <StrategyEditor socket={socket} apiBase={API}/>
@@ -214,44 +220,44 @@ export default function SimulatorPage({ onBack }) {
     <div className="sim-page">
       {/* ── Toolbar ── */}
       <div className="toolbar">
-        {onBack&&<button className="btn" onClick={onBack} style={{marginRight:4}}>← Back</button>}
+        {onBack&&<StarBorder as="button" className="btn" onClick={onBack} style={{marginRight:4}}>← Back</StarBorder>}
         <span className="logo">⬡ SynthCrypto</span><span className="v3-tag">v3</span>
         <span className="label-sm">TF</span>
         <div className="btn-group">
-          {TFS.map(t=><button key={t} className={`btn${tf===t?" active":""}`} onClick={()=>switchTf(t)}>{t}</button>)}
+          {TFS.map(t=><StarBorder as="button" key={t} className={`btn${tf===t?" active":""}`} onClick={()=>switchTf(t)}>{t}</StarBorder>)}
         </div>
         <div className="sep"/>
         <span className="label-sm">Speed</span>
         <div className="btn-group">
-          {SPEEDS.map(s=><button key={s.v} className={`btn${speed===s.v?" active":""}`} onClick={()=>setSpd(s.v)}>{s.l}</button>)}
+          {SPEEDS.map(s=><StarBorder as="button" key={s.v} className={`btn${speed===s.v?" active":""}`} onClick={()=>setSpd(s.v)}>{s.l}</StarBorder>)}
         </div>
         <div className="sep"/>
-        <button className={`btn ${paused?"ctrl-red":"ctrl-green"}`} onClick={togglePause}>{paused?"▶ Resume":"❚❚ Pause"}</button>
-        <button className={`btn ctrl-orange${simLoading?" loading":""}`} onClick={newSim} disabled={simLoading}>{simLoading?"⏳ Loading...":"⊕ New Sim"}</button>
+        <StarBorder as="button" className={`btn ${paused?"ctrl-red":"ctrl-green"}`} onClick={togglePause}>{paused?"▶ Resume":"❚❚ Pause"}</StarBorder>
+        <StarBorder as="button" className={`btn ctrl-orange${simLoading?" loading":""}`} onClick={newSim} disabled={simLoading}>{simLoading?"⏳ Loading...":"⊕ New Sim"}</StarBorder>
         <div className="sep"/>
-        <button className="btn ctrl-purple" onClick={openMetrics}>📊 Metrics</button>
-        <button className="btn" onClick={()=>setShowStress(true)}>⚡ Stress</button>
+        <StarBorder as="button" className="btn ctrl-purple" onClick={openMetrics}>📊 Metrics</StarBorder>
+        <StarBorder as="button" className="btn" onClick={()=>setShowStress(true)}>⚡ Stress</StarBorder>
         <div className="sep"/>
-        <button className={`btn${ebbEnabled?" active":""}`} onClick={toggleEbb} onContextMenu={openEbbMetrics} title="Click=toggle | Right-click=metrics" style={ebbEnabled?{}:{background:"#1a3327",color:"#26a69a"}}>EBB Scalper</button>
+        <StarBorder as="button" className={`btn${ebbEnabled?" active":""}`} onClick={toggleEbb} onContextMenu={openEbbMetrics} title="Click=toggle | Right-click=metrics" style={ebbEnabled?{}:{background:"#1a3327",color:"#26a69a"}}>EBB Scalper</StarBorder>
         {ebbEnabled&&ebbMetrics&&<span className="ebb-badge">
           <span className={ebbMetrics.in_position?(ebbMetrics.pos_side==="long"?"up":"dn"):""} style={ebbMetrics.in_position?{}:{color:"#787b86"}}>{ebbMetrics.in_position?ebbMetrics.pos_side?.toUpperCase():"FLAT"}</span>
           {" "}<span className={(ebbMetrics.net_pnl||0)>=0?"up":"dn"}>{(ebbMetrics.net_pnl||0)>=0?"+":""}${Math.abs(ebbMetrics.net_pnl||0).toFixed(2)}</span> | {ebbMetrics.total_trades||0}T
         </span>}
         <div className="sep"/>
-        <button className="btn" onClick={()=>setTab("lab")}>🧪 Strategy Lab</button>
-        {onBack&&<><div className="sep"/><button className="btn" onClick={onBack}>📁 Portfolio</button></>}
+        <StarBorder as="button" className="btn" onClick={()=>setTab("lab")}>🧪 Strategy Lab</StarBorder>
+        {onBack&&<><div className="sep"/><StarBorder as="button" className="btn" onClick={onBack}>📁 Portfolio</StarBorder></>}
       </div>
 
       {/* ── Indicator bar ── */}
       <div className="indbar">
         {IND_BTNS.map((g,gi)=><span key={gi} style={{display:"contents"}}>
           <span className="label-sm">{g.g}</span>
-          {g.items.map(i=><button key={i.k} className={`btn${activeInds.has(i.k)?" active":""}`} onClick={()=>setActiveInds(s=>{const n=new Set(s);n.has(i.k)?n.delete(i.k):n.add(i.k);return n;})}>{i.l}</button>)}
+          {g.items.map(i=><StarBorder as="button" key={i.k} className={`btn${activeInds.has(i.k)?" active":""}`} onClick={()=>setActiveInds(s=>{const n=new Set(s);n.has(i.k)?n.delete(i.k):n.add(i.k);return n;})}>{i.l}</StarBorder>)}
           {gi<IND_BTNS.length-1&&<div className="sep"/>}
         </span>)}
         <div className="sep"/>
         <span className="label-sm">Oscillator</span>
-        {OSC_BTNS.map(o=><button key={o.k} className={`btn${activeOsc===o.k?" active":""}`} onClick={()=>setActiveOsc(o.k)}>{o.l}</button>)}
+        {OSC_BTNS.map(o=><StarBorder as="button" key={o.k} className={`btn${activeOsc===o.k?" active":""}`} onClick={()=>setActiveOsc(o.k)}>{o.l}</StarBorder>)}
       </div>
 
       {/* ── Phase 2 bar ── */}
@@ -300,12 +306,12 @@ export default function SimulatorPage({ onBack }) {
           <div className="tp-row" style={{flexWrap:"wrap",gap:3}}>
             <span className="tp-lbl">Type</span>
             <div className="btn-group">
-              {["market","limit","stop","stop_limit"].map(t=><button key={t} className={`btn${otype===t?" active":""}`} onClick={()=>setOtype(t)}>{t==="stop_limit"?"S-Limit":t.charAt(0).toUpperCase()+t.slice(1)}</button>)}
+              {["market","limit","stop","stop_limit"].map(t=><StarBorder as="button" key={t} className={`btn${otype===t?" active":""}`} onClick={()=>setOtype(t)}>{t==="stop_limit"?"S-Limit":t.charAt(0).toUpperCase()+t.slice(1)}</StarBorder>)}
             </div>
           </div>
           <div className="tp-row" style={{gap:4}}>
-            <button className={`tp-side-btn long${side==="long"?" active":""}`} onClick={()=>setSide("long")}>▲ Long</button>
-            <button className={`tp-side-btn short${side==="short"?" active":""}`} onClick={()=>setSide("short")}>▼ Short</button>
+            <StarBorder as="button" className={`tp-side-btn long${side==="long"?" active":""}`} onClick={()=>setSide("long")}>▲ Long</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn short${side==="short"?" active":""}`} onClick={()=>setSide("short")}>▼ Short</StarBorder>
           </div>
           <div className="tp-row">
             <span className="tp-lbl">Leverage</span>
@@ -330,7 +336,7 @@ export default function SimulatorPage({ onBack }) {
             <div><span className="tp-lbl">Liq</span><span>{liqP?fmtPrice(liqP):"—"}</span></div>
             <div><span className="tp-lbl">Fee</span><span>${fee}</span></div>
           </div>
-          <button className={`tp-place ${side}`} onClick={placeOrder}>{side==="long"?"Buy / Long":"Sell / Short"}</button>
+          <StarBorder as="button" className={`tp-place ${side}`} onClick={placeOrder}>{side==="long"?"Buy / Long":"Sell / Short"}</StarBorder>
           {toast&&<div className={`tp-toast toast-${toast.type}`}>{toast.msg}</div>}
           <div className="tp-section"><span>Positions</span><span className={totalUpnl>=0?"up":"dn"}>{positions.length?`${totalUpnl>=0?"+":""}$${totalUpnl.toFixed(2)}`:"—"}</span></div>
           <div>{!positions.length?<div className="tp-empty">No open positions</div>:positions.map(p=>(
@@ -338,7 +344,7 @@ export default function SimulatorPage({ onBack }) {
               <div className="pos-card-row"><span className={p.side==="long"?"up":"dn"}>{p.side.toUpperCase()} {p.leverage}×</span><span className={p.upnl>=0?"up":"dn"}>{p.upnl>=0?"+":""}${p.upnl.toFixed(2)} ({p.upnl_pct>=0?"+":""}{p.upnl_pct.toFixed(1)}%)</span></div>
               <div className="pos-card-row" style={{color:"#787b86"}}><span>Entry: {fmtPrice(p.entry_price)}</span><span>Margin: ${p.margin.toFixed(2)}</span></div>
               <div className="pos-card-row" style={{color:"#787b86"}}><span>Liq: <span className="dn">{fmtPrice(p.liq_price)}</span></span><span>Size: ${p.size_usd.toFixed(2)}</span></div>
-              <button className="pos-card-close" onClick={()=>closePos(p.id)}>× Close</button>
+              <StarBorder as="button" className="pos-card-close" onClick={()=>closePos(p.id)}>× Close</StarBorder>
             </div>
           ))}</div>
           <div className="tp-section"><span>Pending Orders</span></div>
@@ -346,7 +352,7 @@ export default function SimulatorPage({ onBack }) {
             <div className="ord-card" key={o.id}>
               <div className="pos-card-row"><span className={o.side==="long"?"up":"dn"}>{o.type.toUpperCase()} {o.side.toUpperCase()} {o.leverage}×</span><span style={{color:"#787b86"}}>${o.size_usd.toFixed(2)}</span></div>
               <div className="pos-card-row" style={{color:"#787b86"}}><span>Trigger: {fmtPrice(o.trigger_price)}</span>{o.limit_price&&<span>Limit: {fmtPrice(o.limit_price)}</span>}</div>
-              <button className="ord-card-cancel" onClick={()=>cancelOrd(o.id)}>× Cancel</button>
+              <StarBorder as="button" className="ord-card-cancel" onClick={()=>cancelOrd(o.id)}>× Cancel</StarBorder>
             </div>
           ))}</div>
           <div className="tp-footer"><span className="pi-lbl">Realized PnL</span><span className={rpnl>=0?"up":"dn"}>{rpnl>=0?"+":""}${Math.abs(rpnl).toFixed(2)}</span></div>

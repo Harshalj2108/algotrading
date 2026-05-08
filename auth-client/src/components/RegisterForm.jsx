@@ -3,6 +3,7 @@
  */
 
 import { useState, useMemo } from "react";
+import StarBorder from "./StarBorder";
 
 const AUTH_SERVER = "http://localhost:3001";
 
@@ -50,7 +51,7 @@ export default function RegisterForm({ onSuccess, onError }) {
       }
 
       onSuccess(data.user);
-    } catch (err) {
+    } catch {
       onError("Cannot reach auth server. Is it running on port 3001?");
       setLoading(false);
     }
@@ -109,14 +110,17 @@ export default function RegisterForm({ onSuccess, onError }) {
             required
           />
           <span className="input-icon">🔒</span>
-          <button
+          <StarBorder
+            as="button"
             type="button"
             className="toggle-pass"
             tabIndex={-1}
             onClick={() => setShowPass(!showPass)}
+            color="#26a69a"
+            thickness={1}
           >
             {showPass ? "🙈" : "👁"}
-          </button>
+          </StarBorder>
         </div>
         {password && (
           <>
@@ -133,13 +137,15 @@ export default function RegisterForm({ onSuccess, onError }) {
         )}
       </div>
 
-      <button
+      <StarBorder
+        as="button"
         type="submit"
         className={`btn-primary${loading ? " loading" : ""}`}
         disabled={loading || password.length < 6}
+        color="#26a69a"
       >
         <span className="btn-text">Create Account</span>
-      </button>
+      </StarBorder>
     </form>
   );
 }

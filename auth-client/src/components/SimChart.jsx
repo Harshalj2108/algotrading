@@ -37,7 +37,7 @@ function dedup(arr) {
   return Array.from(seen.values()).sort((a, b) => a.time - b.time);
 }
 
-export default function SimChart({ candles, timeframe, liveCandle, volumeData, indicatorData, activeInds, activeOsc }) {
+export default function SimChart({ candles, timeframe, liveCandle, volumeData, indicatorData, activeInds }) {
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
@@ -85,7 +85,7 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData, i
         candleSeriesRef.current = null;
         volSeriesRef.current = null;
         overlaySeriesRef.current = {};
-        try { chart.remove(); } catch (_) {}
+        try { chart.remove(); } catch { /* no-op */ }
       };
     } catch (err) {
       console.error("SimChart: failed to create chart", err);
@@ -98,15 +98,15 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData, i
       dataLoadedRef.current = false;
       // Clear existing chart data to avoid stale visuals
       if (candleSeriesRef.current) {
-        try { candleSeriesRef.current.setData([]); } catch (_e) {}
+        try { candleSeriesRef.current.setData([]); } catch { /* no-op */ }
       }
       if (volSeriesRef.current) {
-        try { volSeriesRef.current.setData([]); } catch (_e) {}
+        try { volSeriesRef.current.setData([]); } catch { /* no-op */ }
       }
       // Also clear indicator overlays
       if (chartRef.current) {
         for (const key of Object.keys(overlaySeriesRef.current)) {
-          try { chartRef.current.removeSeries(overlaySeriesRef.current[key]); } catch (_e) {}
+          try { chartRef.current.removeSeries(overlaySeriesRef.current[key]); } catch { /* no-op */ }
         }
         overlaySeriesRef.current = {};
       }
@@ -133,14 +133,14 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData, i
         console.warn("SimChart: setData error", e);
       }
     } else if (candles.length > 0) {
-      try { cs.update(candles[candles.length - 1]); } catch (_e) {}
+      try { cs.update(candles[candles.length - 1]); } catch { /* no-op */ }
     }
   }, [candles, timeframe, volumeData]);
 
   // Handle live candle updates (ticks between candle closes)
   useEffect(() => {
     if (!candleSeriesRef.current || !liveCandle) return;
-    try { candleSeriesRef.current.update(liveCandle); } catch (_) {}
+    try { candleSeriesRef.current.update(liveCandle); } catch { /* no-op */ }
   }, [liveCandle]);
 
   // ── Render indicator overlays ──────────────────────────────────────────────
@@ -160,7 +160,7 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData, i
     // Remove series that are no longer wanted
     for (const key of Object.keys(overlaySeriesRef.current)) {
       if (!wantedKeys.has(key)) {
-        try { chart.removeSeries(overlaySeriesRef.current[key]); } catch (_) {}
+        try { chart.removeSeries(overlaySeriesRef.current[key]); } catch { /* no-op */ }
         delete overlaySeriesRef.current[key];
       }
     }
@@ -182,12 +182,12 @@ export default function SimChart({ candles, timeframe, liveCandle, volumeData, i
             priceLineVisible: false,
           });
           overlaySeriesRef.current[key] = s;
-        } catch (_) { continue; }
+        } catch { continue; }
       }
 
       try {
         overlaySeriesRef.current[key].setData(dedup(data));
-      } catch (_) {}
+      } catch { /* no-op */ }
     }
   }, [indicatorData, activeInds]);
 

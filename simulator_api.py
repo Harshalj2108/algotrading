@@ -166,7 +166,7 @@ def get_tf_data(tf: str, user=Depends(require_auth)):
 
 
 @fastapi_app.get("/api/risk")
-def get_risk_metrics(user=Depends(require_auth)):
+def api_get_risk_metrics(user=Depends(require_auth)):
     return manager.compute_risk_metrics()
 
 
@@ -189,7 +189,7 @@ def resume_simulation(user=Depends(require_auth)):
 
 
 @fastapi_app.post("/api/sim/speed")
-async def set_speed(request: Request, user=Depends(require_auth)):
+async def api_set_speed(request: Request, user=Depends(require_auth)):
     body = await request.json()
     speed = body.get("speed", 1)
     manager.set_speed("max" if speed == "max" else int(speed))
@@ -197,7 +197,7 @@ async def set_speed(request: Request, user=Depends(require_auth)):
 
 
 @fastapi_app.post("/api/stress")
-def set_stress(req: StressRequest, user=Depends(require_auth)):
+def api_set_stress(req: StressRequest, user=Depends(require_auth)):
     with manager.lock:
         manager.stress_cfg = StressTestConfig(
             spread_multiplier=req.spread_mult,
@@ -209,7 +209,7 @@ def set_stress(req: StressRequest, user=Depends(require_auth)):
 
 
 @fastapi_app.post("/api/p2-flags")
-def set_p2_flags(req: P2FlagsRequest, user=Depends(require_auth)):
+def api_set_p2_flags(req: P2FlagsRequest, user=Depends(require_auth)):
     with manager.lock:
         for key in ("garch", "volume", "slippage", "corr", "cascade"):
             val = getattr(req, key)
@@ -221,7 +221,7 @@ def set_p2_flags(req: P2FlagsRequest, user=Depends(require_auth)):
 # ─── trading endpoints ────────────────────────────────────────────────────────
 
 @fastapi_app.post("/api/orders")
-def place_order(req: PlaceOrderRequest, user=Depends(require_auth)):
+def api_place_order(req: PlaceOrderRequest, user=Depends(require_auth)):
     import uuid
     from simulator_core import Position, Order
     with manager.lock:
@@ -246,7 +246,7 @@ def place_order(req: PlaceOrderRequest, user=Depends(require_auth)):
 
 
 @fastapi_app.post("/api/positions/{pos_id}/close")
-def close_position(pos_id: str, user=Depends(require_auth)):
+def api_close_position(pos_id: str, user=Depends(require_auth)):
     with manager.lock:
         pos = next((p for p in manager.positions if p.id == pos_id), None)
         if not pos:
@@ -269,7 +269,7 @@ def close_position(pos_id: str, user=Depends(require_auth)):
 
 
 @fastapi_app.delete("/api/orders/{ord_id}")
-def cancel_order(ord_id: str, user=Depends(require_auth)):
+def api_cancel_order(ord_id: str, user=Depends(require_auth)):
     with manager.lock:
         order = next((o for o in manager.orders if o.id == ord_id), None)
         if not order:

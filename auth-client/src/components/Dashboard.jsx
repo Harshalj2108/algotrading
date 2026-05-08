@@ -11,6 +11,7 @@ import "./Dashboard.css";
 import "./LandingPage.css";
 import MagicBento from "./MagicBento";
 import CircularText from "./CircularText";
+import StarBorder from "./StarBorder";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
@@ -54,7 +55,7 @@ function AnimatedValue({ value, prefix = "$", decimals = 2, duration = 800 }) {
     }
     ref.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(ref.current);
-  }, [value, duration]);
+  }, [value, duration, display]);
 
   return (
     <span>
@@ -169,7 +170,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, liveTrades = []
   }, []);
 
   useEffect(() => {
-    fetchUserData();
+    setTimeout(fetchUserData, 0);
     const interval = setInterval(fetchUserData, 30000);
     return () => clearInterval(interval);
   }, [fetchUserData]);
@@ -426,14 +427,23 @@ export default function Dashboard({ onLogout, onLaunchSimulator, liveTrades = []
 
       {/* Logout + Reset — top right */}
       <div className="dash-top-right-actions">
-        <button
+        <StarBorder
+          as="button"
           className="dash-reset-btn"
           onClick={handleReset}
           disabled={resetting}
+          color="#26a69a"
         >
           {resetting ? "⏳ Resetting..." : "↺ Reset"}
-        </button>
-        <button className="dash-logout-btn" onClick={handleLogout}>Logout</button>
+        </StarBorder>
+        <StarBorder
+          as="button"
+          className="dash-logout-btn"
+          onClick={handleLogout}
+          color="#ef5350"
+        >
+          Logout
+        </StarBorder>
       </div>
 
       {/* Connection indicator */}

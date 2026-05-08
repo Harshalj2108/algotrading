@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import StarBorder from "./StarBorder";
 
 // ─── tiny syntax-highlight tokeniser (no external dep) ────────────────────────
 function tokenise(code) {
@@ -123,7 +124,7 @@ export default function StrategyEditor({ apiBase = "http://localhost:8000", toke
         if (!code) setCode(d.template);
       })
       .catch(() => {});
-  }, [apiBase]);
+  }, [apiBase, code]);
 
   // socket updates
   useEffect(() => {
@@ -285,7 +286,7 @@ export default function StrategyEditor({ apiBase = "http://localhost:8000", toke
 
         {/* tab pills */}
         {["editor","metrics","signals"].map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
+          <StarBorder as="button" key={t} onClick={() => setTab(t)} style={{
             background:  tab === t ? "#1a2a3a" : "transparent",
             border:      tab === t ? "1px solid #2a3a4a" : "1px solid transparent",
             borderRadius: 6,
@@ -294,7 +295,7 @@ export default function StrategyEditor({ apiBase = "http://localhost:8000", toke
             fontSize:    12,
             padding:     "4px 12px",
             textTransform: "capitalize",
-          }}>{t}</button>
+          }}>{t}</StarBorder>
         ))}
       </div>
 
@@ -554,7 +555,7 @@ function Btn({ children, onClick, disabled, variant = "ghost" }) {
   const v = VARIANTS[variant];
   const [hov, setHov] = useState(false);
   return (
-    <button
+    <StarBorder as="button"
       onClick={onClick}
       disabled={disabled}
       onMouseEnter={() => setHov(true)}
@@ -573,7 +574,7 @@ function Btn({ children, onClick, disabled, variant = "ghost" }) {
       }}
     >
       {children}
-    </button>
+    </StarBorder>
   );
 }
 

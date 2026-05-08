@@ -1,6 +1,7 @@
-import React from 'react';
+
 import LightRays from './LightRays';
 import CircularText from './CircularText';
+import StarBorder from './StarBorder';
 import './LandingPage.css';
 
 export default function LandingPage({ onGetStarted }) {
@@ -32,9 +33,14 @@ export default function LandingPage({ onGetStarted }) {
         <h1>SynthCrypto <span className="brand-tag">v3</span></h1>
         <h2>Phase 2 Live Market Simulator</h2>
         <p>Experience realistic market dynamics with our advanced simulation engines.</p>
-        <button className="get-started-btn" onClick={onGetStarted}>
+        <StarBorder
+          as="button"
+          className="get-started-btn"
+          onClick={onGetStarted}
+          color="#26a69a"
+        >
           Get Started
-        </button>
+        </StarBorder>
       </div>
     </div>
   );

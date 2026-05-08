@@ -15,6 +15,7 @@ import GoogleButton from "./components/GoogleButton";
 import Dashboard from "./components/Dashboard";
 import SimulatorPage from "./components/SimulatorPage";
 import LandingPage from "./components/LandingPage";
+import StarBorder from "./components/StarBorder";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
@@ -170,6 +171,14 @@ export default function App() {
           isLive: true,
         };
         setLiveTrades(prev => [trade, ...prev]);
+
+        // Persist trade to DB
+        fetch(`${AUTH_SERVER}/api/portfolio/trade`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(trade),
+        }).catch(err => console.error("Failed to save trade", err));
       }
     });
 
@@ -202,13 +211,13 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const oauthError = params.get("error");
     if (oauthError) {
-      setError(decodeURIComponent(oauthError.replace(/\+/g, " ")));
+      setTimeout(() => setError(decodeURIComponent(oauthError.replace(/\+/g, " "))), 0);
       window.history.replaceState({}, "", window.location.pathname);
     }
     // If redirected back from Google OAuth with a token cookie, go to dashboard
     const oauthSuccess = params.get("auth");
     if (oauthSuccess === "success") {
-      setPage("dashboard");
+      setTimeout(() => setPage("dashboard"), 0);
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
@@ -274,18 +283,22 @@ export default function App() {
 
           {/* Tab switcher */}
           <div className="tab-switcher">
-            <button
+            <StarBorder
+              as="button"
               className={`tab-btn${tab === "login" ? " active" : ""}`}
               onClick={() => switchTab("login")}
+              color="#26a69a"
             >
               Sign In
-            </button>
-            <button
+            </StarBorder>
+            <StarBorder
+              as="button"
               className={`tab-btn${tab === "register" ? " active" : ""}`}
               onClick={() => switchTab("register")}
+              color="#26a69a"
             >
               Create Account
-            </button>
+            </StarBorder>
           </div>
 
           {/* Google OAuth */}
