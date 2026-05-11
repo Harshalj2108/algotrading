@@ -545,8 +545,9 @@ class LiquidationHunter(BaseAgent):
         recent_high = float(np.max(price_history[-50:]))
 
         # Estimate density of liquidation levels below and above
-        liq_below = current_price * (1 - self.scan_range)
-        liq_above = current_price * (1 + self.scan_range)
+        # (Variables kept as conceptual documentation of hunter logic)
+        _liq_below = current_price * (1 - self.scan_range)
+        _liq_above = current_price * (1 + self.scan_range)
 
         dist_to_low  = (current_price - recent_low) / current_price
         dist_to_high = (recent_high - current_price) / current_price
@@ -1849,9 +1850,9 @@ def run_demo(n_steps: int = 5_000, seed: int = 42) -> Phase3MarketSimulator:
 
     # Plots
     print("  Generating plots...")
-    fig1 = plot_phase3_summary(sim)
-    fig2 = plot_liquidity_stress(sim)
-    fig3 = plot_agent_performance(sim)
+    _ = plot_phase3_summary(sim)
+    _ = plot_liquidity_stress(sim)
+    _ = plot_agent_performance(sim)
 
     plt.show()
     return sim
@@ -1895,7 +1896,7 @@ def run_comparison(n_steps: int = 3_000, seed: int = 42) -> None:
 
     print(bar)
     print(f"  Adversarial traps: {sim_adv.n_adversarial_traps}")
-    print(f"  ✓ Comparison complete\n")
+    print("  ✓ Comparison complete\n")
 
 
 # ===========================================================================

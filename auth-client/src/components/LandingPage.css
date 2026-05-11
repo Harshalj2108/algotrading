@@ -1,0 +1,117 @@
+.landing-page {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #0b0e14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.landing-rays {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 5;
+  text-align: center;
+  color: #fff;
+  padding: 40px;
+  background: rgba(19, 23, 34, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  max-width: 600px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+  transform: translateX(-500px);
+}
+
+.landing-content .brand-icon {
+  font-size: 64px;
+  color: #26a69a;
+  margin-bottom: 16px;
+}
+
+.landing-content h1 {
+  font-size: 48px;
+  margin-bottom: 8px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.landing-content h2 {
+  font-size: 20px;
+  color: #d1d4dc;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+.landing-content p {
+  color: #787b86;
+  font-size: 16px;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.get-started-btn {
+  background: #2962ff;
+  color: #fff;
+  border: none;
+  padding: 16px 48px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(41, 98, 255, 0.3);
+}
+
+.get-started-btn:hover {
+  background: #3a71ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(41, 98, 255, 0.4);
+}
+
+.top-left-brand {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.top-left-logo {
+  font-size: 42px;
+  color: #26a69a;
+  position: absolute;
+  z-index: 2;
+}
+
+.brand-circular-text {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.brand-circular-text span {
+  font-size: 13px !important;
+  color: #26a69a;
+  letter-spacing: 2px;
+}

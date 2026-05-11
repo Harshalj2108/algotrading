@@ -1,0 +1,7 @@
+cd auth-client
+npm run dev
+
+cd auth-server
+npm start
+
+python simulator_web_v3.py

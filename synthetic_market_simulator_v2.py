@@ -576,7 +576,7 @@ class RiskMetrics:
         if print_report:
             bar = "─" * 46
             print(f"\n{bar}")
-            print(f"  RISK METRICS REPORT")
+            print("  RISK METRICS REPORT")
             print(bar)
             print(f"  Total return   : {result['total_return_pct']:>10.3f} %")
             print(f"  Sharpe ratio   : {result['sharpe_ratio']:>10.4f}")

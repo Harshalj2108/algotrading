@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chart Data Test</title>
+  <script src="https://unpkg.com/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    body { margin: 0; background: #131722; color: #d1d4dc; font-family: sans-serif; }
+    #status { padding: 10px; font-size: 14px; }
+    #chart { width: 100vw; height: calc(100vh - 40px); }
+    .ok { color: #26a69a; }
+    .err { color: #ef5350; }
+  </style>
+</head>
+<body>
+  <div id="status">Loading BTC/USDT 5m history from API...</div>
+  <div id="chart"></div>
+  <script>
+    const API = 'http://localhost:8000';
+    
+    async function run() {
+      const statusEl = document.getElementById('status');
+      try {
+        // Fetch history
+        const t0 = performance.now();
+        const res = await fetch(`${API}/api/live/history?symbol=BTC/USDT&type=crypto&tf=5m`);
+        const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
+        
+        if (!res.ok) {
+          statusEl.innerHTML = `<span class="err">API returned ${res.status}. Is the backend running on port 8000?</span>`;
+          return;
+        }
+        
+        const data = await res.json();
+        const candles = data.data || [];
+        
+        if (candles.length === 0) {
+          statusEl.innerHTML = `<span class="err">API returned 0 candles!</span>`;
+          return;
+        }
+        
+        // Normalize
+        const normalized = candles.map(c => ({
+          time: Math.floor(Number(c.time)),
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close),
+        })).filter(c => [c.time, c.open, c.high, c.low, c.close].every(Number.isFinite))
+          .sort((a, b) => a.time - b.time);
+        
+        statusEl.innerHTML = `<span class="ok">✓ Loaded ${normalized.length} candles in ${elapsed}s (first: ${new Date(normalized[0].time * 1000).toLocaleString()}, last: ${new Date(normalized[normalized.length-1].time * 1000).toLocaleString()})</span>`;
+        
+        // Create chart
+        const chartEl = document.getElementById('chart');
+        const chart = LightweightCharts.createChart(chartEl, {
+          layout: { background: { type: 'solid', color: '#131722' }, textColor: '#787b86' },
+          grid: { vertLines: { color: '#1e222d' }, horzLines: { color: '#1e222d' } },
+          width: chartEl.clientWidth,
+          height: chartEl.clientHeight,
+          timeScale: { timeVisible: true, secondsVisible: false },
+        });
+        
+        const series = chart.addSeries(LightweightCharts.CandlestickSeries, {
+          upColor: '#26a69a', downColor: '#ef5350',
+          borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350',
+        });
+        
+        series.setData(normalized);
+        chart.timeScale().fitContent();
+        
+        // Resize
+        new ResizeObserver(() => {
+          chart.applyOptions({ width: chartEl.clientWidth, height: chartEl.clientHeight });
+        }).observe(chartEl);
+        
+      } catch (e) {
+        statusEl.innerHTML = `<span class="err">Error: ${e.message}. Is the backend running?</span>`;
+      }
+    }
+    
+    run();
+  </script>
+</body>
+</html>

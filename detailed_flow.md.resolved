@@ -1,0 +1,351 @@
+# SynthCrypto — Detailed Step-by-Step Execution Flow
+
+## System Startup Sequence
+
+### Step 1: PostgreSQL Database
+- Must be running on `localhost:5432` with database `synthcrypto`
+- Connection string: `postgresql://postgres:Saifu@607post@localhost:5432/synthcrypto`
+
+### Step 2: Auth Server (Node.js — port 3001)
+```
+node src/index.js
+```
+1. Loads `.env` (JWT secret, Google OAuth creds, DB URL, client/simulator URLs)
+2. Creates Express app with `cors`, `cookie-parser`, JSON parsing
+3. Calls `initDB()` → connects to PostgreSQL, auto-creates `users` table if missing
+4. Mounts routes: `/api/auth` (auth.js) and `/api/portfolio` (portfolio.js)
+5. Listens on port 3001
+
+### Step 3: Simulator API (Python FastAPI — port 8000)
+```
+uvicorn simulator_api:app --host 0.0.0.0 --port 8000
+```
+**Module load sequence:**
+1. `simulator_api.py` imports `simulator_core.py`
+2. `simulator_core.py` imports `synthetic_market_simulator.py` (Phase 1) and `synthetic_market_simulator_v2.py` (Phase 2)
+3. Creates `socketio.AsyncServer` (ASGI mode)
+4. Creates `SimulationManager` singleton with `_sync_emit` callback
+5. `SimulationManager.__init__()`:
+   - Creates `Phase2MarketSimulator` with random initial price (log-uniform between $1–$100K)
+   - Creates 7 `OHLCVAggregator` instances (1s, 1m, 5m, 15m, 30m, 1h, 1d)
+   - Initializes balance=$10,000, empty positions/orders
+   - Creates `EMABBScalper` strategy instance
+6. Creates FastAPI app with CORS middleware
+7. Mounts Socket.IO under `/ws/socket.io`
+
+**On `startup` event:**
+1. Captures main asyncio event loop reference (`_main_loop`)
+2. Calls `manager.start()` → spawns daemon thread running `_loop()`
+
+### Step 4: React Frontend (Vite — port 5173/5174)
+```
+npx vite --port 5173
+```
+- Serves the React SPA (App.jsx = auth page, Dashboard.jsx, SimulatorPage.jsx)
+
+---
+
+## Authentication Flow
+
+### Email/Password Registration
+```
+User → React RegisterForm → POST http://localhost:3001/api/auth/register
+  { email, username, password }
+```
+1. Validates email + password (min 6 chars)
+2. Checks `users` table for existing email
+3. `bcrypt.genSalt(12)` → `bcrypt.hash(password, salt)` → stores hash
+4. Inserts user into PostgreSQL, returns `id, email, username`
+5. `signToken(user)` → JWT with `{id, email, username, avatar_url}`, expires 7 days
+6. Sets `token` httpOnly cookie (SameSite=lax, 7-day maxAge)
+7. Returns `201 { message, user }`
+8. React receives success → redirects to simulator (`http://localhost:5000`)
+
+### Email/Password Login
+```
+User → React LoginForm → POST http://localhost:3001/api/auth/login
+  { email, password }
+```
+1. Finds user by email (lowercased)
+2. If user has no `password_hash` (Google-only) → rejects with hint
+3. `bcrypt.compare(password, hash)` → validates
+4. Updates `last_login` timestamp
+5. Signs JWT → sets cookie → returns user object
+6. React redirects to simulator
+
+### Google OAuth 2.0
+```
+User → clicks "Sign in with Google" → GET http://localhost:3001/api/auth/google
+```
+1. Generates CSRF state token (`crypto.randomBytes(16).hex`)
+2. Stores state in `oauth_state` cookie (5 min TTL)
+3. Redirects to `https://accounts.google.com/o/oauth2/v2/auth` with:
+   - `client_id`, `redirect_uri=http://localhost:3001/api/auth/google/callback`
+   - Scopes: `userinfo.email` + `userinfo.profile`
+   - `access_type=offline`, `prompt=consent`
+
+```
+Google → callback → GET http://localhost:3001/api/auth/google/callback?code=...&state=...
+```
+4. Verifies CSRF state matches cookie
+5. Exchanges `code` for `access_token` via POST to `https://oauth2.googleapis.com/token`
+6. Fetches user profile from `https://www.googleapis.com/oauth2/v2/userinfo`
+7. Upsert logic:
+   - If `google_id` exists in DB → update `last_login` + avatar
+   - If email exists (password user) → link `google_id` to account
+   - Else → create new user
+8. Signs JWT → sets cookie → redirects to simulator URL
+
+### Token Verification (for Flask/FastAPI)
+```
+GET http://localhost:3001/api/auth/verify
+```
+- Reads token from cookie, query param, or `x-auth-token` header
+- Returns `{ valid: true, user: payload }` or `401`
+
+---
+
+## Simulation Engine — Step-by-Step Tick
+
+The background thread in `SimulationManager._loop()` runs every **50ms** (20 FPS):
+
+### Per-Frame Processing
+
+```python
+while not stop_event:
+    if not paused:
+        # 1. Calculate how many sim-steps to run this frame
+        spf = SPEED_MAP[speed]   # 1×=0.05, 10×=0.5, 100×=5, 1000×=50, MAX=1000
+        accum += spf
+        steps_now = int(accum)   # could be 0 at 1× speed (runs 1 step every 20 frames)
+        accum -= steps_now
+```
+
+### Per Sim-Step (inside `Phase2MarketSimulator.step()`)
+
+```
+Step 1: Regime Switch (Phase 1)
+  → Markov transition: 97% stay, 1% each to other 3 regimes
+  → Current regime determines base μ (drift) and σ (volatility)
+
+Step 2: GARCH(1,1) Update (Phase 2)
+  → σ²_t = α₀ + α₁·r²_{t-1} + β·σ²_{t-1}
+  → Replaces regime's static σ with dynamic conditional volatility
+  → Stress test multiplier applied if enabled
+
+Step 3: GBM Price Update (Phase 1)
+  → price *= (1 + μ + N(0, σ_garch))
+  → Geometric Brownian Motion with GARCH-modified volatility
+
+Step 4: Jump Event (Phase 1)
+  → 0.03% chance per step
+  → If triggered: price *= (1 + N(0, 0.015))  (~1.5% shock)
+  → Price floor enforced (min $0.10)
+
+Step 5: Liquidation Cascade (Phase 2)
+  → If return < -5%: wipe 10% of open interest, inject secondary shock
+  → Secondary shock = -min(|return| × 1.5, 20%)
+  → OI slowly recovers between cascades
+
+Step 6: Correlated Assets (Phase 2)
+  → Cholesky decomposition of correlation matrix
+  → z ~ N(0,I), ε = L @ z (correlated shocks)
+  → ETH price updated with correlated + vol-scaled shock
+
+Step 7: Volume Calculation (Phase 2)
+  → V = base × regime_mult × (1 + 50·|return|) × jump_boost × noise
+  → Regime multipliers: bull=1.2, bear=1.3, high_vol=2.5, low_vol=0.5
+
+Step 8: Record histories
+  → Append: price, return, sigma, volume, regime, jumped, cascaded
+```
+
+### After All Steps in Frame
+
+```
+Step 9: OHLCV Aggregation
+  → Each price tick fed to all 7 OHLCVAggregators (1s, 1m, 5m, 15m, 30m, 1h, 1d)
+  → When a candle closes: compute all 16 indicators on that timeframe
+  → Emit "candle_close" via Socket.IO with candle data + latest indicator values
+  → Log 5m candles to CSV
+
+Step 10: Strategy Execution (on 5m candle close)
+  
+  EMA BB Scalper:
+    a. Compute: EMA30, EMA50, EMA200, ATR14, ADX14, Bollinger(15, 1.5σ)
+    b. Exit check: SL hit → stop_loss, TP hit → take_profit
+       - On SL: 3-bar cooldown, increment consecutive losses
+       - On TP: reset consecutive losses
+       - Track max drawdown → kill switch at 10%
+    c. Cooldown/circuit-breaker check
+    d. Entry filters: ADX > 22, BB width > 1.5%
+    e. Entry signal:
+       - LONG: EMA30 > EMA50, price < lower BB, price > EMA200
+       - SHORT: EMA30 < EMA50, price > upper BB, price < EMA200
+    f. Position sizing: risk 1% of capital, SL at 2× ATR
+    g. Trailing stop: once profitable, trail at 75% of max favorable excursion
+
+  Dynamic Strategy (if loaded):
+    a. Call user's on_candle(candles, price, step)
+    b. Process returned actions (open/close)
+    c. Log any closed trades
+    d. Emit "dynamic_strategy_update"
+
+Step 11: Order Processing
+  → Check pending limit/stop orders against current price
+  → If triggered: create Position, apply slippage, deduct margin + fees
+  → Check all positions for liquidation (price crossed liq_price)
+  → Liquidated positions: wipe margin, log trade
+
+Step 12: Emit Tick
+  → Socket.IO "tick" event with:
+    { step, price, regime, live candles (all TFs),
+      positions[], orders[], balance, realized_pnl,
+      p2: {sigma, volume, cascade, corr_prices, oi, jumped},
+      events: {filled[], liquidated[]} }
+```
+
+---
+
+## Trading Flow (User Places an Order)
+
+### Market Order
+```
+React SimulatorPage → POST /api/orders (or socket "place_order")
+  { type: "market", side: "long", size_usd: 1000, leverage: 10 }
+```
+1. Get current price from `manager.p2sim.price`
+2. Compute execution price with slippage:
+   - `slippage = vol_mult × sigma × size_factor × order_size`
+   - `exec_price = mid × (1 + direction × (spread + slippage))`
+3. Create `Position(id, side, exec_price, size, leverage)`
+   - `margin = size / leverage` ($100 for $1000 at 10×)
+   - `fee = size × 0.06%` ($0.60)
+   - `liq_price` calculated from leverage + maintenance margin
+4. Check `margin + fee <= balance`
+5. Deduct from balance, append to positions list
+6. Return `{status: "filled", position, balance, slippage}`
+
+### Position Close
+```
+POST /api/positions/{id}/close
+```
+1. Compute exit price with slippage (opposite direction)
+2. Calculate PnL: `(exit - entry) / entry × size` (long) or reverse (short)
+3. Deduct exit fee
+4. Credit `margin + net_pnl` back to balance
+5. Log trade to CSV
+6. Remove from positions list
+
+---
+
+## Portfolio Persistence Flow
+
+### Get Portfolio
+```
+React Dashboard → GET http://localhost:3001/api/portfolio/me
+  (with httpOnly cookie)
+```
+1. `requireAuth` middleware extracts user from JWT cookie
+2. Query `users.balance` from PostgreSQL
+3. Query last 50 trades from `trades` table
+4. Sum all PnL → `total_pnl`
+5. Return `{ balance, total_pnl, trades[] }`
+
+### Trade Sync (Simulator → Auth Server)
+```
+Flask/FastAPI → POST http://localhost:3001/api/portfolio/trade
+  { user_id, symbol, side, size_usd, entry_price, exit_price, pnl }
+```
+1. Begin PostgreSQL transaction
+2. Insert into `trades` table
+3. Update `users.balance += pnl`
+4. Commit transaction
+
+> [!WARNING]
+> This trade sync endpoint exists in the auth server code but the **simulator API doesn't currently call it** — the balance is tracked in-memory only. This was being worked on in recent conversations but isn't fully wired up yet.
+
+---
+
+## Real-Time Data Flow (Socket.IO)
+
+```mermaid
+sequenceDiagram
+    participant C as React Client
+    participant S as FastAPI + Socket.IO
+    participant M as SimulationManager Thread
+
+    C->>S: Socket.IO connect
+    S->>C: "init" {candles, indicators, price, regime, p2_status, strategies}
+    
+    loop Every 50ms
+        M->>M: Run N sim steps (based on speed)
+        M->>S: _sync_emit("tick", {...})
+        S->>C: "tick" {price, positions, balance, p2 stats}
+        
+        alt Candle closed
+            M->>S: _sync_emit("candle_close", {tf, candles, indicators})
+            S->>C: "candle_close" {...}
+        end
+        
+        alt Strategy action
+            M->>S: _sync_emit("ebb_strategy_update", {actions, metrics})
+            S->>C: "ebb_strategy_update" {...}
+        end
+    end
+
+    C->>S: "place_order" {type, side, size}
+    S->>C: "order_result" {status, position, balance}
+    
+    C->>S: "switch_tf" {tf: "5m"}
+    S->>C: "tf_data" {full candle + indicator payload}
+```
+
+---
+
+## File Dependency Graph
+
+```
+simulator_api.py (FastAPI + Socket.IO web layer)
+  └── simulator_core.py (indicators, strategies, SimulationManager)
+        ├── synthetic_market_simulator.py (Phase 1: GBM, regime, jumps, spread, fees, leverage)
+        └── synthetic_market_simulator_v2.py (Phase 2: GARCH, volume, slippage, correlation, cascade)
+              └── synthetic_market_simulator.py (imports Phase 1 classes)
+
+synthetic_market_simulator_v3.py (Phase 3: agents, liquidity, adversarial — standalone/research only)
+  ├── synthetic_market_simulator.py
+  └── synthetic_market_simulator_v2.py
+
+auth-server/src/index.js (Express entry)
+  ├── db.js (PostgreSQL pool + migration)
+  ├── routes/auth.js (login, register, Google OAuth, verify)
+  │     └── middleware/auth.js (JWT sign/verify/requireAuth)
+  └── routes/portfolio.js (balance, trade sync)
+
+auth-client/src/main.jsx → App.jsx
+  ├── components/LoginForm.jsx
+  ├── components/RegisterForm.jsx
+  ├── components/GoogleButton.jsx
+  ├── components/Dashboard.jsx
+  └── components/SimulatorPage.jsx (+ SimulatorPage.css)
+```
+
+---
+
+## Key Constants
+
+| Constant | Value | Location |
+|----------|-------|----------|
+| Initial Balance | $10,000 | simulator_core.py |
+| Taker Fee | 0.06% | simulator_core.py |
+| Maker Fee | 0.02% | simulator_core.py |
+| Maintenance Margin | 0.5% | simulator_core.py |
+| Tick Rate | 50ms (20 FPS) | simulator_core.py |
+| Max Candles Stored | 2,000 | simulator_core.py |
+| JWT Expiry | 7 days | middleware/auth.js |
+| bcrypt Rounds | 12 | routes/auth.js |
+| GARCH α₀/α₁/β | 1e-6 / 0.10 / 0.85 | v2.py Phase2Config |
+| Cascade Threshold | -5% return | v2.py Phase2Config |
+| EBB Max Drawdown | 10% | simulator_core.py |
+| EBB ADX Filter | > 22 | simulator_core.py |
+| EBB Risk Per Trade | 1% | simulator_core.py |
