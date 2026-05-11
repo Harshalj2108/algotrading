@@ -410,11 +410,38 @@ class OHLCVAggregator(CandleAggregator):
 
 # ─── Position / Order ─────────────────────────────────────────────────────────
 
+def validate_tpsl(side: str, entry_price: float,
+                  tp_price: Optional[float] = None,
+                  sl_price: Optional[float] = None) -> Optional[str]:
+    if tp_price is not None and not math.isfinite(tp_price):
+        return "Take Profit must be a valid price"
+    if sl_price is not None and not math.isfinite(sl_price):
+        return "Stop Loss must be a valid price"
+    if tp_price is not None and tp_price <= 0:
+        return "Take Profit must be greater than zero"
+    if sl_price is not None and sl_price <= 0:
+        return "Stop Loss must be greater than zero"
+
+    if side == "long":
+        if tp_price is not None and tp_price <= entry_price:
+            return "Long Take Profit must be above entry"
+        if sl_price is not None and sl_price >= entry_price:
+            return "Long Stop Loss must be below entry"
+    else:
+        if tp_price is not None and tp_price >= entry_price:
+            return "Short Take Profit must be below entry"
+        if sl_price is not None and sl_price <= entry_price:
+            return "Short Stop Loss must be above entry"
+    return None
+
+
 class Position:
     def __init__(self, pos_id: str, side: str, entry: float,
                  size_usd: float, leverage: float,
                  order_type: str = "market",
-                 slippage_cost: float = 0.0) -> None:
+                 slippage_cost: float = 0.0,
+                 tp_price: Optional[float] = None,
+                 sl_price: Optional[float] = None) -> None:
         self.id            = pos_id
         self.side          = side
         self.entry_price   = entry
@@ -425,15 +452,39 @@ class Position:
         fee_rate           = MAKER_FEE_RATE if order_type == "limit" else TAKER_FEE_RATE
         self.fee_paid      = size_usd * fee_rate
         self.slippage_cost = slippage_cost
+        self.tp_price      = tp_price
+        self.sl_price      = sl_price
         if side == "long":
             self.liq_price = entry * (1 - 1 / leverage + MAINT_MARGIN)
         else:
             self.liq_price = entry * (1 + 1 / leverage - MAINT_MARGIN)
 
+    def set_tpsl(self, tp_price: Optional[float] = None,
+                 sl_price: Optional[float] = None) -> Optional[str]:
+        err = validate_tpsl(self.side, self.entry_price, tp_price, sl_price)
+        if err:
+            return err
+        self.tp_price = tp_price
+        self.sl_price = sl_price
+        return None
+
     def unrealized_pnl(self, price: float) -> float:
         if self.side == "long":
             return (price - self.entry_price) / self.entry_price * self.size_usd
         return (self.entry_price - price) / self.entry_price * self.size_usd
+
+    def tpsl_trigger(self, price: float) -> Optional[Tuple[str, float]]:
+        if self.side == "long":
+            if self.tp_price is not None and price >= self.tp_price:
+                return "take_profit", self.tp_price
+            if self.sl_price is not None and price <= self.sl_price:
+                return "stop_loss", self.sl_price
+        else:
+            if self.tp_price is not None and price <= self.tp_price:
+                return "take_profit", self.tp_price
+            if self.sl_price is not None and price >= self.sl_price:
+                return "stop_loss", self.sl_price
+        return None
 
     def is_liquidated(self, price: float) -> bool:
         return price <= self.liq_price if self.side == "long" else price >= self.liq_price
@@ -450,6 +501,8 @@ class Position:
             "margin":        round(self.margin, 2),
             "qty":           round(self.qty, 6),
             "liq_price":     round(self.liq_price, 6),
+            "tp_price":      round(self.tp_price, 6) if self.tp_price is not None else None,
+            "sl_price":      round(self.sl_price, 6) if self.sl_price is not None else None,
             "upnl":          round(upnl, 2),
             "upnl_pct":      round(upnl_pct, 2),
             "fee_paid":      round(self.fee_paid, 4),
@@ -1253,6 +1306,35 @@ class SimulationManager:
             return ep, abs(ep - mid)
         return mid, 0.0
 
+    def _close_position_locked(self, pos: Position, price: float,
+                               reason: str = "manual") -> Dict:
+        cp, slip = self._slippage_exec_price(
+            price, "short" if pos.side == "long" else "long", pos.size_usd)
+        upnl = ((cp - pos.entry_price) / pos.entry_price * pos.size_usd
+                if pos.side == "long"
+                else (pos.entry_price - cp) / pos.entry_price * pos.size_usd)
+        fee = pos.size_usd * TAKER_FEE_RATE
+        net = upnl - fee
+        self.balance      += pos.margin + net
+        self.realized_pnl += net
+        self.trade_pnls.append(net)
+        if pos in self.positions:
+            self.positions.remove(pos)
+        return {
+            "status": "closed",
+            "reason": reason,
+            "position_id": pos.id,
+            "pnl": round(net, 2),
+            "balance": round(self.balance, 2),
+            "slippage": round(slip, 6),
+            "side": pos.side,
+            "entry_price": round(pos.entry_price, 6),
+            "exit_price": round(cp, 6),
+            "size_usd": round(pos.size_usd, 2),
+            "leverage": pos.leverage,
+            "symbol": "SIM",
+        }
+
     # ── controls ──────────────────────────────────────────────────────────────
 
     def set_speed(self, speed: Any) -> None:
@@ -1292,6 +1374,7 @@ class SimulationManager:
                 tick_regime  = self.p2sim.regime
                 filled_events: List[Dict] = []
                 liq_events:    List[str]  = []
+                tpsl_events:   List[Dict] = []
                 cascade_fired  = False
 
                 for _ in range(max(0, steps_now)):
@@ -1318,6 +1401,12 @@ class SimulationManager:
                                 self.orders.remove(order)
 
                         for pos in list(self.positions):
+                            tpsl_hit = pos.tpsl_trigger(new_price)
+                            if tpsl_hit is not None:
+                                reason, trigger_price = tpsl_hit
+                                tpsl_events.append(
+                                    self._close_position_locked(pos, trigger_price, reason))
+                                continue
                             if pos.is_liquidated(new_price):
                                 liq_events.append(pos.id)
                                 self.positions.remove(pos)
@@ -1394,7 +1483,11 @@ class SimulationManager:
                         "orders":    ord_dicts,
                         "balance":   balance,
                         "rpnl":      rpnl,
-                        "events":    {"filled": filled_events, "liquidated": liq_events},
+                        "events":    {
+                            "filled": filled_events,
+                            "liquidated": liq_events,
+                            "tpsl_closed": tpsl_events,
+                        },
                         "p2":        p2_tick,
                     })
 

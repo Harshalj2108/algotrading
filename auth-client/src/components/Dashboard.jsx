@@ -97,7 +97,7 @@ function Sparkline({ data, color = "#26a69a", width = 120, height = 32 }) {
 }
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
-export default function Dashboard({ onLogout, onLaunchSimulator, liveTrades = [], onResetTrades }) {
+export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto, onLaunchStocks, liveTrades = [], onResetTrades }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -378,22 +378,29 @@ export default function Dashboard({ onLogout, onLaunchSimulator, liveTrades = []
       ),
       color: 'rgba(19, 23, 34, 0.4)'
     },
-    // Card 5: Simulator (wide rectangle, row 3 col 1-2)
+    // Card 5: Apps / Markets (wide rectangle, row 3 col 1-2)
     {
-      label: 'Simulator',
+      label: 'Markets & Simulators',
       content: (
-        <div style={{display: 'flex', alignItems: 'center', gap: '16px', height: '100%'}}>
-           <div style={{fontSize: '36px'}}>🚀</div>
-           <div>
-             <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#26a69a' }}>Launch Simulator</div>
-             <div style={{ fontSize: '12px', color: '#787b86', marginTop: 4 }}>Open the live trading engine</div>
-           </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '10px 16px', gap: '12px' }}>
+          <StarBorder as="button" onClick={onLaunchSimulator} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 8px', background: 'rgba(41,98,255,0.08)', border: '1px solid rgba(41,98,255,0.2)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <span style={{ fontSize: '22px' }}>⬡</span>
+            <span style={{ color: '#d1d4dc', fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' }}>Simulator</span>
+          </StarBorder>
+          <StarBorder as="button" onClick={onLaunchCrypto} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 8px', background: 'rgba(38,166,154,0.08)', border: '1px solid rgba(38,166,154,0.2)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <span style={{ fontSize: '22px' }}>₿</span>
+            <span style={{ color: '#d1d4dc', fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' }}>Live Crypto</span>
+          </StarBorder>
+          <StarBorder as="button" onClick={onLaunchStocks} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 8px', background: 'rgba(243,135,32,0.08)', border: '1px solid rgba(243,135,32,0.2)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <span style={{ fontSize: '22px' }}>📈</span>
+            <span style={{ color: '#d1d4dc', fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' }}>Live Stocks</span>
+          </StarBorder>
         </div>
       ),
       color: 'rgba(38, 166, 154, 0.05)',
-      onClick: onLaunchSimulator
     },
     // Card 6: Available Balance (rectangle, row 3 col 3-4)
+
     {
       label: 'Available Balance',
       content: (
@@ -555,3 +562,4 @@ export default function Dashboard({ onLogout, onLaunchSimulator, liveTrades = []
     </>
   );
 }
+ 

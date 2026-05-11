@@ -36,6 +36,7 @@ from simulator_core import (
     StressTestConfig,
     load_strategy,
 )
+from realtime_engine import data_engine
 
 # ─── configuration ────────────────────────────────────────────────────────────
 
@@ -51,6 +52,27 @@ sio = socketio.AsyncServer(
     engineio_logger=False,
 )
 
+# ─── Live Market State ────────────────────────────────────────────────────────
+# Keeps track of which clients are subscribed to which live market symbols
+# format: { sid: {"asset_class": "crypto", "symbol": "BTC/USDT"} }
+_live_subscriptions = {}
+_live_polling_task = None
+
+async def _poll_live_markets():
+    """Background task to poll live markets for active subscriptions and broadcast."""
+    while True:
+        if _live_subscriptions:
+            # Group by unique symbols to avoid duplicate API calls
+            unique_subs = set((sub["asset_class"], sub["symbol"]) for sub in _live_subscriptions.values())
+            for asset_class, symbol in unique_subs:
+                ticker = await data_engine.get_ticker(asset_class, symbol)
+                if ticker:
+                    # Broadcast to all sids subscribed to this symbol
+                    for sid, sub in _live_subscriptions.items():
+                        if sub["asset_class"] == asset_class and sub["symbol"] == symbol:
+                            await sio.emit("live_tick", ticker, to=sid)
+        
+        await asyncio.sleep(2) # Poll every 2 seconds
 
 # ─── main event loop reference (set in startup) ──────────────────────────────
 
@@ -142,9 +164,15 @@ class PlaceOrderRequest(BaseModel):
     leverage:      float = 1.0
     trigger_price: Optional[float] = None
     limit_price:   Optional[float] = None
+    tp_price:      Optional[float] = None
+    sl_price:      Optional[float] = None
 
 class ClosePositionRequest(BaseModel):
     id: str
+
+class UpdateTPSLRequest(BaseModel):
+    tp_price: Optional[float] = None
+    sl_price: Optional[float] = None
 
 class CancelOrderRequest(BaseModel):
     id: str
@@ -156,6 +184,31 @@ class CancelOrderRequest(BaseModel):
 def health():
     return {"status": "ok", "version": "4.0.0"}
 
+@fastapi_app.get("/api/live/search")
+async def live_search(q: str, type: str = "crypto"):
+    """Search for symbols."""
+    results = await data_engine.search_symbols(q, type)
+    return {"results": results}
+
+@fastapi_app.get("/api/live/history")
+async def live_history(symbol: str, type: str = "crypto", tf: str = "5m"):
+    """Fetch historical data to initialize chart."""
+    import time as _time
+    t0 = _time.monotonic()
+    try:
+        data = await data_engine.get_history(type, symbol, tf)
+        elapsed = _time.monotonic() - t0
+        print(f"[API] /api/live/history: {type}/{symbol}/{tf} -> {len(data)} candles in {elapsed:.1f}s")
+        from simulator_core import compute_indicators
+        inds = compute_indicators(data) if len(data) >= 2 else {}
+        return {"symbol": symbol, "data": data, "indicators": inds}
+    except Exception as e:
+        elapsed = _time.monotonic() - t0
+        print(f"[API] /api/live/history ERROR: {type}/{symbol}/{tf} -> {e} ({elapsed:.1f}s)")
+        return JSONResponse(
+            status_code=500,
+            content={"symbol": symbol, "data": [], "indicators": {}, "error": str(e)},
+        )
 
 @fastapi_app.get("/api/tf/{tf}")
 def get_tf_data(tf: str, user=Depends(require_auth)):
@@ -229,7 +282,11 @@ def api_place_order(req: PlaceOrderRequest, user=Depends(require_auth)):
         if req.type == "market":
             ep, slip = manager._slippage_exec_price(cur, req.side, req.size_usd)
             pos = Position(str(uuid.uuid4())[:8], req.side, ep,
-                           req.size_usd, req.leverage, "market", slip)
+                           req.size_usd, req.leverage, "market", slip,
+                           req.tp_price, req.sl_price)
+            err = pos.set_tpsl(req.tp_price, req.sl_price)
+            if err:
+                raise HTTPException(400, err)
             if pos.margin + pos.fee_paid > manager.balance:
                 raise HTTPException(400, "Insufficient balance")
             manager.balance -= pos.margin + pos.fee_paid
@@ -252,20 +309,22 @@ def api_close_position(pos_id: str, user=Depends(require_auth)):
         if not pos:
             raise HTTPException(404, "Position not found")
         cur = manager.p2sim.price if manager.p2sim else pos.entry_price
-        cp, slip = manager._slippage_exec_price(
-            cur, "short" if pos.side == "long" else "long", pos.size_usd)
-        upnl = ((cp - pos.entry_price) / pos.entry_price * pos.size_usd
-                if pos.side == "long"
-                else (pos.entry_price - cp) / pos.entry_price * pos.size_usd)
-        from simulator_core import TAKER_FEE_RATE
-        fee = pos.size_usd * TAKER_FEE_RATE
-        net = upnl - fee
-        manager.balance      += pos.margin + net
-        manager.realized_pnl += net
-        manager.trade_pnls.append(net)
-        manager.positions.remove(pos)
-    return {"status": "closed", "pnl": round(net, 2),
-            "balance": round(manager.balance, 2), "slippage": round(slip, 6)}
+        result = manager._close_position_locked(pos, cur, "manual")
+    return result
+
+
+@fastapi_app.patch("/api/positions/{pos_id}/tpsl")
+def api_update_position_tpsl(pos_id: str, req: UpdateTPSLRequest,
+                             user=Depends(require_auth)):
+    with manager.lock:
+        pos = next((p for p in manager.positions if p.id == pos_id), None)
+        if not pos:
+            raise HTTPException(404, "Position not found")
+        err = pos.set_tpsl(req.tp_price, req.sl_price)
+        if err:
+            raise HTTPException(400, err)
+        cur = manager.p2sim.price if manager.p2sim else pos.entry_price
+        return {"status": "tpsl_updated", "position": pos.to_dict(cur)}
 
 
 @fastapi_app.delete("/api/orders/{ord_id}")
@@ -529,7 +588,7 @@ async def new_sim(sid, data=None):
 async def place_order(sid, data):
     """WebSocket shortcut for placing orders (mirrors the REST endpoint)."""
     import uuid
-    from simulator_core import Position, Order, TAKER_FEE_RATE
+    from simulator_core import Position, Order
     data = data or {}
     order_type    = data.get("type", "market")
     side          = data.get("side", "long")
@@ -537,13 +596,28 @@ async def place_order(sid, data):
     leverage      = float(data.get("leverage", 1))
     trigger_price = data.get("trigger_price")
     limit_price   = data.get("limit_price")
+    tp_price      = data.get("tp_price")
+    sl_price      = data.get("sl_price")
+    try:
+        tp_price = float(tp_price) if tp_price not in (None, "") else None
+        sl_price = float(sl_price) if sl_price not in (None, "") else None
+    except (TypeError, ValueError):
+        await sio.emit("order_result",
+                       {"status": "error", "msg": "TP/SL prices must be numbers"}, to=sid)
+        return
 
     with manager.lock:
         cur = manager.p2sim.price if manager.p2sim else 0.0
         if order_type == "market":
             ep, slip = manager._slippage_exec_price(cur, side, size_usd)
             pos = Position(str(uuid.uuid4())[:8], side, ep,
-                           size_usd, leverage, "market", slip)
+                           size_usd, leverage, "market", slip,
+                           tp_price, sl_price)
+            err = pos.set_tpsl(tp_price, sl_price)
+            if err:
+                await sio.emit("order_result",
+                               {"status": "error", "msg": err}, to=sid)
+                return
             if pos.margin + pos.fee_paid > manager.balance:
                 await sio.emit("order_result",
                                {"status": "error", "msg": "Insufficient balance"}, to=sid)
@@ -578,25 +652,39 @@ async def close_position(sid, data):
                            {"status": "error", "msg": "Position not found"}, to=sid)
             return
         cur = manager.p2sim.price if manager.p2sim else pos.entry_price
-        cp, slip = manager._slippage_exec_price(
-            cur, "short" if pos.side == "long" else "long", pos.size_usd)
-        upnl = ((cp - pos.entry_price) / pos.entry_price * pos.size_usd
-                if pos.side == "long"
-                else (pos.entry_price - cp) / pos.entry_price * pos.size_usd)
-        from simulator_core import TAKER_FEE_RATE
-        fee = pos.size_usd * TAKER_FEE_RATE
-        net = upnl - fee
-        manager.balance      += pos.margin + net
-        manager.realized_pnl += net
-        manager.trade_pnls.append(net)
-        manager.positions.remove(pos)
-    await sio.emit("order_result", {
-        "status": "closed", "pnl": round(net, 2),
-        "balance": round(manager.balance, 2), "slippage": round(slip, 6),
-        "side": pos.side, "entry_price": round(pos.entry_price, 6),
-        "exit_price": round(cp, 6), "size_usd": round(pos.size_usd, 2),
-        "leverage": pos.leverage, "symbol": "SIM",
-    })
+        result = manager._close_position_locked(pos, cur, "manual")
+    await sio.emit("order_result", result, to=sid)
+
+
+@sio.event
+async def update_position_tpsl(sid, data):
+    data = data or {}
+    pos_id = data.get("id")
+    tp_price = data.get("tp_price")
+    sl_price = data.get("sl_price")
+    try:
+        tp_price = float(tp_price) if tp_price not in (None, "") else None
+        sl_price = float(sl_price) if sl_price not in (None, "") else None
+    except (TypeError, ValueError):
+        await sio.emit("order_result",
+                       {"status": "error", "msg": "TP/SL prices must be numbers"}, to=sid)
+        return
+
+    with manager.lock:
+        pos = next((p for p in manager.positions if p.id == pos_id), None)
+        if not pos:
+            await sio.emit("order_result",
+                           {"status": "error", "msg": "Position not found"}, to=sid)
+            return
+        err = pos.set_tpsl(tp_price, sl_price)
+        if err:
+            await sio.emit("order_result", {"status": "error", "msg": err}, to=sid)
+            return
+        cur = manager.p2sim.price if manager.p2sim else pos.entry_price
+        position = pos.to_dict(cur)
+
+    await sio.emit("order_result",
+                   {"status": "tpsl_updated", "position": position}, to=sid)
 
 
 @sio.event
@@ -668,13 +756,38 @@ async def toggle_dynamic_strategy(sid, data):
     }, to=sid)
 
 
+@sio.event
+async def subscribe_live_market(sid, data):
+    data = data or {}
+    asset_class = data.get("type", "crypto")
+    symbol = data.get("symbol")
+    if symbol:
+        _live_subscriptions[sid] = {"asset_class": asset_class, "symbol": symbol}
+        print(f"[{sid}] Subscribed to {asset_class} - {symbol}")
+
+
+@sio.event
+async def unsubscribe_live_market(sid, data):
+    if sid in _live_subscriptions:
+        del _live_subscriptions[sid]
+        print(f"[{sid}] Unsubscribed from live market")
+
+
+@sio.event
+async def disconnect(sid):
+    if sid in _live_subscriptions:
+        del _live_subscriptions[sid]
+    # Rest of default disconnect logic if any
+
+
 # ─── startup / shutdown ───────────────────────────────────────────────────────
 
 @fastapi_app.on_event("startup")
 async def startup():
-    global _main_loop
+    global _main_loop, _live_polling_task
     _main_loop = asyncio.get_running_loop()
     manager.start()
+    _live_polling_task = asyncio.create_task(_poll_live_markets())
     print("=" * 60)
     print("  SynthCrypto v4 — FastAPI + Socket.IO")
     print("  REST:      http://localhost:8000/docs")
@@ -684,4 +797,6 @@ async def startup():
 
 @fastapi_app.on_event("shutdown")
 async def shutdown():
+    if _live_polling_task:
+        _live_polling_task.cancel()
     manager.stop()

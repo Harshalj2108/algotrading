@@ -39,6 +39,11 @@ function fmtPrice(v){if(v==null)return"—";v=+v;if(v>=10000)return v.toFixed(2)
 function fmtSim(s){const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),ss=s%60;if(d>0)return`${d}d ${h}h`;if(h>0)return`${h}h ${m}m`;if(m>0)return`${m}m ${ss}s`;return`${ss}s`;}
 function fmtC(v){if(v>=1e9)return(v/1e9).toFixed(1)+"B";if(v>=1e6)return(v/1e6).toFixed(1)+"M";if(v>=1e3)return(v/1e3).toFixed(1)+"K";return v.toFixed(0);}
 
+function toOptionalPrice(v){if(v===""||v==null)return null;const n=Number(v);return Number.isFinite(n)?n:NaN;}
+function defaultTpsl(pos){const step=Math.max(pos.entry_price*0.01,0.000001);return pos.side==="long"?{tp:pos.entry_price+step,sl:pos.entry_price-step}:{tp:pos.entry_price-step,sl:pos.entry_price+step};}
+function validateTpslValues(pos,tp,sl){if(!pos)return"Select a position first";if(tp==null&&sl==null)return"Enter at least one TP or SL price";if(Number.isNaN(tp)||Number.isNaN(sl))return"TP/SL prices must be valid numbers";if(tp!=null&&tp<=0)return"Take Profit must be greater than zero";if(sl!=null&&sl<=0)return"Stop Loss must be greater than zero";if(pos.side==="long"){if(tp!=null&&tp<=pos.entry_price)return"Long TP must be above entry";if(sl!=null&&sl>=pos.entry_price)return"Long SL must be below entry";}else{if(tp!=null&&tp>=pos.entry_price)return"Short TP must be below entry";if(sl!=null&&sl<=pos.entry_price)return"Short SL must be above entry";}return null;}
+function riskReward(pos,tp=pos?.tp_price,sl=pos?.sl_price){if(!pos||tp==null||sl==null)return"â€”";const reward=Math.abs(tp-pos.entry_price);const risk=Math.abs(pos.entry_price-sl);return risk>0?(reward/risk).toFixed(2)+"R":"â€”";}
+
 export default function SimulatorPage({ onBack }) {
   const [tf, setTf] = useState("1m");
   const [speed, setSpeed] = useState(1);
@@ -51,6 +56,7 @@ export default function SimulatorPage({ onBack }) {
   const [liveCandle, setLiveCandle] = useState(null);
   const [price, setPrice] = useState(0);
   const [prevPrice, setPrevPrice] = useState(null);
+  const priceRef = useRef(0);
   const [regime, setRegime] = useState("bull");
   const [step, setStep] = useState(0);
   const ohlc = {o:"—",h:"—",l:"—",c:"—"};
@@ -68,6 +74,10 @@ export default function SimulatorPage({ onBack }) {
   const [trigPrice, setTrigPrice] = useState("");
   const [limitPrice, setLimitPrice] = useState("");
   const [toast, setToast] = useState(null);
+  const [selectedPosId, setSelectedPosId] = useState(null);
+  const [tpslPanelOpen, setTpslPanelOpen] = useState(false);
+  const [tpslDraft, setTpslDraft] = useState({ tp: "", sl: "" });
+  const [detailsPosId, setDetailsPosId] = useState(null);
   // Overlays
   const [showMetrics, setShowMetrics] = useState(false);
   const [metricsData, setMetricsData] = useState(null);
@@ -89,7 +99,52 @@ export default function SimulatorPage({ onBack }) {
     toastTimer.current = setTimeout(() => setToast(null), 4000);
   }, []);
 
-  // Socket setup
+  const selectedPosition = positions.find(p => p.id === selectedPosId) || positions[0] || null;
+  const detailsPosition = positions.find(p => p.id === detailsPosId) || null;
+
+  const openTpslPanel = useCallback((pos = selectedPosition) => {
+    if (!pos) {
+      showToastMsg("Open a position before adding TP/SL", "err");
+      return;
+    }
+    const defaults = defaultTpsl(pos);
+    setSelectedPosId(pos.id);
+    setTpslDraft({
+      tp: String(pos.tp_price ?? defaults.tp.toFixed(6)),
+      sl: String(pos.sl_price ?? defaults.sl.toFixed(6)),
+    });
+    setTpslPanelOpen(true);
+  }, [selectedPosition, showToastMsg]);
+
+  const applyTpsl = useCallback((pos = selectedPosition, nextDraft = tpslDraft) => {
+    if (!pos) {
+      showToastMsg("Select a position first", "err");
+      return false;
+    }
+    const tp = toOptionalPrice(nextDraft.tp);
+    const sl = toOptionalPrice(nextDraft.sl);
+    const err = validateTpslValues(pos, tp, sl);
+    if (err) {
+      showToastMsg(err, "err");
+      return false;
+    }
+    socket.emit("update_position_tpsl", { id: pos.id, tp_price: tp, sl_price: sl });
+    return true;
+  }, [selectedPosition, showToastMsg, tpslDraft]);
+
+  const updatePositionTpsl = useCallback((posId, next) => {
+    const pos = positions.find(p => p.id === posId);
+    if (!pos) return false;
+    return applyTpsl(pos, {
+      tp: next.tp_price == null ? "" : String(next.tp_price),
+      sl: next.sl_price == null ? "" : String(next.sl_price),
+    });
+  }, [applyTpsl, positions]);
+
+  // Keep priceRef in sync so socket handlers can read current price without re-subscribing
+  useEffect(() => { priceRef.current = price; }, [price]);
+
+  // Socket setup — runs ONCE on mount, never tears down mid-session
   useEffect(() => {
     socket.connect();
     socket.on("init", d => {
@@ -105,7 +160,7 @@ export default function SimulatorPage({ onBack }) {
     socket.on("tf_data", d => {
       if(d.candles) setCandles(d.candles);
       if(d.indicators) { setIndicatorData(d.indicators); if(d.indicators.volume) setVolData(d.indicators.volume); }
-      if(d.price){setPrevPrice(price);setPrice(d.price);}
+      if(d.price){setPrevPrice(priceRef.current);setPrice(d.price);}
       if(d.regime) setRegime(d.regime);
       if(d.step) setStep(d.step);
       if(d.p2) setP2(d.p2);
@@ -113,7 +168,7 @@ export default function SimulatorPage({ onBack }) {
     });
     socket.on("tick", d => {
       setStep(d.step);
-      setPrevPrice(d.price);
+      setPrevPrice(priceRef.current);
       setPrice(d.price);
       setRegime(d.regime);
       if(d.live){const lc=d.live[tfRef.current];if(lc)setLiveCandle({...lc});}
@@ -131,6 +186,10 @@ export default function SimulatorPage({ onBack }) {
         }));
       }
       if(d.events?.liquidated?.length) d.events.liquidated.forEach(id=>showToastMsg("⚡ LIQUIDATED "+id,"liq"));
+      if(d.events?.tpsl_closed?.length) d.events.tpsl_closed.forEach(ev=>{
+        const label=ev.reason==="take_profit"?"Take Profit":"Stop Loss";
+        showToastMsg(`${label} closed ${ev.side?.toUpperCase?.()||""} ${ev.pnl>=0?"+":""}$${Math.abs(ev.pnl||0).toFixed(2)}`,ev.pnl>=0?"ok":"err");
+      });
       if(d.events?.filled?.length) showToastMsg("✓ Order filled","ok");
     });
     socket.on("candle_close", d => {
@@ -140,6 +199,7 @@ export default function SimulatorPage({ onBack }) {
       if(d.price){setPrice(d.price);setPrevPrice(d.price);}
       setStep(0);if(d.regime)setRegime(d.regime);if(d.p2)setP2(d.p2);
       setBalance(d.balance||10000);setRpnl(0);setPositions([]);setOrders([]);
+      setSelectedPosId(null);setTpslPanelOpen(false);setDetailsPosId(null);
       setEbbMetrics(null);
       // Clear chart data — server will follow up with tf_data containing fresh candles
       setCandles([]);setVolData([]);setLiveCandle(null);setIndicatorData({});
@@ -154,6 +214,11 @@ export default function SimulatorPage({ onBack }) {
       if(d.status==="filled")showToastMsg("✓ Filled"+(d.slippage>0?` (slip: $${d.slippage.toFixed(4)})`:""),"ok");
       else if(d.status==="pending")showToastMsg("⏱ Order placed","ok");
       else if(d.status==="closed")showToastMsg(`✓ Closed ${d.pnl>=0?"+":""}$${Math.abs(d.pnl).toFixed(2)}`,d.pnl>=0?"ok":"err");
+      else if(d.status==="tpsl_updated"){
+        if(d.position)setPositions(prev=>prev.map(p=>p.id===d.position.id?{...p,...d.position}:p));
+        setTpslPanelOpen(false);
+        showToastMsg("TP/SL updated","ok");
+      }
       else if(d.status==="cancelled")showToastMsg("Order cancelled","ok");
       else if(d.status==="error")showToastMsg("⚠ "+d.msg,"err");
     });
@@ -161,7 +226,8 @@ export default function SimulatorPage({ onBack }) {
     socket.on("ebb_strategy_update",d=>{if(d.metrics)setEbbMetrics(d.metrics);});
     socket.on("ebb_strategy_metrics",d=>setEbbMetrics(d));
     return()=>{socket.off();socket.disconnect();};
-  }, [price, showToastMsg]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Actions
   const switchTf=t=>{
@@ -288,7 +354,21 @@ export default function SimulatorPage({ onBack }) {
         <div className="charts-col">
           <div className="main-wrap">
             <ChartErrorBoundary>
-              <SimChart candles={candles} timeframe={tf} liveCandle={liveCandle} volumeData={activeInds.has("volume")?volData:[]} indicatorData={indicatorData} activeInds={activeInds} activeOsc={activeOsc}/>
+              <SimChart
+                candles={candles}
+                timeframe={tf}
+                liveCandle={liveCandle}
+                volumeData={activeInds.has("volume")?volData:[]}
+                indicatorData={indicatorData}
+                activeInds={activeInds}
+                activeOsc={activeOsc}
+                positions={positions}
+                currentPrice={price}
+                selectedPositionId={selectedPosition?.id}
+                onSelectPosition={setSelectedPosId}
+                onOpenPositionDetails={setDetailsPosId}
+                onUpdatePositionTpsl={updatePositionTpsl}
+              />
             </ChartErrorBoundary>
           </div>
           <div className="osc-wrap">
@@ -309,6 +389,31 @@ export default function SimulatorPage({ onBack }) {
               {["market","limit","stop","stop_limit"].map(t=><StarBorder as="button" key={t} className={`btn${otype===t?" active":""}`} onClick={()=>setOtype(t)}>{t==="stop_limit"?"S-Limit":t.charAt(0).toUpperCase()+t.slice(1)}</StarBorder>)}
             </div>
           </div>
+          <div className="tp-row tpsl-action-row">
+            <StarBorder as="button" className="btn tpsl-add-btn" onClick={()=>openTpslPanel()} disabled={!positions.length}>Add TP/SL</StarBorder>
+            <span className="tpsl-selected">{selectedPosition?`${selectedPosition.side.toUpperCase()} @ ${fmtPrice(selectedPosition.entry_price)}`:"No position"}</span>
+          </div>
+          {tpslPanelOpen&&selectedPosition&&<div className="tpsl-panel">
+            <div className="tpsl-panel-head">
+              <span>TP/SL</span>
+              <select value={selectedPosition.id} onChange={e=>{
+                const pos=positions.find(p=>p.id===e.target.value);
+                if(pos)openTpslPanel(pos);
+              }}>
+                {positions.map(p=><option key={p.id} value={p.id}>{p.side.toUpperCase()} {fmtPrice(p.entry_price)}</option>)}
+              </select>
+            </div>
+            <label><span>Take Profit</span><input type="number" value={tpslDraft.tp} onChange={e=>setTpslDraft(d=>({...d,tp:e.target.value}))}/></label>
+            <label><span>Stop Loss</span><input type="number" value={tpslDraft.sl} onChange={e=>setTpslDraft(d=>({...d,sl:e.target.value}))}/></label>
+            <div className="tpsl-summary">
+              <span>Entry {fmtPrice(selectedPosition.entry_price)}</span>
+              <span>R/R {riskReward(selectedPosition,toOptionalPrice(tpslDraft.tp),toOptionalPrice(tpslDraft.sl))}</span>
+            </div>
+            <div className="tpsl-actions">
+              <StarBorder as="button" className="btn ctrl-green" onClick={()=>applyTpsl()}>Confirm</StarBorder>
+              <StarBorder as="button" className="btn" onClick={()=>setTpslPanelOpen(false)}>Cancel</StarBorder>
+            </div>
+          </div>}
           <div className="tp-row" style={{gap:4}}>
             <StarBorder as="button" className={`tp-side-btn long${side==="long"?" active":""}`} onClick={()=>setSide("long")}>▲ Long</StarBorder>
             <StarBorder as="button" className={`tp-side-btn short${side==="short"?" active":""}`} onClick={()=>setSide("short")}>▼ Short</StarBorder>
@@ -340,11 +445,16 @@ export default function SimulatorPage({ onBack }) {
           {toast&&<div className={`tp-toast toast-${toast.type}`}>{toast.msg}</div>}
           <div className="tp-section"><span>Positions</span><span className={totalUpnl>=0?"up":"dn"}>{positions.length?`${totalUpnl>=0?"+":""}$${totalUpnl.toFixed(2)}`:"—"}</span></div>
           <div>{!positions.length?<div className="tp-empty">No open positions</div>:positions.map(p=>(
-            <div className="pos-card" key={p.id}>
+            <div className={`pos-card${selectedPosition?.id===p.id?" selected":""}`} key={p.id} onClick={()=>setSelectedPosId(p.id)}>
               <div className="pos-card-row"><span className={p.side==="long"?"up":"dn"}>{p.side.toUpperCase()} {p.leverage}×</span><span className={p.upnl>=0?"up":"dn"}>{p.upnl>=0?"+":""}${p.upnl.toFixed(2)} ({p.upnl_pct>=0?"+":""}{p.upnl_pct.toFixed(1)}%)</span></div>
               <div className="pos-card-row" style={{color:"#787b86"}}><span>Entry: {fmtPrice(p.entry_price)}</span><span>Margin: ${p.margin.toFixed(2)}</span></div>
+              <div className="pos-card-row tpsl-card-row"><span>TP: <span className="up">{p.tp_price?fmtPrice(p.tp_price):"—"}</span></span><span>SL: <span className="dn">{p.sl_price?fmtPrice(p.sl_price):"—"}</span></span></div>
               <div className="pos-card-row" style={{color:"#787b86"}}><span>Liq: <span className="dn">{fmtPrice(p.liq_price)}</span></span><span>Size: ${p.size_usd.toFixed(2)}</span></div>
-              <StarBorder as="button" className="pos-card-close" onClick={()=>closePos(p.id)}>× Close</StarBorder>
+              <div className="pos-card-actions">
+                <StarBorder as="button" className="pos-card-tpsl" onClick={e=>{e.stopPropagation();openTpslPanel(p);}}>TP/SL</StarBorder>
+                <StarBorder as="button" className="pos-card-tpsl" onClick={e=>{e.stopPropagation();setDetailsPosId(p.id);}}>Details</StarBorder>
+              </div>
+              <StarBorder as="button" className="pos-card-close" onClick={e=>{e.stopPropagation();closePos(p.id);}}>× Close</StarBorder>
             </div>
           ))}</div>
           <div className="tp-section"><span>Pending Orders</span></div>
@@ -363,6 +473,23 @@ export default function SimulatorPage({ onBack }) {
       <div className="conn-indicator live">● live</div>
 
       {/* ── Overlays ── */}
+      {detailsPosition&&<div className="overlay-backdrop" onClick={()=>setDetailsPosId(null)}>
+        <div className="overlay-panel position-detail-panel" onClick={e=>e.stopPropagation()}>
+          <h3>{detailsPosition.side.toUpperCase()} Position</h3>
+          <div className="metric-row"><span>Entry price</span><span>{fmtPrice(detailsPosition.entry_price)}</span></div>
+          <div className="metric-row"><span>Current price</span><span>{fmtPrice(price)}</span></div>
+          <div className="metric-row"><span>Take Profit</span><span className="up">{detailsPosition.tp_price?fmtPrice(detailsPosition.tp_price):"—"}</span></div>
+          <div className="metric-row"><span>Stop Loss</span><span className="dn">{detailsPosition.sl_price?fmtPrice(detailsPosition.sl_price):"—"}</span></div>
+          <div className="metric-row"><span>Risk / Reward</span><span>{riskReward(detailsPosition)}</span></div>
+          <div className="metric-row"><span>PnL</span><span className={detailsPosition.upnl>=0?"up":"dn"}>{detailsPosition.upnl>=0?"+":""}${Math.abs(detailsPosition.upnl).toFixed(2)} ({detailsPosition.upnl_pct>=0?"+":""}{detailsPosition.upnl_pct.toFixed(1)}%)</span></div>
+          <div className="metric-row"><span>Trade size</span><span>${detailsPosition.size_usd.toFixed(2)} / {detailsPosition.qty} qty</span></div>
+          <div className="metric-row"><span>Liquidation</span><span className="dn">{fmtPrice(detailsPosition.liq_price)}</span></div>
+          <div className="detail-actions">
+            <StarBorder as="button" className="btn ctrl-green" onClick={()=>openTpslPanel(detailsPosition)}>Edit TP/SL</StarBorder>
+            <StarBorder as="button" className="overlay-close" onClick={()=>setDetailsPosId(null)}>Close</StarBorder>
+          </div>
+        </div>
+      </div>}
       {showMetrics&&<MetricsOverlay data={metricsData} onClose={()=>setShowMetrics(false)}/>}
       {showStress&&<StressOverlay socket={socket} onClose={()=>setShowStress(false)}/>}
       {showEbb&&<EBBOverlay metrics={ebbMetrics} onClose={()=>setShowEbb(false)}/>}

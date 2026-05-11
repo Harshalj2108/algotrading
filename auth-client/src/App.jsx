@@ -14,11 +14,73 @@ import RegisterForm from "./components/RegisterForm";
 import GoogleButton from "./components/GoogleButton";
 import Dashboard from "./components/Dashboard";
 import SimulatorPage from "./components/SimulatorPage";
-import LandingPage from "./components/LandingPage";
+import { HomePage, AboutUsPage, LearnTradingPage } from "./components/PublicPages";
 import StarBorder from "./components/StarBorder";
+import AssetSearch from "./components/AssetSearch";
+import LiveMarketPage from "./components/LiveMarketPage";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
+const PUBLIC_PATHS = {
+  home: "/",
+  about: "/about",
+  learn: "/learn-trading",
+};
+const VALID_PAGES = new Set([
+  "home",
+  "about",
+  "learn",
+  "auth",
+  "dashboard",
+  "simulator",
+  "crypto_search",
+  "stocks_search",
+]);
+
+function normalizeStoredPage(page) {
+  if (page === "landing") return "home";
+  if (page && page.startsWith("live_market:")) return page;
+  return VALID_PAGES.has(page) ? page : "home";
+}
+
+function pageFromPathname(pathname) {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  if (path === "/about") return "about";
+  if (path === "/learn" || path === "/learn-trading") return "learn";
+  if (path === "/signup" || path === "/login") return "auth";
+  if (path === "/dashboard") return "dashboard";
+  if (path === "/") return null;
+  return null;
+}
+
+function writePath(path) {
+  if (window.location.pathname !== path) {
+    window.history.pushState({}, "", path);
+  }
+}
+
+const SEO_BY_PAGE = {
+  home: {
+    title: "Crypto Trading Simulator | Learn Trading Risk-Free",
+    description: "Practice crypto trading with virtual money using live market simulations and interactive learning tools.",
+  },
+  about: {
+    title: "About Us | Crypto Learning Platform",
+    description: "Learn about our mission to make crypto trading education practical, interactive, and risk-free.",
+  },
+  learn: {
+    title: "Learn Crypto Trading | Beginner to Advanced",
+    description: "Explore crypto basics, candlestick patterns, futures trading, spot trading, and technical indicators.",
+  },
+  auth: {
+    title: "Sign In | SynthCrypto",
+    description: "Sign in or create an account to use the SynthCrypto trading simulator.",
+  },
+  dashboard: {
+    title: "Portfolio | SynthCrypto",
+    description: "View your virtual crypto trading portfolio and simulation performance.",
+  },
+};
 
 // Persistent socket for capturing trade events across page navigations
 const appSocket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" });
@@ -61,8 +123,9 @@ function TickerBar() {
 
 // ── Particle System ──────────────────────────────────────────────────────────
 
-function useParticles(canvasRef) {
+function useParticles(canvasRef, active) {
   useEffect(() => {
+    if (!active) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -134,22 +197,46 @@ function useParticles(canvasRef) {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animId);
     };
-  }, [canvasRef]);
+  }, [canvasRef, active]);
+}
+
+// ── Search Wrapper ───────────────────────────────────────────────────────────
+function SearchPageWrapper({ assetClass, onBack, onSelect }) {
+  return (
+    <div style={{ minHeight: '100vh', background: '#0a0e17', position: 'relative' }}>
+      <button 
+        onClick={onBack} 
+        style={{
+          position: 'absolute', top: '20px', left: '20px', background: 'transparent',
+          color: '#787b86', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 16px',
+          borderRadius: '4px', cursor: 'pointer'
+        }}
+      >
+        ← Dashboard
+      </button>
+      <div style={{ paddingTop: '80px' }}>
+        <AssetSearch assetClass={assetClass} onSelect={onSelect} />
+      </div>
+    </div>
+  );
 }
 
 // ── Main App ─────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [page, setPage] = useState(() => {
+    const routedPage = pageFromPathname(window.location.pathname);
+    if (routedPage) return routedPage;
     const saved = localStorage.getItem("synthcrypto_page");
-    return (saved === "simulator" || saved === "dashboard") ? saved : "landing";
-  });      // "landing" | "auth" | "dashboard" | "simulator"
-  const [tab, setTab] = useState("login");        // "login" | "register"
+    return normalizeStoredPage(saved);
+  });
+  const [tab, setTab] = useState(() => window.location.pathname === "/signup" ? "register" : "login");        // "login" | "register"
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const canvasRef = useRef(null);
 
-  useParticles(canvasRef);
+  useParticles(canvasRef, page === "auth");
 
   // ── Persistent trade tracking (survives Dashboard ↔ Simulator navigation) ──
   const [liveTrades, setLiveTrades] = useState([]);
@@ -193,17 +280,77 @@ export default function App() {
     localStorage.setItem("synthcrypto_page", page);
   }, [page]);
 
+  useEffect(() => {
+    const meta = SEO_BY_PAGE[page];
+    if (!meta) return;
+
+    document.title = meta.title;
+    let description = document.querySelector('meta[name="description"]');
+    if (!description) {
+      description = document.createElement("meta");
+      description.setAttribute("name", "description");
+      document.head.appendChild(description);
+    }
+    description.setAttribute("content", meta.description);
+  }, [page]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const routedPage = pageFromPathname(window.location.pathname) || "home";
+      setPage(routedPage);
+      if (window.location.pathname === "/signup") setTab("register");
+      if (window.location.pathname === "/login") setTab("login");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigatePublic = useCallback((nextPage) => {
+    setPage(nextPage);
+    writePath(PUBLIC_PATHS[nextPage] || "/");
+  }, []);
+
+  const openAuth = useCallback((mode = "register") => {
+    if (isAuthenticated) {
+      setPage("dashboard");
+      writePath("/dashboard");
+      return;
+    }
+
+    setTab(mode);
+    setError("");
+    setSuccess("");
+    setPage("auth");
+    writePath(mode === "register" ? "/signup" : "/login");
+  }, [isAuthenticated]);
+
   // On mount: check if already logged in
   useEffect(() => {
     fetch(`${AUTH_SERVER}/api/auth/me`, { credentials: "include" })
       .then((r) => { 
         if (r.ok) {
-          setPage(prev => (prev === "auth" || prev === "landing") ? "dashboard" : prev);
+          setIsAuthenticated(true);
+          setPage(prev => {
+            if (prev !== "auth") return prev;
+            writePath("/dashboard");
+            return "dashboard";
+          });
         } else {
-          setPage(prev => prev === "dashboard" ? "landing" : prev);
+          setIsAuthenticated(false);
+          setPage(prev => {
+            if (prev !== "dashboard") return prev;
+            writePath("/");
+            return "home";
+          });
         }
       })
-      .catch(() => setPage(prev => prev === "dashboard" ? "landing" : prev));
+      .catch(() => setPage(prev => {
+        setIsAuthenticated(false);
+        if (prev !== "dashboard") return prev;
+        writePath("/");
+        return "home";
+      }));
   }, []);
 
   // Check URL for OAuth error param
@@ -217,16 +364,21 @@ export default function App() {
     // If redirected back from Google OAuth with a token cookie, go to dashboard
     const oauthSuccess = params.get("auth");
     if (oauthSuccess === "success") {
-      setTimeout(() => setPage("dashboard"), 0);
-      window.history.replaceState({}, "", window.location.pathname);
+      setTimeout(() => {
+        setIsAuthenticated(true);
+        setPage("dashboard");
+      }, 0);
+      window.history.replaceState({}, "", "/dashboard");
     }
   }, []);
 
   const handleSuccess = useCallback((user) => {
     setError("");
     setSuccess(`Welcome, ${user.username || user.email}!`);
+    setIsAuthenticated(true);
     setTimeout(() => {
       setPage("dashboard");
+      writePath("/dashboard");
     }, 800);
   }, []);
 
@@ -240,22 +392,51 @@ export default function App() {
     setTab(t);
     setError("");
     setSuccess("");
+    window.history.replaceState({}, "", t === "register" ? "/signup" : "/login");
   };
 
   // ── Render pages ──
-  if (page === "landing") {
-    return <LandingPage onGetStarted={() => setPage("auth")} />;
+  if (page === "home") {
+    return <HomePage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} />;
+  }
+
+  if (page === "about") {
+    return <AboutUsPage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} />;
+  }
+
+  if (page === "learn") {
+    return <LearnTradingPage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} />;
   }
 
   if (page === "simulator") {
     return <SimulatorPage onBack={() => setPage("dashboard")} />;
   }
 
+  if (page === "crypto_search") {
+    return <SearchPageWrapper assetClass="crypto" onBack={() => setPage("dashboard")} onSelect={(sym) => setPage(`live_market:crypto:${sym}`)} />;
+  }
+
+  if (page === "stocks_search") {
+    return <SearchPageWrapper assetClass="stock" onBack={() => setPage("dashboard")} onSelect={(sym) => setPage(`live_market:stock:${sym}`)} />;
+  }
+
+  if (page && page.startsWith("live_market:")) {
+    const parts = page.split(":");
+    const assetClass = parts[1];
+    const symbol = parts.slice(2).join(":"); // recombine rest in case symbol has a colon
+    return <LiveMarketPage assetClass={assetClass} symbol={symbol} onBack={() => setPage("dashboard")} />;
+  }
+
   if (page === "dashboard") {
     return (
       <Dashboard
-        onLogout={() => setPage("landing")}
+        onLogout={() => {
+          setIsAuthenticated(false);
+          navigatePublic("home");
+        }}
         onLaunchSimulator={() => setPage("simulator")}
+        onLaunchCrypto={() => setPage("crypto_search")}
+        onLaunchStocks={() => setPage("stocks_search")}
         liveTrades={liveTrades}
         onResetTrades={() => setLiveTrades([])}
       />

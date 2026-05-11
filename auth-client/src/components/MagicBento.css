@@ -22,7 +22,7 @@
   border: 1px solid var(--border-color);
   background: var(--background-dark);
   font-weight: 300;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   box-sizing: border-box;
@@ -177,7 +177,7 @@
 
 .particle-container {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .particle::before {

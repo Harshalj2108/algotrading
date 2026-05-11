@@ -1,0 +1,39 @@
+{
+  "issue": "Historical candle data not loading",
+  "problem_description": "The trading chart is currently displaying only a single candle instead of a full historical candle series. This makes the simulator unrealistic and unusable because users cannot analyze trends, support/resistance zones, momentum, or past price action.",
+  "expected_behavior": {
+    "chart_data": "Load and render a large set of historical OHLC candles before showing live candles.",
+    "default_range": "When a chart opens, it should automatically display enough historical candles to fill the visible chart area.",
+    "minimum_candles": "At least 100-300 historical candles should load initially.",
+    "live_updates": "After historical candles are loaded, new candles should continue updating in real time.",
+    "scroll_behavior": "Users should be able to scroll backward to view older historical candles.",
+    "zoom_behavior": "Zooming in/out should dynamically adjust visible candle density without losing history."
+  },
+  "required_fix": {
+    "data_fetching": [
+      "Fetch historical OHLC market data from the API before initializing the chart.",
+      "Ensure the API request includes a valid timeframe (1m, 5m, 15m, 1h, etc.).",
+      "Verify that the API returns an array of candles instead of a single latest candle."
+    ],
+    "chart_rendering": [
+      "Pass the complete historical candle array into the chart component.",
+      "Render candles sequentially based on timestamp order.",
+      "Ensure candle timestamps are unique and properly formatted."
+    ],
+    "state_management": [
+      "Store historical candles separately from live streaming candle updates.",
+      "Append new candles to the existing candle array instead of replacing the entire dataset."
+    ],
+    "fallback_handling": [
+      "Show a loading state while historical data is being fetched.",
+      "Display an error message if candle data fails to load.",
+      "Prevent chart initialization with incomplete data."
+    ]
+  },
+  "ui_expectation": {
+    "before_fix": "Chart shows only one candle floating in empty space.",
+    "after_fix": "Chart should look like a real trading platform with continuous historical market movement visible immediately on load."
+  },
+  "priority": "High",
+  "impact": "Core simulator functionality is broken because users cannot properly analyze or practice trading without historical price movement."
+}

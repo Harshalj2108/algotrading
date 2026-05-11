@@ -1,0 +1,146 @@
+:root {
+  --folder-color: #70a1ff;
+  --folder-back-color: #4785ff;
+  --paper-1: #e6e6e6;
+  --paper-2: #f2f2f2;
+  --paper-3: #ffffff;
+}
+
+.folder {
+  transition: all 0.2s ease-in;
+  cursor: pointer;
+}
+
+.folder:not(.folder--click):hover {
+  transform: translateY(-8px);
+}
+
+.folder:not(.folder--click):hover .paper {
+  transform: translate(-50%, 0%);
+}
+
+.folder:not(.folder--click):hover .folder__front {
+  transform: skew(15deg) scaleY(0.6);
+}
+
+.folder:not(.folder--click):hover .right {
+  transform: skew(-15deg) scaleY(0.6);
+}
+
+.folder.open {
+  transform: translateY(-8px);
+}
+
+/* ── Open state: spread papers with proper z-index and no text bleed ── */
+
+/* Paper 1: leftmost, lowest z-index */
+.folder.open .paper:nth-child(1) {
+  transform: translate(-130%, -80%) rotateZ(-15deg);
+  z-index: 4;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.folder.open .paper:nth-child(1):hover {
+  transform: translate(-130%, -80%) rotateZ(-15deg) scale(1.12);
+  z-index: 10;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
+/* Paper 2: rightward, mid z-index */
+.folder.open .paper:nth-child(2) {
+  transform: translate(20%, -80%) rotateZ(15deg);
+  height: 80%;
+  z-index: 5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.folder.open .paper:nth-child(2):hover {
+  transform: translate(20%, -80%) rotateZ(15deg) scale(1.12);
+  z-index: 10;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
+/* Paper 3: center-top, highest z-index */
+.folder.open .paper:nth-child(3) {
+  transform: translate(-50%, -110%) rotateZ(3deg);
+  height: 80%;
+  z-index: 6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.folder.open .paper:nth-child(3):hover {
+  transform: translate(-50%, -110%) rotateZ(3deg) scale(1.12);
+  z-index: 10;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
+.folder.open .folder__front {
+  transform: skew(15deg) scaleY(0.6);
+}
+
+.folder.open .right {
+  transform: skew(-15deg) scaleY(0.6);
+}
+
+.folder__back {
+  position: relative;
+  width: 100px;
+  height: 80px;
+  background: var(--folder-back-color);
+  border-radius: 0px 10px 10px 10px;
+}
+
+.folder__back::after {
+  position: absolute;
+  z-index: 0;
+  bottom: 98%;
+  left: 0;
+  content: '';
+  width: 30px;
+  height: 10px;
+  background: var(--folder-back-color);
+  border-radius: 5px 5px 0 0;
+}
+
+.paper {
+  position: absolute;
+  z-index: 2;
+  bottom: 10%;
+  left: 50%;
+  transform: translate(-50%, 10%);
+  width: 70%;
+  height: 80%;
+  background: var(--paper-1);
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
+  /* Prevent text bleed from papers behind */
+  backface-visibility: hidden;
+}
+
+.paper:nth-child(2) {
+  background: var(--paper-2);
+  width: 80%;
+  height: 70%;
+}
+
+.paper:nth-child(3) {
+  background: var(--paper-3);
+  width: 90%;
+  height: 60%;
+}
+
+.folder__front {
+  position: absolute;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  background: var(--folder-color);
+  border-radius: 5px 10px 10px 10px;
+  transform-origin: bottom;
+  transition: all 0.3s ease-in-out;
+}
+
+/* When open, papers are clickable */
+.folder.open .paper {
+  cursor: pointer;
+}
