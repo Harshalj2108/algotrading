@@ -1,0 +1,75 @@
+INFO:     Started server process [10972]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+http://127.0.0.1:5173 is not an accepted origin. (further occurrences of this error will be logged with level INFO)
+INFO:     127.0.0.1:60760 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=gRSyRZye1_G4VDCKAAAC" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64671 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=ohUBsKNshelbrzeSAAAD" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:50316 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=e31mZkyUw5IPJ5ftAAAH" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:53184 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=JMpe6v_rFxm9Ag5cAAAK" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:59289 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=7PPUv1dD9FJpIKdWAAAN" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:61616 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=bvRh_-hJkou4_vycAAAQ" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:49361 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=Z-ZAGFjwnTu5kzz2AAAU" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51131 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=p8mGlGa17ia7lPdZAAAV" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:55711 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=wiqILMIGzuyhBd1sAAAa" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53796 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=7YPmLWAdvawE9qtwAAAb" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:50541 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=6qe3SFOUuUpS5UHjAAAf" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:55954 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=q5UF3Kz1ywzz1lGeAAAi" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:60888 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=Oj_41utEBJjKglWDAAAl" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:52226 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=jY9UqIAN4EY8Fr_eAAAo" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:64646 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=3GUTtZt2YTeG0iEFAAAs" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58351 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=Fu0gEC2isG_Q6heMAAAt" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:57541 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=w4MlAyheYuuzsAhgAAAx" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:60154 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=q93PRVy0htoEuCkjAAA0" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:60936 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=FLUw-s_n4OJyW1ctAAA3" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:61283 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=KdbO7UNm5Csq3CGHAAA6" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:57397 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=7KddMEAdHr8N3FmqAAA9" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     127.0.0.1:54270 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=hnqEPDZ6yyBYyrTuAABA" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:53670 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=SwMgvx3LHX034kyfAABD" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60586 - "WebSocket /ws/socket.io/?EIO=4&transport=websocket&sid=LxJRnQhdHmj_Zx_9AABG" [accepted]
+INFO:     connection open

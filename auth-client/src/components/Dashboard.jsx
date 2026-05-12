@@ -102,10 +102,11 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Live data from simulator
+  // Live persisted paper-trading data
   const [balance, setBalance] = useState(10000);
   const [rpnl, setRpnl] = useState(0);
   const [positions, setPositions] = useState([]);
+  const [paperSummary, setPaperSummary] = useState({});
   const [connected, setConnected] = useState(false);
 
   // Persisted trades from auth-server DB
@@ -127,7 +128,15 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
         const res = await fetch(`${AUTH_SERVER}/api/portfolio/me`, { credentials: "include" });
         if (res.ok) {
           const data = await readJsonResponse(res);
-          if (data.trades) setDbTrades(data.trades);
+          if (data.paper) {
+            setBalance(Number(data.paper.wallet?.virtual_balance) || 0);
+            setRpnl(Number(data.paper.summary?.realized_profit_loss) || 0);
+            setPositions(data.paper.positions || []);
+            setPaperSummary(data.paper.summary || {});
+            setDbTrades(data.paper.history || []);
+          } else if (data.trades) {
+            setDbTrades(data.trades);
+          }
         }
       } catch { /* portfolio endpoint optional */ }
     } catch (err) {
@@ -143,28 +152,6 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
 
     simSocket.on("connect", () => setConnected(true));
     simSocket.on("disconnect", () => setConnected(false));
-
-    simSocket.on("init", d => {
-      if (d.balance !== undefined) setBalance(d.balance);
-    });
-
-    simSocket.on("tick", d => {
-      if (d.balance !== undefined) setBalance(d.balance);
-      if (d.rpnl !== undefined) setRpnl(d.rpnl);
-      if (d.positions !== undefined) setPositions(d.positions);
-    });
-
-    simSocket.on("new_sim", d => {
-      setBalance(d.balance || 10000);
-      setRpnl(0);
-      setPositions([]);
-    });
-
-    simSocket.on("order_result", d => {
-      if (d.status === "closed" && d.balance !== undefined) {
-        setBalance(d.balance);
-      }
-    });
 
     return () => { simSocket.off(); simSocket.disconnect(); };
   }, []);
@@ -202,6 +189,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       setBalance(10000);
       setRpnl(0);
       setPositions([]);
+      setPaperSummary({});
 
       // 3. Clear App-level live trades
       if (onResetTrades) onResetTrades();
@@ -257,21 +245,20 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
   const pnlPositive = rpnl >= 0;
   const pnlPercent = ((rpnl / INITIAL_CAPITAL) * 100).toFixed(2);
   const activePositions = positions.length;
-  const totalUpnl = positions.reduce((s, p) => s + (p.upnl || 0), 0);
-  const totalPositionValue = positions.reduce((s, p) => s + (p.size_usd || 0), 0);
-  const portfolioValue = balance + totalUpnl;
+  const totalPositionValue = positions.reduce((s, p) => s + (Number(p.current_value ?? p.size_usd) || 0), 0);
+  const portfolioValue = Number(paperSummary.total_portfolio_value) || (balance + totalPositionValue);
 
   // Merge live + DB trades (live first, then DB)
   const allTrades = [...liveTrades, ...dbTrades];
   const allTradeCount = allTrades.length;
-  const wins = allTrades.filter(t => parseFloat(t.pnl) > 0).length;
-  const losses = allTrades.filter(t => parseFloat(t.pnl) <= 0).length;
+  const wins = allTrades.filter(t => parseFloat(t.pnl ?? t.profit_loss) > 0).length;
+  const losses = allTrades.filter(t => parseFloat(t.pnl ?? t.profit_loss) <= 0).length;
   const winRate = allTradeCount > 0 ? ((wins / allTradeCount) * 100).toFixed(1) : "—";
 
   // Equity sparkline
   const equityData = [10000];
   let running = 10000;
-  for (const t of [...allTrades].reverse()) { running += parseFloat(t.pnl || 0); equityData.push(running); }
+  for (const t of [...allTrades].reverse()) { running += parseFloat(t.pnl ?? t.profit_loss ?? 0); equityData.push(running); }
 
   /* ─────────────────────────────────────────────────────────────────────────
    *  BENTO CARD ORDER (matches the CSS grid layout):
@@ -332,26 +319,29 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
               <div className="dash-stat-muted">No open positions</div>
             </div>
           ) : (
-            positions.map(p => (
-              <div key={p.id} className="bento-pos-card">
-                <div className="bento-pos-row">
-                  <span className={p.side === "long" ? "pnl-up" : "pnl-dn"}>
-                    {p.side?.toUpperCase()} {p.leverage}×
-                  </span>
-                  <span className={(p.upnl || 0) >= 0 ? "pnl-up" : "pnl-dn"}>
-                    {(p.upnl || 0) >= 0 ? "+" : ""}${(p.upnl || 0).toFixed(2)}
-                  </span>
+            positions.map(p => {
+              const positionPnl = Number(p.upnl ?? p.profit_loss) || 0;
+              return (
+                <div key={p.id} className="bento-pos-card">
+                  <div className="bento-pos-row">
+                    <span className="pnl-up">
+                      {(p.order_type || "buy").toUpperCase()} {p.asset_symbol || p.symbol || "SIM"}
+                    </span>
+                    <span className={positionPnl >= 0 ? "pnl-up" : "pnl-dn"}>
+                      {positionPnl >= 0 ? "+" : ""}${positionPnl.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="bento-pos-row bento-pos-detail">
+                    <span>Entry: {fmtPrice(p.entry_price)}</span>
+                    <span>Invested: ${(Number(p.size_usd ?? p.invested_amount) || 0).toFixed(0)}</span>
+                  </div>
+                  <div className="bento-pos-row bento-pos-detail">
+                    <span>Value: ${(Number(p.current_value) || 0).toFixed(2)}</span>
+                    <span>Qty: {(Number(p.quantity ?? p.qty) || 0).toFixed(4)}</span>
+                  </div>
                 </div>
-                <div className="bento-pos-row bento-pos-detail">
-                  <span>Entry: {fmtPrice(p.entry_price)}</span>
-                  <span>Size: ${(p.size_usd || 0).toFixed(0)}</span>
-                </div>
-                <div className="bento-pos-row bento-pos-detail">
-                  <span>Liq: <span className="pnl-dn">{fmtPrice(p.liq_price)}</span></span>
-                  <span>Margin: ${(p.margin || 0).toFixed(2)}</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       ),
@@ -528,19 +518,22 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
                   </thead>
                   <tbody>
                     {recentTrades.map((trade) => {
-                      const pnl = parseFloat(trade.pnl);
+                      const pnl = parseFloat(trade.pnl ?? trade.profit_loss ?? 0);
                       const isWin = pnl >= 0;
+                      const sideLabel = trade.order_type || trade.side || "buy";
+                      const symbolLabel = trade.asset_symbol || trade.symbol || "SIM";
+                      const sizeValue = trade.size_usd ?? trade.invested_amount ?? 0;
                       return (
                         <tr key={trade.id} className={`dash-trade-row ${trade.isLive ? "dash-trade-live" : ""}`}>
                           <td>
-                            <span className={`dash-side-badge ${trade.side}`}>
-                              {(trade.side || "—").toUpperCase()}
+                            <span className={`dash-side-badge ${sideLabel}`}>
+                              {sideLabel.toUpperCase()}
                             </span>
                           </td>
-                          <td className="dash-trade-symbol">{trade.symbol || "SIM"}</td>
+                          <td className="dash-trade-symbol">{symbolLabel}</td>
                           <td className="dash-trade-mono">${parseFloat(trade.entry_price || 0).toFixed(2)}</td>
                           <td className="dash-trade-mono">${parseFloat(trade.exit_price || 0).toFixed(2)}</td>
-                          <td className="dash-trade-mono">${parseFloat(trade.size_usd || 0).toFixed(0)}</td>
+                          <td className="dash-trade-mono">${parseFloat(sizeValue || 0).toFixed(0)}</td>
                           <td className={`dash-trade-pnl ${isWin ? "pnl-up" : "pnl-dn"}`}>
                             {isWin ? "+" : ""}${pnl.toFixed(2)}
                           </td>

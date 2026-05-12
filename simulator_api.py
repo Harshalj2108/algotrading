@@ -210,6 +210,24 @@ async def live_history(symbol: str, type: str = "crypto", tf: str = "5m"):
             content={"symbol": symbol, "data": [], "indicators": {}, "error": str(e)},
         )
 
+@fastapi_app.get("/api/live/ticker")
+async def live_ticker(symbol: str, type: str = "crypto"):
+    """Fetch the latest live ticker used by paper-trade execution."""
+    try:
+        ticker = await data_engine.get_ticker(type, symbol)
+        if not ticker:
+            return JSONResponse(
+                status_code=404,
+                content={"symbol": symbol, "type": type, "error": "Ticker unavailable"},
+            )
+        return {"type": type, **ticker}
+    except Exception as e:
+        print(f"[API] /api/live/ticker ERROR: {type}/{symbol} -> {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"symbol": symbol, "type": type, "error": str(e)},
+        )
+
 @fastapi_app.get("/api/tf/{tf}")
 def get_tf_data(tf: str, user=Depends(require_auth)):
     payload = manager.get_tf_payload(tf)

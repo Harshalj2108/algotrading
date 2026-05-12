@@ -1,39 +1,308 @@
 {
-  "issue": "Historical candle data not loading",
-  "problem_description": "The trading chart is currently displaying only a single candle instead of a full historical candle series. This makes the simulator unrealistic and unusable because users cannot analyze trends, support/resistance zones, momentum, or past price action.",
-  "expected_behavior": {
-    "chart_data": "Load and render a large set of historical OHLC candles before showing live candles.",
-    "default_range": "When a chart opens, it should automatically display enough historical candles to fill the visible chart area.",
-    "minimum_candles": "At least 100-300 historical candles should load initially.",
-    "live_updates": "After historical candles are loaded, new candles should continue updating in real time.",
-    "scroll_behavior": "Users should be able to scroll backward to view older historical candles.",
-    "zoom_behavior": "Zooming in/out should dynamically adjust visible candle density without losing history."
-  },
-  "required_fix": {
-    "data_fetching": [
-      "Fetch historical OHLC market data from the API before initializing the chart.",
-      "Ensure the API request includes a valid timeframe (1m, 5m, 15m, 1h, etc.).",
-      "Verify that the API returns an array of candles instead of a single latest candle."
+  "feature": "Enable Live Paper Trading System",
+  "objective": "Make the paper trading simulator fully functional with real-time order execution, position management, portfolio tracking, and profit/loss calculation using live market data.",
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Connect Live Market Data to Paper Trading Engine",
+      "description": "Integrate the existing chart and market data system with the paper trading backend so trades execute using live prices.",
+      "requirements": [
+        "Use websocket/live API price feed for crypto and stocks",
+        "Ensure buy/sell actions use current market price",
+        "Update prices continuously without page refresh",
+        "Synchronize chart price with execution engine",
+        "Handle delayed API responses gracefully",
+        "Add fallback reconnect logic for websocket disconnects"
+      ],
+      "technical_details": {
+        "market_data": {
+          "source": "existing live market feed",
+          "update_interval": "real-time",
+          "supported_assets": [
+            "crypto",
+            "stocks"
+          ]
+        },
+        "execution_logic": {
+          "order_execution_type": "market order",
+          "execution_price": "latest live price",
+          "latency_handling": true
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Create Paper Trading Database Schema",
+      "description": "Store all trading activity and portfolio information in the database.",
+      "database_tables": [
+        {
+          "table": "paper_trades",
+          "fields": [
+            {
+              "name": "trade_id",
+              "type": "uuid",
+              "required": true
+            },
+            {
+              "name": "user_id",
+              "type": "uuid",
+              "required": true
+            },
+            {
+              "name": "asset_symbol",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "asset_type",
+              "type": "string",
+              "values": [
+                "crypto",
+                "stock"
+              ]
+            },
+            {
+              "name": "order_type",
+              "type": "string",
+              "values": [
+                "buy",
+                "sell"
+              ]
+            },
+            {
+              "name": "quantity",
+              "type": "number"
+            },
+            {
+              "name": "entry_price",
+              "type": "number"
+            },
+            {
+              "name": "exit_price",
+              "type": "number"
+            },
+            {
+              "name": "position_status",
+              "type": "string",
+              "values": [
+                "open",
+                "closed"
+              ]
+            },
+            {
+              "name": "invested_amount",
+              "type": "number"
+            },
+            {
+              "name": "current_value",
+              "type": "number"
+            },
+            {
+              "name": "profit_loss",
+              "type": "number"
+            },
+            {
+              "name": "profit_loss_percentage",
+              "type": "number"
+            },
+            {
+              "name": "stop_loss",
+              "type": "number"
+            },
+            {
+              "name": "take_profit",
+              "type": "number"
+            },
+            {
+              "name": "created_at",
+              "type": "timestamp"
+            },
+            {
+              "name": "closed_at",
+              "type": "timestamp"
+            }
+          ]
+        },
+        {
+          "table": "paper_wallets",
+          "fields": [
+            {
+              "name": "user_id",
+              "type": "uuid"
+            },
+            {
+              "name": "virtual_balance",
+              "type": "number"
+            },
+            {
+              "name": "total_portfolio_value",
+              "type": "number"
+            },
+            {
+              "name": "total_profit_loss",
+              "type": "number"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Implement Buy Order Logic",
+      "description": "Allow users to place paper buy orders using virtual balance.",
+      "workflow": [
+        "User selects asset",
+        "User enters quantity or amount",
+        "Fetch latest live price",
+        "Validate sufficient virtual balance",
+        "Calculate total trade value",
+        "Deduct amount from wallet",
+        "Store trade in database",
+        "Mark position as OPEN",
+        "Display order on chart"
+      ],
+      "validations": [
+        "Prevent negative quantities",
+        "Prevent zero amount trades",
+        "Prevent buying with insufficient balance",
+        "Prevent invalid asset symbols"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Implement Sell Order Logic",
+      "description": "Allow users to close positions and calculate profit/loss.",
+      "workflow": [
+        "User clicks sell/close position",
+        "Fetch latest live price",
+        "Retrieve original buy trade data",
+        "Calculate exit value",
+        "Calculate profit/loss",
+        "Update wallet balance",
+        "Mark position as CLOSED",
+        "Store exit price and close timestamp"
+      ],
+      "profit_loss_formula": {
+        "long_position": "(exit_price - entry_price) * quantity",
+        "percentage": "((exit_price - entry_price) / entry_price) * 100"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Real-Time PnL Tracking",
+      "description": "Continuously calculate and display unrealized profit/loss for open trades.",
+      "requirements": [
+        "Update PnL every time live price changes",
+        "Display floating profit/loss on chart",
+        "Update portfolio value in real-time",
+        "Show green for profit and red for loss",
+        "Optimize calculations to avoid performance issues"
+      ],
+      "calculations": {
+        "unrealized_pnl": "(current_market_price - entry_price) * quantity",
+        "portfolio_value": "wallet_balance + sum(all_open_positions_current_value)"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Chart Position Visualization",
+      "description": "Display open trades visually on the chart.",
+      "requirements": [
+        "Show entry line on chart",
+        "Display buy/sell markers",
+        "Show floating PnL box",
+        "Add dotted lines for active positions",
+        "Update lines dynamically with live price",
+        "Display stop loss and take profit lines if set"
+      ],
+      "ui_elements": [
+        {
+          "component": "entry_line",
+          "style": "dotted"
+        },
+        {
+          "component": "pnl_box",
+          "style": "rounded_rectangle"
+        },
+        {
+          "component": "tp_sl_lines",
+          "style": "colored_horizontal_lines"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Portfolio Management System",
+      "description": "Create a complete portfolio dashboard for users.",
+      "features": [
+        "Total portfolio balance",
+        "Available virtual cash",
+        "Open positions list",
+        "Closed trades history",
+        "Total realized profit/loss",
+        "Total unrealized profit/loss",
+        "Win rate percentage",
+        "Best trade",
+        "Worst trade"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Trade History Module",
+      "description": "Store and display all historical trades.",
+      "requirements": [
+        "Show trade entry and exit prices",
+        "Show timestamps",
+        "Show trade duration",
+        "Show quantity and invested amount",
+        "Show realized PnL",
+        "Add filtering and sorting"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Stop Loss and Take Profit Automation",
+      "description": "Automatically close trades when stop loss or take profit levels are hit.",
+      "workflow": [
+        "Monitor live prices continuously",
+        "Compare live price against TP/SL levels",
+        "Trigger automatic sell when target reached",
+        "Store auto-close reason in database",
+        "Update wallet and portfolio instantly"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Performance and Stability Improvements",
+      "description": "Ensure the paper trading system works smoothly under continuous live updates.",
+      "requirements": [
+        "Debounce excessive UI updates",
+        "Prevent duplicate order execution",
+        "Use optimistic UI updates carefully",
+        "Implement backend validation for every trade",
+        "Handle websocket reconnects",
+        "Avoid memory leaks from live subscriptions"
+      ]
+    }
+  ],
+  "expected_result": {
+    "user_flow": [
+      "User opens simulator",
+      "User selects crypto or stock",
+      "Live candles and prices load",
+      "User places buy/sell trade",
+      "Trade appears on chart",
+      "PnL updates live",
+      "User closes position",
+      "Final profit/loss calculated and stored",
+      "Portfolio updates instantly"
     ],
-    "chart_rendering": [
-      "Pass the complete historical candle array into the chart component.",
-      "Render candles sequentially based on timestamp order.",
-      "Ensure candle timestamps are unique and properly formatted."
-    ],
-    "state_management": [
-      "Store historical candles separately from live streaming candle updates.",
-      "Append new candles to the existing candle array instead of replacing the entire dataset."
-    ],
-    "fallback_handling": [
-      "Show a loading state while historical data is being fetched.",
-      "Display an error message if candle data fails to load.",
-      "Prevent chart initialization with incomplete data."
+    "system_behavior": [
+      "All trades persist in database",
+      "Portfolio survives page refresh",
+      "PnL calculations remain accurate",
+      "Real-time market data drives all calculations",
+      "Multiple positions supported simultaneously"
     ]
-  },
-  "ui_expectation": {
-    "before_fix": "Chart shows only one candle floating in empty space.",
-    "after_fix": "Chart should look like a real trading platform with continuous historical market movement visible immediately on load."
-  },
-  "priority": "High",
-  "impact": "Core simulator functionality is broken because users cannot properly analyze or practice trading without historical price movement."
+  }
 }
