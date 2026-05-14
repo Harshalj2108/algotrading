@@ -137,7 +137,6 @@
     grid-row: 3;
   }
 }
-
 /* ── Border glow effect ── */
 .magic-bento-card--border-glow::after {
   content: '';

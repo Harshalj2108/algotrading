@@ -55,14 +55,24 @@ export default function LoginForm({ onSuccess, onError }) {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            style={{ paddingLeft: '14px' }}
             required
           />
-          <span className="input-icon">✉</span>
         </div>
       </div>
 
       <div className="form-group">
-        <label className="form-label" htmlFor="login-password">Password</label>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <label className="form-label" htmlFor="login-password" style={{ marginBottom: 0 }}>Password</label>
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => setShowPass(!showPass)}
+            style={{ background: 'none', border: 'none', color: '#D8B4FE', fontSize: '13px', cursor: 'pointer', fontWeight: 600, padding: 0 }}
+          >
+            {showPass ? "Hide" : "Show"}
+          </button>
+        </div>
         <div className="input-wrap">
           <input
             className="form-input"
@@ -73,20 +83,9 @@ export default function LoginForm({ onSuccess, onError }) {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            style={{ paddingLeft: '14px' }}
             required
           />
-          <span className="input-icon">🔒</span>
-          <StarBorder
-            as="button"
-            type="button"
-            className="toggle-pass"
-            tabIndex={-1}
-            onClick={() => setShowPass(!showPass)}
-            color="#26a69a"
-            thickness={1}
-          >
-            {showPass ? "🙈" : "👁"}
-          </StarBorder>
         </div>
       </div>
 

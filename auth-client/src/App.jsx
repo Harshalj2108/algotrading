@@ -524,15 +524,15 @@ export default function App() {
   }, [openLiveMarket, openSimulator]);
 
   if (page === "home") {
-    return <LandingPage onNavigate={navigatePublic} />;
+    return <LandingPage onNavigate={navigatePublic} isAuthenticated={isAuthenticated} onGoDashboard={openDashboard} />;
   }
 
   if (page === "about") {
-    return <AboutUsPage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} />;
+    return <AboutUsPage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} isAuthenticated={isAuthenticated} onGoDashboard={openDashboard} />;
   }
 
   if (page === "learn") {
-    return <LearnTradingPage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} />;
+    return <LearnTradingPage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} isAuthenticated={isAuthenticated} onGoDashboard={openDashboard} />;
   }
 
   if (page === "simulator") {
@@ -582,6 +582,7 @@ export default function App() {
           setPage("buy_more");
           writePath("/buy-s");
         }}
+        onGoHome={() => navigatePublic("home")}
       />
     );
   }
@@ -614,7 +615,6 @@ export default function App() {
         <div className="ds-auth-container">
           <div className="ds-brand">
             <h1>SynthCrypto</h1>
-            <p>Phase 2 Live Market Simulator</p>
           </div>
 
           <div className="gooey-tabs">

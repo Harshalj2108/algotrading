@@ -166,7 +166,7 @@ function Sparkline({ data, color = "#26a69a", width = 120, height = 32 }) {
 }
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
-export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto, onLaunchStocks, onOpenPosition, liveTrades = [], onResetTrades, onBuyMore }) {
+export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto, onLaunchStocks, onOpenPosition, liveTrades = [], onResetTrades, onBuyMore, onGoHome }) {
   const [showRewardPopup, setShowRewardPopup] = useState(() => {
     return localStorage.getItem("isNewRegistration") === "true";
   });
@@ -612,6 +612,35 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       <div className="orb orb-2" />
       <div className="orb orb-3" />
 
+      {/* Home Button — top left */}
+      <div style={{ position: 'absolute', top: '24px', left: '32px', zIndex: 100 }}>
+        <button
+          onClick={onGoHome}
+          style={{ 
+            padding: '8px 16px', 
+            borderRadius: '8px', 
+            cursor: 'pointer', 
+            background: 'transparent', 
+            border: '1px solid rgba(139, 92, 246, 0.5)', 
+            color: '#D8B4FE', 
+            fontWeight: 600,
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
+            e.currentTarget.style.borderColor = '#8B5CF6';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
+          }}
+        >
+          <span>←</span> Home
+        </button>
+      </div>
 
       {/* Profile Menu — top right */}
       <div className="dash-top-right-actions" ref={menuRef}>
@@ -640,6 +669,12 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
               disabled={resetting}
             >
               {resetting ? "⏳ Resetting..." : "Reset Portfolio"}
+            </button>
+            <button
+              className="dash-dropdown-item"
+              onClick={() => { setMenuOpen(false); alert("Referral feature coming soon!"); }}
+            >
+              Refer a Friend
             </button>
             <div className="dash-dropdown-divider" />
             <button

@@ -172,7 +172,7 @@ function IconMark({ name }) {
   );
 }
 
-function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn }) {
+function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard }) {
   return (
     <header className="public-nav">
       <button className="public-brand" type="button" onClick={() => onNavigate("home")}>
@@ -194,18 +194,26 @@ function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn }) {
       </nav>
 
       <div className="public-nav-actions">
-        <button className="public-nav-signin" type="button" onClick={onSignIn}>
-          Sign In
-        </button>
-        <button className="public-nav-cta" type="button" onClick={onGetStarted}>
-          Start Free
-        </button>
+        {isAuthenticated ? (
+          <button className="public-nav-cta" type="button" onClick={onGoDashboard}>
+            Portfolio
+          </button>
+        ) : (
+          <>
+            <button className="public-nav-signin" type="button" onClick={onSignIn}>
+              Sign In
+            </button>
+            <button className="public-nav-cta" type="button" onClick={onGetStarted}>
+              Start Free
+            </button>
+          </>
+        )}
       </div>
     </header>
   );
 }
 
-function PublicShell({ currentPage, onNavigate, onGetStarted, onSignIn, children }) {
+function PublicShell({ currentPage, onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard, children }) {
   return (
     <div className="public-shell">
       <div className="public-dotfield-bg">
@@ -221,8 +229,17 @@ function PublicShell({ currentPage, onNavigate, onGetStarted, onSignIn, children
           glowColor="rgba(139, 92, 246, 0.4)"
         />
       </div>
-      <PublicNav currentPage={currentPage} onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} />
-      {children}
+      <div className="public-shell-content">
+        <PublicNav 
+          currentPage={currentPage} 
+          onNavigate={onNavigate} 
+          onGetStarted={onGetStarted} 
+          onSignIn={onSignIn} 
+          isAuthenticated={isAuthenticated}
+          onGoDashboard={onGoDashboard}
+        />
+        {children}
+      </div>
     </div>
   );
 }
@@ -427,9 +444,9 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
   );
 }
 
-export function AboutUsPage({ onNavigate, onGetStarted, onSignIn }) {
+export function AboutUsPage({ onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard }) {
   return (
-    <PublicShell currentPage="about" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn}>
+    <PublicShell currentPage="about" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} isAuthenticated={isAuthenticated} onGoDashboard={onGoDashboard}>
       <main className="public-main public-page-main">
         <section className="public-page-header">
           <p className="public-eyebrow">About SynthCrypto</p>
@@ -498,9 +515,9 @@ export function AboutUsPage({ onNavigate, onGetStarted, onSignIn }) {
   );
 }
 
-export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn }) {
+export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard }) {
   return (
-    <PublicShell currentPage="learn" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn}>
+    <PublicShell currentPage="learn" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} isAuthenticated={isAuthenticated} onGoDashboard={onGoDashboard}>
       <main className="public-main public-page-main">
         <section className="public-page-header">
           <p className="public-eyebrow">Learn Trading</p>
@@ -567,9 +584,15 @@ export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn }) {
               <h2>Start Practicing Today</h2>
               <p>Use virtual capital to test decisions, review outcomes, and improve before taking on real market risk.</p>
             </div>
-            <button className="public-primary-btn" type="button" onClick={onGetStarted}>
-              Start Free
-            </button>
+            {isAuthenticated ? (
+              <button className="public-primary-btn" type="button" onClick={onGoDashboard}>
+                Go to Portfolio
+              </button>
+            ) : (
+              <button className="public-primary-btn" type="button" onClick={onGetStarted}>
+                Start Free
+              </button>
+            )}
           </section>
         </BorderGlow>
       </main>

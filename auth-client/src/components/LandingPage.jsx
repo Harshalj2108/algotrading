@@ -3,7 +3,7 @@ import DotField from "./DotField";
 import BorderGlow from "./BorderGlow";
 import "./LandingPage.css";
 
-export default function LandingPage({ onNavigate }) {
+export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard }) {
   return (
     <div className="landing-page">
       {/* Full Screen Background */}
@@ -35,18 +35,38 @@ export default function LandingPage({ onNavigate }) {
           >
             About
           </button>
-          <button 
-            className="btn-secondary purple-outline nav-btn" 
-            onClick={() => onNavigate("auth")}
-          >
-            Log In
-          </button>
-          <button 
-            className="btn-primary purple-btn nav-btn" 
-            onClick={() => onNavigate("auth")}
-          >
-            Sign Up
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button 
+                className="btn-secondary purple-outline nav-btn" 
+                onClick={() => onNavigate("learn")}
+                style={{ border: 'none', background: 'transparent' }}
+              >
+                Learn Trading
+              </button>
+              <button 
+                className="btn-primary purple-btn nav-btn" 
+                onClick={onGoDashboard}
+              >
+                Portfolio
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                className="btn-secondary purple-outline nav-btn" 
+                onClick={() => onNavigate("auth")}
+              >
+                Log In
+              </button>
+              <button 
+                className="btn-primary purple-btn nav-btn" 
+                onClick={() => onNavigate("auth")}
+              >
+                Sign Up
+              </button>
+            </>
+          )}
         </div>
       </nav>
 
@@ -58,18 +78,29 @@ export default function LandingPage({ onNavigate }) {
             Practice crypto trading with live market simulations, virtual currency, and real-time charts in a safe learning environment.
           </p>
           <div className="hero-buttons">
-            <button 
-              className="btn-primary purple-btn hero-btn" 
-              onClick={() => onNavigate("auth")}
-            >
-              Start Free
-            </button>
-            <button 
-              className="btn-secondary purple-outline hero-btn" 
-              onClick={() => onNavigate("learn")}
-            >
-              Learn Trading
-            </button>
+            {isAuthenticated ? (
+              <button 
+                className="btn-primary purple-btn hero-btn" 
+                onClick={onGoDashboard}
+              >
+                Go to Portfolio
+              </button>
+            ) : (
+              <>
+                <button 
+                  className="btn-primary purple-btn hero-btn" 
+                  onClick={() => onNavigate("auth")}
+                >
+                  Start Free
+                </button>
+                <button 
+                  className="btn-secondary purple-outline hero-btn" 
+                  onClick={() => onNavigate("learn")}
+                >
+                  Learn Trading
+                </button>
+              </>
+            )}
           </div>
         </div>
 
