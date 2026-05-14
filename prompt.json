@@ -1,308 +1,198 @@
 {
-  "feature": "Enable Live Paper Trading System",
-  "objective": "Make the paper trading simulator fully functional with real-time order execution, position management, portfolio tracking, and profit/loss calculation using live market data.",
-  "tasks": [
-    {
-      "id": 1,
-      "title": "Connect Live Market Data to Paper Trading Engine",
-      "description": "Integrate the existing chart and market data system with the paper trading backend so trades execute using live prices.",
-      "requirements": [
-        "Use websocket/live API price feed for crypto and stocks",
-        "Ensure buy/sell actions use current market price",
-        "Update prices continuously without page refresh",
-        "Synchronize chart price with execution engine",
-        "Handle delayed API responses gracefully",
-        "Add fallback reconnect logic for websocket disconnects"
-      ],
-      "technical_details": {
-        "market_data": {
-          "source": "existing live market feed",
-          "update_interval": "real-time",
-          "supported_assets": [
-            "crypto",
-            "stocks"
-          ]
-        },
-        "execution_logic": {
-          "order_execution_type": "market order",
-          "execution_price": "latest live price",
-          "latency_handling": true
-        }
-      }
-    },
-    {
-      "id": 2,
-      "title": "Create Paper Trading Database Schema",
-      "description": "Store all trading activity and portfolio information in the database.",
-      "database_tables": [
+    "project": "Trading Platform Improvements",
+    "objective": "Fix trade synchronization issues and improve trade management UX across dashboard, simulator, crypto, and stock trading modules.",
+    "tasks": [
         {
-          "table": "paper_trades",
-          "fields": [
-            {
-              "name": "trade_id",
-              "type": "uuid",
-              "required": true
+            "id": 1,
+            "title": "Fix Recent Trades Feed",
+            "priority": "high",
+            "problem": "The Recent Trades section is not showing all executed trades from every trading module.",
+            "goal": "Display every buy/sell trade happening across Live Crypto, Live Stocks, and Simulator/Paper Trading in one unified real-time feed.",
+            "requirements": [
+                "Show all BUY trades",
+                "Show all SELL trades",
+                "Include Live Crypto trades",
+                "Include Live Stock trades",
+                "Include Simulator/Paper Trading trades",
+                "Update trades instantly in real-time",
+                "Newest trades should appear at the top",
+                "Do not require page refresh",
+                "Prevent duplicate trade entries",
+                "Support simultaneous multi-user trades"
+            ],
+            "backend_changes": {
+                "create_unified_trade_feed": true,
+                "merge_sources": [
+                    "live_crypto_trades",
+                    "live_stock_trades",
+                    "paper_trades"
+                ],
+                "required_trade_fields": [
+                    "trade_id",
+                    "user_id",
+                    "asset_symbol",
+                    "asset_type",
+                    "buy_or_sell",
+                    "quantity",
+                    "entry_price",
+                    "trade_value",
+                    "timestamp",
+                    "source_market"
+                ],
+                "realtime_updates": {
+                    "method": "websocket",
+                    "broadcast_trade_updates": true
+                }
             },
-            {
-              "name": "user_id",
-              "type": "uuid",
-              "required": true
+            "frontend_changes": {
+                "component": "RecentTradesPanel",
+                "features": [
+                    "live updates",
+                    "infinite scrolling",
+                    "trade type badges",
+                    "market source labels",
+                    "buy/sell color indicators"
+                ],
+                "ui_rules": {
+                    "buy_trade_color": "green",
+                    "sell_trade_color": "red",
+                    "crypto_badge": "Crypto",
+                    "stock_badge": "Stocks",
+                    "simulator_badge": "Simulator"
+                }
             },
-            {
-              "name": "asset_symbol",
-              "type": "string",
-              "required": true
-            },
-            {
-              "name": "asset_type",
-              "type": "string",
-              "values": [
-                "crypto",
-                "stock"
-              ]
-            },
-            {
-              "name": "order_type",
-              "type": "string",
-              "values": [
-                "buy",
-                "sell"
-              ]
-            },
-            {
-              "name": "quantity",
-              "type": "number"
-            },
-            {
-              "name": "entry_price",
-              "type": "number"
-            },
-            {
-              "name": "exit_price",
-              "type": "number"
-            },
-            {
-              "name": "position_status",
-              "type": "string",
-              "values": [
-                "open",
-                "closed"
-              ]
-            },
-            {
-              "name": "invested_amount",
-              "type": "number"
-            },
-            {
-              "name": "current_value",
-              "type": "number"
-            },
-            {
-              "name": "profit_loss",
-              "type": "number"
-            },
-            {
-              "name": "profit_loss_percentage",
-              "type": "number"
-            },
-            {
-              "name": "stop_loss",
-              "type": "number"
-            },
-            {
-              "name": "take_profit",
-              "type": "number"
-            },
-            {
-              "name": "created_at",
-              "type": "timestamp"
-            },
-            {
-              "name": "closed_at",
-              "type": "timestamp"
+            "expected_result": {
+                "behavior": [
+                    "Every executed trade appears instantly",
+                    "Trade feed remains synchronized across the app",
+                    "No missing trades",
+                    "No duplicated trades"
+                ]
             }
-          ]
         },
         {
-          "table": "paper_wallets",
-          "fields": [
-            {
-              "name": "user_id",
-              "type": "uuid"
+            "id": 2,
+            "title": "Make Current Positions Clickable",
+            "priority": "high",
+            "problem": "Trades shown under Current Positions on the dashboard are static and not interactive.",
+            "goal": "Allow users to click any current position and instantly navigate to its corresponding trading chart.",
+            "requirements": [
+                "Every current position card should behave like a button",
+                "Clicking should redirect to the asset chart page",
+                "Chart should automatically open the correct symbol",
+                "Maintain selected timeframe if possible",
+                "Highlight active position on chart after navigation"
+            ],
+            "navigation_behavior": {
+                "crypto_trade": "/markets/crypto/{symbol}",
+                "stock_trade": "/markets/stocks/{symbol}",
+                "paper_trade": "/simulation/{symbol}"
             },
-            {
-              "name": "virtual_balance",
-              "type": "number"
+            "frontend_changes": {
+                "component": "CurrentPositions",
+                "features": [
+                    "hover effect",
+                    "pointer cursor",
+                    "smooth navigation animation",
+                    "active position highlighting"
+                ]
             },
-            {
-              "name": "total_portfolio_value",
-              "type": "number"
+            "chart_behavior": {
+                "auto_focus_position": true,
+                "scroll_to_trade_entry": true,
+                "show_position_marker": true
             },
-            {
-              "name": "total_profit_loss",
-              "type": "number"
+            "expected_result": {
+                "behavior": [
+                    "Users can instantly jump to any trade chart",
+                    "Trade management becomes faster",
+                    "Dashboard becomes interactive"
+                ]
             }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "title": "Implement Buy Order Logic",
-      "description": "Allow users to place paper buy orders using virtual balance.",
-      "workflow": [
-        "User selects asset",
-        "User enters quantity or amount",
-        "Fetch latest live price",
-        "Validate sufficient virtual balance",
-        "Calculate total trade value",
-        "Deduct amount from wallet",
-        "Store trade in database",
-        "Mark position as OPEN",
-        "Display order on chart"
-      ],
-      "validations": [
-        "Prevent negative quantities",
-        "Prevent zero amount trades",
-        "Prevent buying with insufficient balance",
-        "Prevent invalid asset symbols"
-      ]
-    },
-    {
-      "id": 4,
-      "title": "Implement Sell Order Logic",
-      "description": "Allow users to close positions and calculate profit/loss.",
-      "workflow": [
-        "User clicks sell/close position",
-        "Fetch latest live price",
-        "Retrieve original buy trade data",
-        "Calculate exit value",
-        "Calculate profit/loss",
-        "Update wallet balance",
-        "Mark position as CLOSED",
-        "Store exit price and close timestamp"
-      ],
-      "profit_loss_formula": {
-        "long_position": "(exit_price - entry_price) * quantity",
-        "percentage": "((exit_price - entry_price) / entry_price) * 100"
-      }
-    },
-    {
-      "id": 5,
-      "title": "Real-Time PnL Tracking",
-      "description": "Continuously calculate and display unrealized profit/loss for open trades.",
-      "requirements": [
-        "Update PnL every time live price changes",
-        "Display floating profit/loss on chart",
-        "Update portfolio value in real-time",
-        "Show green for profit and red for loss",
-        "Optimize calculations to avoid performance issues"
-      ],
-      "calculations": {
-        "unrealized_pnl": "(current_market_price - entry_price) * quantity",
-        "portfolio_value": "wallet_balance + sum(all_open_positions_current_value)"
-      }
-    },
-    {
-      "id": 6,
-      "title": "Chart Position Visualization",
-      "description": "Display open trades visually on the chart.",
-      "requirements": [
-        "Show entry line on chart",
-        "Display buy/sell markers",
-        "Show floating PnL box",
-        "Add dotted lines for active positions",
-        "Update lines dynamically with live price",
-        "Display stop loss and take profit lines if set"
-      ],
-      "ui_elements": [
-        {
-          "component": "entry_line",
-          "style": "dotted"
         },
         {
-          "component": "pnl_box",
-          "style": "rounded_rectangle"
-        },
-        {
-          "component": "tp_sl_lines",
-          "style": "colored_horizontal_lines"
+            "id": 3,
+            "title": "Improve TP/SL Position Management",
+            "priority": "critical",
+            "problem": [
+                "TP/SL boxes currently cannot remove positions",
+                "Editing TP/SL has no save button",
+                "Users cannot properly manage existing TP/SL orders"
+            ],
+            "goal": "Allow users to edit, save, and remove Take Profit and Stop Loss positions directly from the chart.",
+            "requirements": [
+                "Clicking TP/SL rectangle box should open management popup",
+                "Popup must contain Edit option",
+                "Popup must contain Remove option",
+                "Editing TP/SL values must include Save button",
+                "Changes should update instantly on chart",
+                "Removing TP/SL should remove chart lines immediately",
+                "Prevent accidental deletion with confirmation modal"
+            ],
+            "ui_flow": {
+                "step_1": "User clicks TP/SL rectangle on chart",
+                "step_2": "Context menu/modal appears",
+                "step_3": "User chooses Edit or Remove",
+                "step_4_edit": "Editable TP/SL inputs appear",
+                "step_5_edit": "User clicks Save button",
+                "step_6_edit": "Chart updates immediately",
+                "step_4_remove": "Confirmation modal appears",
+                "step_5_remove": "User confirms deletion",
+                "step_6_remove": "TP/SL lines and box removed"
+            },
+            "frontend_changes": {
+                "components": [
+                    "TPSLContextMenu",
+                    "TPSLEditModal",
+                    "TPSLDeleteConfirmation"
+                ],
+                "buttons_required": [
+                    "Save Changes",
+                    "Remove TP/SL",
+                    "Cancel"
+                ]
+            },
+            "backend_changes": {
+                "new_endpoints": [
+                    "PATCH /trade/update-tpsl",
+                    "DELETE /trade/remove-tpsl"
+                ],
+                "validations": [
+                    "TP must be above entry for long trades",
+                    "SL must be below entry for long trades",
+                    "Prevent invalid negative values"
+                ]
+            },
+            "chart_updates": {
+                "live_refresh": true,
+                "remove_lines_on_delete": true,
+                "update_lines_on_edit": true
+            },
+            "expected_result": {
+                "behavior": [
+                    "Users can fully manage TP/SL directly from chart",
+                    "Editing feels responsive",
+                    "TP/SL management becomes intuitive",
+                    "No missing save functionality"
+                ]
+            }
         }
-      ]
-    },
-    {
-      "id": 7,
-      "title": "Portfolio Management System",
-      "description": "Create a complete portfolio dashboard for users.",
-      "features": [
-        "Total portfolio balance",
-        "Available virtual cash",
-        "Open positions list",
-        "Closed trades history",
-        "Total realized profit/loss",
-        "Total unrealized profit/loss",
-        "Win rate percentage",
-        "Best trade",
-        "Worst trade"
-      ]
-    },
-    {
-      "id": 8,
-      "title": "Trade History Module",
-      "description": "Store and display all historical trades.",
-      "requirements": [
-        "Show trade entry and exit prices",
-        "Show timestamps",
-        "Show trade duration",
-        "Show quantity and invested amount",
-        "Show realized PnL",
-        "Add filtering and sorting"
-      ]
-    },
-    {
-      "id": 9,
-      "title": "Stop Loss and Take Profit Automation",
-      "description": "Automatically close trades when stop loss or take profit levels are hit.",
-      "workflow": [
-        "Monitor live prices continuously",
-        "Compare live price against TP/SL levels",
-        "Trigger automatic sell when target reached",
-        "Store auto-close reason in database",
-        "Update wallet and portfolio instantly"
-      ]
-    },
-    {
-      "id": 10,
-      "title": "Performance and Stability Improvements",
-      "description": "Ensure the paper trading system works smoothly under continuous live updates.",
-      "requirements": [
-        "Debounce excessive UI updates",
-        "Prevent duplicate order execution",
-        "Use optimistic UI updates carefully",
-        "Implement backend validation for every trade",
-        "Handle websocket reconnects",
-        "Avoid memory leaks from live subscriptions"
-      ]
-    }
-  ],
-  "expected_result": {
-    "user_flow": [
-      "User opens simulator",
-      "User selects crypto or stock",
-      "Live candles and prices load",
-      "User places buy/sell trade",
-      "Trade appears on chart",
-      "PnL updates live",
-      "User closes position",
-      "Final profit/loss calculated and stored",
-      "Portfolio updates instantly"
     ],
-    "system_behavior": [
-      "All trades persist in database",
-      "Portfolio survives page refresh",
-      "PnL calculations remain accurate",
-      "Real-time market data drives all calculations",
-      "Multiple positions supported simultaneously"
-    ]
-  }
+    "global_requirements": {
+        "performance": [
+            "Avoid unnecessary rerenders",
+            "Optimize websocket listeners",
+            "Debounce excessive updates"
+        ],
+        "ui_consistency": [
+            "Use same styling across crypto, stocks, and simulator",
+            "Maintain responsive design",
+            "Use consistent modal behavior"
+        ],
+        "error_handling": [
+            "Show toast on TP/SL save success",
+            "Show toast on remove success",
+            "Show proper validation errors"
+        ]
+    }
 }

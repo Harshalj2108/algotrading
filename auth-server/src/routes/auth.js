@@ -207,6 +207,7 @@ router.get("/google/callback", async (req, res) => {
 
     // Upsert user — find by google_id or email, create if not found
     let user;
+    let isNewGoogleUser = false;
     const existingByGoogle = await pool.query(
       "SELECT id, email, username, avatar_url FROM users WHERE google_id = $1",
       [google_id]
@@ -244,13 +245,18 @@ router.get("/google/callback", async (req, res) => {
           [email.toLowerCase(), name || email.split("@")[0], google_id, picture]
         );
         user = result.rows[0];
+        isNewGoogleUser = true;
       }
     }
 
     // Issue JWT & redirect to simulator
     const token = signToken(user);
     res.cookie("token", token, COOKIE_OPTS);
-    res.redirect(`${CLIENT_URL}?auth=success`);
+    if (isNewGoogleUser) {
+      res.redirect(`${CLIENT_URL}?auth=success&isNew=true`);
+    } else {
+      res.redirect(`${CLIENT_URL}?auth=success`);
+    }
   } catch (err) {
     console.error("Google OAuth callback error:", err.response?.data || err.message);
     res.redirect(`${CLIENT_URL}?error=Google+authentication+failed`);

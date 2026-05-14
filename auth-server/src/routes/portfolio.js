@@ -7,6 +7,10 @@ const express = require("express");
 const axios = require("axios");
 const { pool } = require("../db");
 const { requireAuth } = require("../middleware/auth");
+const {
+  loadTradeFeed,
+  recordAndBroadcastTradeEvent,
+} = require("../tradeFeed");
 
 const router = express.Router();
 
@@ -212,6 +216,33 @@ function normalizeTrade(row, marketPrice = null) {
   };
 }
 
+function tradeEventFromPaperTrade(trade, side, overrides = {}) {
+  const executionPrice = side === "sell"
+    ? asNumber(trade.exit_price, asNumber(trade.entry_price))
+    : asNumber(trade.entry_price);
+  const quantity = asNumber(trade.quantity ?? trade.qty);
+  const tradeValue = side === "sell"
+    ? quantity * executionPrice
+    : asNumber(trade.invested_amount ?? trade.size_usd);
+  const sourceMarket = trade.asset_type === "stock" ? "stocks" : "crypto";
+
+  return {
+    event_key: overrides.event_key || `${sourceMarket}:${trade.trade_id || trade.id}:${side}`,
+    trade_id: trade.trade_id || trade.id,
+    asset_symbol: trade.asset_symbol || trade.symbol,
+    asset_type: trade.asset_type,
+    buy_or_sell: side,
+    quantity,
+    entry_price: executionPrice,
+    exit_price: side === "sell" ? executionPrice : null,
+    execution_price: executionPrice,
+    trade_value: tradeValue,
+    profit_loss: side === "sell" ? asNumber(trade.profit_loss ?? trade.pnl) : 0,
+    timestamp: overrides.timestamp || (side === "sell" ? trade.closed_at : trade.created_at) || new Date().toISOString(),
+    source_market: sourceMarket,
+  };
+}
+
 async function updateStoredMark(db, userId, tradeId, marketPrice) {
   const rowResult = await db.query(
     `SELECT * FROM paper_trades
@@ -370,6 +401,45 @@ async function loadPaperPortfolio(userId, { fetchLive = true, priceOverrides = n
   };
 }
 
+async function updatePaperTradeTpsl(userId, tradeId, stopLoss, takeProfit) {
+  if (!tradeId) throw httpError(400, "trade_id is required");
+
+  const client = await pool.connect();
+  let trade;
+  try {
+    await client.query("BEGIN");
+    const result = await client.query(
+      `SELECT * FROM paper_trades
+       WHERE user_id = $1 AND trade_id = $2 AND position_status = 'open'
+       FOR UPDATE`,
+      [userId, tradeId]
+    );
+    if (!result.rows.length) throw httpError(404, "Open position not found");
+    const row = result.rows[0];
+    validateLongTpsl(asNumber(row.entry_price), stopLoss, takeProfit);
+
+    const updateResult = await client.query(
+      `UPDATE paper_trades
+       SET stop_loss = $1,
+           take_profit = $2,
+           updated_at = NOW()
+       WHERE user_id = $3 AND trade_id = $4
+       RETURNING *`,
+      [stopLoss, takeProfit, userId, tradeId]
+    );
+    await client.query("COMMIT");
+    trade = normalizeTrade(updateResult.rows[0]);
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+
+  const data = await loadPaperPortfolio(userId, { fetchLive: false });
+  return { trade, data };
+}
+
 function handleRouteError(res, err, label) {
   const status = err.status || 500;
   if (status >= 500) console.error(`${label} error:`, err);
@@ -399,15 +469,46 @@ router.get("/me", requireAuth, async (req, res) => {
     const total_pnl = parseFloat(pnlResult.rows[0].total_pnl || 0);
 
     const paper = await loadPaperPortfolio(userId, { fetchLive: false });
+    const tradeFeed = await loadTradeFeed(userId, { limit: 50 });
 
     res.json({
       balance,
       total_pnl,
       trades: tradesResult.rows,
       paper,
+      trade_feed: tradeFeed,
     });
   } catch (err) {
     handleRouteError(res, err, "GET /portfolio/me");
+  }
+});
+
+// GET /api/portfolio/trade-feed - unified recent trade feed.
+router.get("/trade-feed", requireAuth, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const trades = await loadTradeFeed(userId, {
+      limit: req.query.limit,
+      before: req.query.before,
+    });
+    res.json({ success: true, trades, has_more: trades.length >= Math.min(Math.max(Number(req.query.limit) || 50, 1), 100) });
+  } catch (err) {
+    handleRouteError(res, err, "GET /portfolio/trade-feed");
+  }
+});
+
+// POST /api/portfolio/trade-feed - record a simulator/manual execution event.
+router.post("/trade-feed", requireAuth, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const { trade, inserted } = await recordAndBroadcastTradeEvent(pool, userId, {
+      ...req.body,
+      source_market: req.body.source_market || "simulator",
+      asset_type: req.body.asset_type || "simulator",
+    });
+    res.status(inserted ? 201 : 200).json({ success: true, trade, inserted });
+  } catch (err) {
+    handleRouteError(res, err, "POST /portfolio/trade-feed");
   }
 });
 
@@ -422,6 +523,7 @@ router.post("/trade", requireAuth, async (req, res) => {
     }
 
     const client = await pool.connect();
+    let savedTrade;
     try {
       await client.query("BEGIN");
 
@@ -430,6 +532,7 @@ router.post("/trade", requireAuth, async (req, res) => {
          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
         [userId, symbol, side, size_usd, entry_price, exit_price, pnl]
       );
+      savedTrade = tradeResult.rows[0];
 
       await client.query(
         "UPDATE users SET balance = balance + $1 WHERE id = $2",
@@ -437,13 +540,30 @@ router.post("/trade", requireAuth, async (req, res) => {
       );
 
       await client.query("COMMIT");
-      res.json({ success: true, trade: tradeResult.rows[0] });
     } catch (e) {
       await client.query("ROLLBACK");
       throw e;
     } finally {
       client.release();
     }
+
+    await recordAndBroadcastTradeEvent(pool, userId, {
+      event_key: req.body.event_key || `simulator:${savedTrade.id}:sell`,
+      trade_id: req.body.trade_id || savedTrade.id,
+      asset_symbol: symbol,
+      asset_type: "simulator",
+      buy_or_sell: side === "short" ? "buy" : "sell",
+      quantity: req.body.quantity ?? req.body.qty ?? 0,
+      entry_price: entry_price,
+      exit_price: exit_price,
+      execution_price: exit_price ?? entry_price,
+      trade_value: size_usd,
+      profit_loss: pnl,
+      timestamp: savedTrade.closed_at,
+      source_market: "simulator",
+    });
+
+    res.json({ success: true, trade: savedTrade });
   } catch (err) {
     handleRouteError(res, err, "POST /portfolio/trade");
   }
@@ -542,6 +662,7 @@ router.post("/paper/buy", requireAuth, async (req, res) => {
       fetchLive: false,
       priceOverrides: new Map([[tradeKey(assetType, symbol), entryPrice]]),
     });
+    await recordAndBroadcastTradeEvent(pool, userId, tradeEventFromPaperTrade(trade, "buy"));
     res.status(201).json({ success: true, trade, execution: live, ...data });
   } catch (err) {
     handleRouteError(res, err, "POST /portfolio/paper/buy");
@@ -584,6 +705,7 @@ router.post("/paper/sell", requireAuth, async (req, res) => {
     }
 
     const data = await loadPaperPortfolio(userId, { fetchLive: false });
+    await recordAndBroadcastTradeEvent(pool, userId, tradeEventFromPaperTrade(closedTrade, "sell"));
     res.json({ success: true, trade: closedTrade, execution: live, ...data });
   } catch (err) {
     handleRouteError(res, err, "POST /portfolio/paper/sell");
@@ -597,43 +719,47 @@ router.patch("/paper/trades/:tradeId", requireAuth, async (req, res) => {
     const tradeId = req.params.tradeId;
     const stopLoss = parseOptionalPositiveNumber(req.body.stop_loss ?? req.body.sl_price, "Stop loss");
     const takeProfit = parseOptionalPositiveNumber(req.body.take_profit ?? req.body.tp_price, "Take profit");
-
-    const client = await pool.connect();
-    let trade;
-    try {
-      await client.query("BEGIN");
-      const result = await client.query(
-        `SELECT * FROM paper_trades
-         WHERE user_id = $1 AND trade_id = $2 AND position_status = 'open'
-         FOR UPDATE`,
-        [userId, tradeId]
-      );
-      if (!result.rows.length) throw httpError(404, "Open position not found");
-      const row = result.rows[0];
-      validateLongTpsl(asNumber(row.entry_price), stopLoss, takeProfit);
-
-      const updateResult = await client.query(
-        `UPDATE paper_trades
-         SET stop_loss = $1,
-             take_profit = $2,
-             updated_at = NOW()
-         WHERE user_id = $3 AND trade_id = $4
-         RETURNING *`,
-        [stopLoss, takeProfit, userId, tradeId]
-      );
-      await client.query("COMMIT");
-      trade = normalizeTrade(updateResult.rows[0]);
-    } catch (e) {
-      await client.query("ROLLBACK");
-      throw e;
-    } finally {
-      client.release();
-    }
-
-    const data = await loadPaperPortfolio(userId, { fetchLive: false });
+    const { trade, data } = await updatePaperTradeTpsl(userId, tradeId, stopLoss, takeProfit);
     res.json({ success: true, trade, ...data });
   } catch (err) {
     handleRouteError(res, err, "PATCH /portfolio/paper/trades/:tradeId");
+  }
+});
+
+// DELETE /api/portfolio/paper/trades/:tradeId/tpsl - remove stop loss/take profit.
+router.delete("/paper/trades/:tradeId/tpsl", requireAuth, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const { trade, data } = await updatePaperTradeTpsl(userId, req.params.tradeId, null, null);
+    res.json({ success: true, trade, ...data });
+  } catch (err) {
+    handleRouteError(res, err, "DELETE /portfolio/paper/trades/:tradeId/tpsl");
+  }
+});
+
+// PATCH /api/portfolio/trade/update-tpsl - compatibility endpoint.
+router.patch("/trade/update-tpsl", requireAuth, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const tradeId = String(req.body.trade_id || req.body.id || "").trim();
+    const stopLoss = parseOptionalPositiveNumber(req.body.stop_loss ?? req.body.sl_price, "Stop loss");
+    const takeProfit = parseOptionalPositiveNumber(req.body.take_profit ?? req.body.tp_price, "Take profit");
+    const { trade, data } = await updatePaperTradeTpsl(userId, tradeId, stopLoss, takeProfit);
+    res.json({ success: true, trade, ...data });
+  } catch (err) {
+    handleRouteError(res, err, "PATCH /portfolio/trade/update-tpsl");
+  }
+});
+
+// DELETE /api/portfolio/trade/remove-tpsl - compatibility endpoint.
+router.delete("/trade/remove-tpsl", requireAuth, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const tradeId = String(req.body.trade_id || req.body.id || req.query.trade_id || req.query.id || "").trim();
+    const { trade, data } = await updatePaperTradeTpsl(userId, tradeId, null, null);
+    res.json({ success: true, trade, ...data });
+  } catch (err) {
+    handleRouteError(res, err, "DELETE /portfolio/trade/remove-tpsl");
   }
 });
 
@@ -688,6 +814,17 @@ router.post("/paper/tick", requireAuth, async (req, res) => {
       fetchLive: false,
       priceOverrides: new Map([[tradeKey(assetType, symbol), price]]),
     });
+    for (const event of events) {
+      if (event.trade) {
+        await recordAndBroadcastTradeEvent(
+          pool,
+          userId,
+          tradeEventFromPaperTrade(event.trade, "sell", {
+            event_key: `${assetType === "stock" ? "stocks" : "crypto"}:${event.trade.trade_id || event.trade.id}:sell`,
+          })
+        );
+      }
+    }
     res.json({ success: true, price, execution: live, events, ...data });
   } catch (err) {
     handleRouteError(res, err, "POST /portfolio/paper/tick");
@@ -732,6 +869,7 @@ router.post("/reset", requireAuth, async (req, res) => {
       await client.query("BEGIN");
       await client.query("DELETE FROM trades WHERE user_id = $1", [userId]);
       await client.query("DELETE FROM paper_trades WHERE user_id = $1", [userId]);
+      await client.query("DELETE FROM trade_events WHERE user_id = $1", [userId]);
       await client.query("UPDATE users SET balance = $1 WHERE id = $2", [INITIAL_VIRTUAL_BALANCE, userId]);
       await client.query(
         `INSERT INTO paper_wallets (user_id, virtual_balance, total_portfolio_value, total_profit_loss)

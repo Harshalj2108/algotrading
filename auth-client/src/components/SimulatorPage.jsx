@@ -24,6 +24,7 @@ class ChartErrorBoundary extends Component {
 }
 
 const API = "http://localhost:8000";
+const AUTH_SERVER = "http://localhost:3001";
 const socket = io(API, { autoConnect: false, path: "/ws/socket.io" });
 
 const TFS = ["1s","1m","5m","15m","30m","1h","1d"];
@@ -44,7 +45,60 @@ function defaultTpsl(pos){const step=Math.max(pos.entry_price*0.01,0.000001);ret
 function validateTpslValues(pos,tp,sl){if(!pos)return"Select a position first";if(tp==null&&sl==null)return"Enter at least one TP or SL price";if(Number.isNaN(tp)||Number.isNaN(sl))return"TP/SL prices must be valid numbers";if(tp!=null&&tp<=0)return"Take Profit must be greater than zero";if(sl!=null&&sl<=0)return"Stop Loss must be greater than zero";if(pos.side==="long"){if(tp!=null&&tp<=pos.entry_price)return"Long TP must be above entry";if(sl!=null&&sl>=pos.entry_price)return"Long SL must be below entry";}else{if(tp!=null&&tp>=pos.entry_price)return"Short TP must be below entry";if(sl!=null&&sl<=pos.entry_price)return"Short SL must be above entry";}return null;}
 function riskReward(pos,tp=pos?.tp_price,sl=pos?.sl_price){if(!pos||tp==null||sl==null)return"â€”";const reward=Math.abs(tp-pos.entry_price);const risk=Math.abs(pos.entry_price-sl);return risk>0?(reward/risk).toFixed(2)+"R":"â€”";}
 
-export default function SimulatorPage({ onBack }) {
+function postSimulatorTradeEvent(trade){
+  if(!trade)return;
+  fetch(`${AUTH_SERVER}/api/portfolio/trade-feed`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    credentials:"include",
+    body:JSON.stringify(trade),
+  }).catch(err=>console.warn("Trade feed sync failed:",err.message));
+}
+
+function simulatorOpenTradeEvent(position,extra={}){
+  if(!position)return null;
+  const side=position.side==="short"?"sell":"buy";
+  return {
+    event_key:extra.event_key||`simulator:${position.id}:open`,
+    trade_id:position.id,
+    asset_symbol:"SIM",
+    asset_type:"simulator",
+    buy_or_sell:side,
+    side,
+    quantity:position.qty||0,
+    entry_price:position.entry_price||0,
+    execution_price:position.entry_price||0,
+    trade_value:position.size_usd||0,
+    profit_loss:0,
+    timestamp:new Date().toISOString(),
+    source_market:"simulator",
+  };
+}
+
+function simulatorCloseTradeEvent(result,extra={}){
+  if(!result)return null;
+  const tradeId=result.position_id||result.trade_id||result.id;
+  if(!tradeId)return null;
+  const side=result.side==="short"?"buy":"sell";
+  return {
+    event_key:extra.event_key||`simulator:${tradeId}:close:${result.reason||"manual"}`,
+    trade_id:tradeId,
+    asset_symbol:result.symbol||"SIM",
+    asset_type:"simulator",
+    buy_or_sell:side,
+    side,
+    quantity:result.qty||result.quantity||0,
+    entry_price:result.exit_price??result.entry_price??0,
+    exit_price:result.exit_price??null,
+    execution_price:result.exit_price??result.entry_price??0,
+    trade_value:result.size_usd||0,
+    profit_loss:result.pnl||0,
+    timestamp:new Date().toISOString(),
+    source_market:"simulator",
+  };
+}
+
+export default function SimulatorPage({ onBack, focusPositionId = null }) {
   const [tf, setTf] = useState("1m");
   const [speed, setSpeed] = useState(1);
   const [paused, setPaused] = useState(false);
@@ -78,6 +132,9 @@ export default function SimulatorPage({ onBack }) {
   const [tpslPanelOpen, setTpslPanelOpen] = useState(false);
   const [tpslDraft, setTpslDraft] = useState({ tp: "", sl: "" });
   const [detailsPosId, setDetailsPosId] = useState(null);
+  const [tpslManagePosId, setTpslManagePosId] = useState(null);
+  const [tpslEditPosId, setTpslEditPosId] = useState(null);
+  const [tpslDeletePosId, setTpslDeletePosId] = useState(null);
   // Overlays
   const [showMetrics, setShowMetrics] = useState(false);
   const [metricsData, setMetricsData] = useState(null);
@@ -99,8 +156,14 @@ export default function SimulatorPage({ onBack }) {
     toastTimer.current = setTimeout(() => setToast(null), 4000);
   }, []);
 
-  const selectedPosition = positions.find(p => p.id === selectedPosId) || positions[0] || null;
+  const selectedPosition = positions.find(p => p.id === selectedPosId)
+    || positions.find(p => p.id === focusPositionId)
+    || positions[0]
+    || null;
   const detailsPosition = positions.find(p => p.id === detailsPosId) || null;
+  const tpslManagePosition = positions.find(p => p.id === tpslManagePosId) || null;
+  const tpslEditPosition = positions.find(p => p.id === tpslEditPosId) || null;
+  const tpslDeletePosition = positions.find(p => p.id === tpslDeletePosId) || null;
 
   const openTpslPanel = useCallback((pos = selectedPosition) => {
     if (!pos) {
@@ -131,6 +194,42 @@ export default function SimulatorPage({ onBack }) {
     socket.emit("update_position_tpsl", { id: pos.id, tp_price: tp, sl_price: sl });
     return true;
   }, [selectedPosition, showToastMsg, tpslDraft]);
+
+  const openTpslManage = useCallback((posId) => {
+    const pos = positions.find(p => p.id === posId);
+    if (!pos) return;
+    setSelectedPosId(pos.id);
+    setTpslManagePosId(pos.id);
+  }, [positions]);
+
+  const openTpslEditModal = useCallback((pos) => {
+    if (!pos) return;
+    const defaults = defaultTpsl(pos);
+    setSelectedPosId(pos.id);
+    setTpslDraft({
+      tp: String(pos.tp_price ?? defaults.tp.toFixed(6)),
+      sl: String(pos.sl_price ?? defaults.sl.toFixed(6)),
+    });
+    setTpslManagePosId(null);
+    setTpslEditPosId(pos.id);
+  }, []);
+
+  const saveTpslEditModal = useCallback(() => {
+    if (!tpslEditPosition) return;
+    if (applyTpsl(tpslEditPosition, tpslDraft)) {
+      setTpslEditPosId(null);
+    }
+  }, [applyTpsl, tpslDraft, tpslEditPosition]);
+
+  const removeTpsl = useCallback((pos = tpslDeletePosition) => {
+    if (!pos) return;
+    setPositions(prev => prev.map(p => p.id === pos.id ? { ...p, tp_price: null, sl_price: null } : p));
+    socket.emit("remove_position_tpsl", { id: pos.id });
+    setTpslPanelOpen(false);
+    setTpslManagePosId(null);
+    setTpslEditPosId(null);
+    setTpslDeletePosId(null);
+  }, [tpslDeletePosition]);
 
   const updatePositionTpsl = useCallback((posId, next) => {
     const pos = positions.find(p => p.id === posId);
@@ -188,9 +287,13 @@ export default function SimulatorPage({ onBack }) {
       if(d.events?.liquidated?.length) d.events.liquidated.forEach(id=>showToastMsg("⚡ LIQUIDATED "+id,"liq"));
       if(d.events?.tpsl_closed?.length) d.events.tpsl_closed.forEach(ev=>{
         const label=ev.reason==="take_profit"?"Take Profit":"Stop Loss";
-        showToastMsg(`${label} closed ${ev.side?.toUpperCase?.()||""} ${ev.pnl>=0?"+":""}$${Math.abs(ev.pnl||0).toFixed(2)}`,ev.pnl>=0?"ok":"err");
+        postSimulatorTradeEvent(simulatorCloseTradeEvent(ev,{event_key:`simulator:${ev.position_id||ev.trade_id||ev.id}:close:${ev.reason||"tpsl"}`}));
+        showToastMsg(`${label} closed ${ev.side?.toUpperCase?.()||""} ${ev.pnl>=0?"+":""}S${Math.abs(ev.pnl||0).toFixed(2)}`,ev.pnl>=0?"ok":"err");
       });
-      if(d.events?.filled?.length) showToastMsg("✓ Order filled","ok");
+      if(d.events?.filled?.length){
+        d.events.filled.forEach(ev=>postSimulatorTradeEvent(simulatorOpenTradeEvent(ev.position,{event_key:`simulator:${ev.position?.id||ev.order_id}:open`})));
+        showToastMsg("✓ Order filled","ok");
+      }
     });
     socket.on("candle_close", d => {
       if(d.tf===tfRef.current && d.candles) setCandles(prev=>[...prev,...d.candles].slice(-2000));
@@ -199,7 +302,7 @@ export default function SimulatorPage({ onBack }) {
       if(d.price){setPrice(d.price);setPrevPrice(d.price);}
       setStep(0);if(d.regime)setRegime(d.regime);if(d.p2)setP2(d.p2);
       setBalance(d.balance||10000);setRpnl(0);setPositions([]);setOrders([]);
-      setSelectedPosId(null);setTpslPanelOpen(false);setDetailsPosId(null);
+      setSelectedPosId(null);setTpslPanelOpen(false);setDetailsPosId(null);setTpslManagePosId(null);setTpslEditPosId(null);setTpslDeletePosId(null);
       setEbbMetrics(null);
       // Clear chart data — server will follow up with tf_data containing fresh candles
       setCandles([]);setVolData([]);setLiveCandle(null);setIndicatorData({});
@@ -211,13 +314,27 @@ export default function SimulatorPage({ onBack }) {
     socket.on("resumed",()=>setPaused(false));
     socket.on("risk_metrics",d=>setMetricsData(d));
     socket.on("order_result",d=>{
-      if(d.status==="filled")showToastMsg("✓ Filled"+(d.slippage>0?` (slip: $${d.slippage.toFixed(4)})`:""),"ok");
+      if(d.status==="filled"){
+        postSimulatorTradeEvent(simulatorOpenTradeEvent(d.position));
+        showToastMsg("✓ Filled"+(d.slippage>0?` (slip: S${d.slippage.toFixed(4)})`:""),"ok");
+      }
       else if(d.status==="pending")showToastMsg("⏱ Order placed","ok");
-      else if(d.status==="closed")showToastMsg(`✓ Closed ${d.pnl>=0?"+":""}$${Math.abs(d.pnl).toFixed(2)}`,d.pnl>=0?"ok":"err");
+      else if(d.status==="closed"){
+        postSimulatorTradeEvent(simulatorCloseTradeEvent(d));
+        showToastMsg(`✓ Closed ${d.pnl>=0?"+":""}S${Math.abs(d.pnl).toFixed(2)}`,d.pnl>=0?"ok":"err");
+      }
       else if(d.status==="tpsl_updated"){
         if(d.position)setPositions(prev=>prev.map(p=>p.id===d.position.id?{...p,...d.position}:p));
         setTpslPanelOpen(false);
         showToastMsg("TP/SL updated","ok");
+      }
+      else if(d.status==="tpsl_removed"){
+        if(d.position)setPositions(prev=>prev.map(p=>p.id===d.position.id?{...p,...d.position}:p));
+        setTpslPanelOpen(false);
+        setTpslManagePosId(null);
+        setTpslEditPosId(null);
+        setTpslDeletePosId(null);
+        showToastMsg("TP/SL removed","ok");
       }
       else if(d.status==="cancelled")showToastMsg("Order cancelled","ok");
       else if(d.status==="error")showToastMsg("⚠ "+d.msg,"err");
@@ -270,7 +387,7 @@ export default function SimulatorPage({ onBack }) {
     <div className="sim-page">
       <div className="toolbar">
         {onBack&&<StarBorder as="button" className="btn" onClick={onBack} style={{marginRight:4}}>← Back</StarBorder>}
-        <span className="logo">⬡ SynthCrypto</span><span className="v3-tag">v3</span>
+        <span className="logo">⬡ SynthCrypto</span>
         <div className="sep"/>
         <StarBorder as="button" className="btn active" onClick={()=>setTab("chart")}>Dashboard</StarBorder>
         <StarBorder as="button" className="btn ctrl-purple" onClick={()=>setTab("lab")}>Strategy Lab</StarBorder>
@@ -287,7 +404,7 @@ export default function SimulatorPage({ onBack }) {
       {/* ── Toolbar ── */}
       <div className="toolbar">
         {onBack&&<StarBorder as="button" className="btn" onClick={onBack} style={{marginRight:4}}>← Back</StarBorder>}
-        <span className="logo">⬡ SynthCrypto</span><span className="v3-tag">v3</span>
+        <span className="logo">⬡ SynthCrypto</span>
         <span className="label-sm">TF</span>
         <div className="btn-group">
           {TFS.map(t=><StarBorder as="button" key={t} className={`btn${tf===t?" active":""}`} onClick={()=>switchTf(t)}>{t}</StarBorder>)}
@@ -307,7 +424,7 @@ export default function SimulatorPage({ onBack }) {
         <StarBorder as="button" className={`btn${ebbEnabled?" active":""}`} onClick={toggleEbb} onContextMenu={openEbbMetrics} title="Click=toggle | Right-click=metrics" style={ebbEnabled?{}:{background:"#1a3327",color:"#26a69a"}}>EBB Scalper</StarBorder>
         {ebbEnabled&&ebbMetrics&&<span className="ebb-badge">
           <span className={ebbMetrics.in_position?(ebbMetrics.pos_side==="long"?"up":"dn"):""} style={ebbMetrics.in_position?{}:{color:"#787b86"}}>{ebbMetrics.in_position?ebbMetrics.pos_side?.toUpperCase():"FLAT"}</span>
-          {" "}<span className={(ebbMetrics.net_pnl||0)>=0?"up":"dn"}>{(ebbMetrics.net_pnl||0)>=0?"+":""}${Math.abs(ebbMetrics.net_pnl||0).toFixed(2)}</span> | {ebbMetrics.total_trades||0}T
+          {" "}<span className={(ebbMetrics.net_pnl||0)>=0?"up":"dn"}>{(ebbMetrics.net_pnl||0)>=0?"+":""}S{Math.abs(ebbMetrics.net_pnl||0).toFixed(2)}</span> | {ebbMetrics.total_trades||0}T
         </span>}
         <div className="sep"/>
         <StarBorder as="button" className="btn" onClick={()=>setTab("lab")}>🧪 Strategy Lab</StarBorder>
@@ -331,7 +448,7 @@ export default function SimulatorPage({ onBack }) {
         <div className="p2-item"><span className={`p2-dot ${p2.garch_enabled!==false?"on":"off"}`}/><span className="p2-lbl">GARCH σ</span><span className="p2-val">{p2.garch_sigma!=null?(p2.garch_sigma).toFixed?.(4)+"%":"—"}</span></div>
         <div className="p2-item"><span className={`p2-dot ${p2.volume_enabled!==false?"on":"off"}`}/><span className="p2-lbl">Volume</span><span className="p2-val">{p2.volume!=null?fmtC(p2.volume):"—"}</span></div>
         <div className="p2-item"><span className={`p2-dot ${p2.slippage_enabled!==false?"on":"off"}`}/><span className="p2-lbl">Slippage</span><span className="p2-val">{p2.slippage_enabled!==false?"ON":"OFF"}</span></div>
-        <div className="p2-item"><span className={`p2-dot ${p2.corr_enabled!==false?"on":"off"}`}/><span className="p2-lbl">ETH</span><span className="p2-val">{p2.corr_prices?.ETH!=null?"$"+fmtPrice(p2.corr_prices.ETH):"—"}</span></div>
+        <div className="p2-item"><span className={`p2-dot ${p2.corr_enabled!==false?"on":"off"}`}/><span className="p2-lbl">ETH</span><span className="p2-val">{p2.corr_prices?.ETH!=null?"S"+fmtPrice(p2.corr_prices.ETH):"—"}</span></div>
         <div className="p2-item"><span className={`p2-dot ${p2.cascade_enabled!==false?"on":"off"}`}/><span className="p2-lbl">Cascades</span><span className="p2-val">{p2.cascade_count??p2.n_cascade_events??0}</span></div>
         <div className="p2-item"><span className="p2-lbl">OI</span><span className="p2-val">{p2.oi!=null?fmtC(p2.oi):"—"}</span></div>
         {p2.stress_enabled&&<div className="p2-item"><span style={{color:"#f38720",fontWeight:700}}>⚡ STRESS</span></div>}
@@ -368,6 +485,7 @@ export default function SimulatorPage({ onBack }) {
                 onSelectPosition={setSelectedPosId}
                 onOpenPositionDetails={setDetailsPosId}
                 onUpdatePositionTpsl={updatePositionTpsl}
+                onManagePositionTpsl={openTpslManage}
               />
             </ChartErrorBoundary>
           </div>
@@ -381,7 +499,7 @@ export default function SimulatorPage({ onBack }) {
         <div className="trade-panel">
           <div className="tp-header">
             <span style={{fontWeight:700,color:"#d1d4dc"}}>► Trade</span>
-            <span className={balance>=10000?"up":"dn"}>${balance.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+            <span className={balance>=10000?"up":"dn"}>S{balance.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
           </div>
           <div className="tp-row" style={{flexWrap:"wrap",gap:3}}>
             <span className="tp-lbl">Type</span>
@@ -410,7 +528,8 @@ export default function SimulatorPage({ onBack }) {
               <span>R/R {riskReward(selectedPosition,toOptionalPrice(tpslDraft.tp),toOptionalPrice(tpslDraft.sl))}</span>
             </div>
             <div className="tpsl-actions">
-              <StarBorder as="button" className="btn ctrl-green" onClick={()=>applyTpsl()}>Confirm</StarBorder>
+              <StarBorder as="button" className="btn ctrl-green" onClick={()=>applyTpsl()}>Save Changes</StarBorder>
+              <StarBorder as="button" className="btn ctrl-red" onClick={()=>setTpslDeletePosId(selectedPosition.id)}>Remove TP/SL</StarBorder>
               <StarBorder as="button" className="btn" onClick={()=>setTpslPanelOpen(false)}>Cancel</StarBorder>
             </div>
           </div>}
@@ -425,31 +544,31 @@ export default function SimulatorPage({ onBack }) {
             <span style={{color:"#787b86"}}>×</span>
           </div>
           <div className="tp-row">
-            <span className="tp-lbl">Size $</span>
+            <span className="tp-lbl">Size S</span>
             <input type="number" min={1} value={sizeUsd} onChange={e=>setSizeUsd(+e.target.value)} style={{flex:1}}/>
           </div>
           {otype!=="market"&&<div className="tp-row">
-            <span className="tp-lbl">{otype==="limit"?"Price $":"Stop $"}</span>
+            <span className="tp-lbl">{otype==="limit"?"Price S":"Stop S"}</span>
             <input type="number" value={trigPrice} onChange={e=>setTrigPrice(e.target.value)} style={{flex:1}} placeholder="Trigger price"/>
           </div>}
           {otype==="stop_limit"&&<div className="tp-row">
-            <span className="tp-lbl">Limit $</span>
+            <span className="tp-lbl">Limit S</span>
             <input type="number" value={limitPrice} onChange={e=>setLimitPrice(e.target.value)} style={{flex:1}} placeholder="Limit price"/>
           </div>}
           <div className="tp-info">
-            <div><span className="tp-lbl">Margin</span><span>${margin}</span></div>
+            <div><span className="tp-lbl">Margin</span><span>S{margin}</span></div>
             <div><span className="tp-lbl">Liq</span><span>{liqP?fmtPrice(liqP):"—"}</span></div>
-            <div><span className="tp-lbl">Fee</span><span>${fee}</span></div>
+            <div><span className="tp-lbl">Fee</span><span>S{fee}</span></div>
           </div>
           <StarBorder as="button" className={`tp-place ${side}`} onClick={placeOrder}>{side==="long"?"Buy / Long":"Sell / Short"}</StarBorder>
           {toast&&<div className={`tp-toast toast-${toast.type}`}>{toast.msg}</div>}
-          <div className="tp-section"><span>Positions</span><span className={totalUpnl>=0?"up":"dn"}>{positions.length?`${totalUpnl>=0?"+":""}$${totalUpnl.toFixed(2)}`:"—"}</span></div>
+          <div className="tp-section"><span>Positions</span><span className={totalUpnl>=0?"up":"dn"}>{positions.length?`${totalUpnl>=0?"+":""}S${totalUpnl.toFixed(2)}`:"—"}</span></div>
           <div>{!positions.length?<div className="tp-empty">No open positions</div>:positions.map(p=>(
             <div className={`pos-card${selectedPosition?.id===p.id?" selected":""}`} key={p.id} onClick={()=>setSelectedPosId(p.id)}>
-              <div className="pos-card-row"><span className={p.side==="long"?"up":"dn"}>{p.side.toUpperCase()} {p.leverage}×</span><span className={p.upnl>=0?"up":"dn"}>{p.upnl>=0?"+":""}${p.upnl.toFixed(2)} ({p.upnl_pct>=0?"+":""}{p.upnl_pct.toFixed(1)}%)</span></div>
-              <div className="pos-card-row" style={{color:"#787b86"}}><span>Entry: {fmtPrice(p.entry_price)}</span><span>Margin: ${p.margin.toFixed(2)}</span></div>
+              <div className="pos-card-row"><span className={p.side==="long"?"up":"dn"}>{p.side.toUpperCase()} {p.leverage}×</span><span className={p.upnl>=0?"up":"dn"}>{p.upnl>=0?"+":""}S{p.upnl.toFixed(2)} ({p.upnl_pct>=0?"+":""}{p.upnl_pct.toFixed(1)}%)</span></div>
+              <div className="pos-card-row" style={{color:"#787b86"}}><span>Entry: {fmtPrice(p.entry_price)}</span><span>Margin: S{p.margin.toFixed(2)}</span></div>
               <div className="pos-card-row tpsl-card-row"><span>TP: <span className="up">{p.tp_price?fmtPrice(p.tp_price):"—"}</span></span><span>SL: <span className="dn">{p.sl_price?fmtPrice(p.sl_price):"—"}</span></span></div>
-              <div className="pos-card-row" style={{color:"#787b86"}}><span>Liq: <span className="dn">{fmtPrice(p.liq_price)}</span></span><span>Size: ${p.size_usd.toFixed(2)}</span></div>
+              <div className="pos-card-row" style={{color:"#787b86"}}><span>Liq: <span className="dn">{fmtPrice(p.liq_price)}</span></span><span>Size: S{p.size_usd.toFixed(2)}</span></div>
               <div className="pos-card-actions">
                 <StarBorder as="button" className="pos-card-tpsl" onClick={e=>{e.stopPropagation();openTpslPanel(p);}}>TP/SL</StarBorder>
                 <StarBorder as="button" className="pos-card-tpsl" onClick={e=>{e.stopPropagation();setDetailsPosId(p.id);}}>Details</StarBorder>
@@ -460,12 +579,12 @@ export default function SimulatorPage({ onBack }) {
           <div className="tp-section"><span>Pending Orders</span></div>
           <div>{!orders.length?<div className="tp-empty">No pending orders</div>:orders.map(o=>(
             <div className="ord-card" key={o.id}>
-              <div className="pos-card-row"><span className={o.side==="long"?"up":"dn"}>{o.type.toUpperCase()} {o.side.toUpperCase()} {o.leverage}×</span><span style={{color:"#787b86"}}>${o.size_usd.toFixed(2)}</span></div>
+              <div className="pos-card-row"><span className={o.side==="long"?"up":"dn"}>{o.type.toUpperCase()} {o.side.toUpperCase()} {o.leverage}×</span><span style={{color:"#787b86"}}>S{o.size_usd.toFixed(2)}</span></div>
               <div className="pos-card-row" style={{color:"#787b86"}}><span>Trigger: {fmtPrice(o.trigger_price)}</span>{o.limit_price&&<span>Limit: {fmtPrice(o.limit_price)}</span>}</div>
               <StarBorder as="button" className="ord-card-cancel" onClick={()=>cancelOrd(o.id)}>× Cancel</StarBorder>
             </div>
           ))}</div>
-          <div className="tp-footer"><span className="pi-lbl">Realized PnL</span><span className={rpnl>=0?"up":"dn"}>{rpnl>=0?"+":""}${Math.abs(rpnl).toFixed(2)}</span></div>
+          <div className="tp-footer"><span className="pi-lbl">Realized PnL</span><span className={rpnl>=0?"up":"dn"}>{rpnl>=0?"+":""}S{Math.abs(rpnl).toFixed(2)}</span></div>
         </div>
       </div>
 
@@ -473,6 +592,48 @@ export default function SimulatorPage({ onBack }) {
       <div className="conn-indicator live">● live</div>
 
       {/* ── Overlays ── */}
+      {tpslManagePosition&&<div className="overlay-backdrop" onClick={()=>setTpslManagePosId(null)}>
+        <div className="overlay-panel tpsl-modal" onClick={e=>e.stopPropagation()}>
+          <h3>Manage TP/SL</h3>
+          <div className="metric-row"><span>Position</span><span>{tpslManagePosition.side.toUpperCase()} @ {fmtPrice(tpslManagePosition.entry_price)}</span></div>
+          <div className="metric-row"><span>Take Profit</span><span className="up">{tpslManagePosition.tp_price?fmtPrice(tpslManagePosition.tp_price):"—"}</span></div>
+          <div className="metric-row"><span>Stop Loss</span><span className="dn">{tpslManagePosition.sl_price?fmtPrice(tpslManagePosition.sl_price):"—"}</span></div>
+          <div className="detail-actions tpsl-modal-actions">
+            <StarBorder as="button" className="btn ctrl-green" onClick={()=>openTpslEditModal(tpslManagePosition)}>Edit</StarBorder>
+            <StarBorder as="button" className="btn ctrl-red" onClick={()=>{setTpslDeletePosId(tpslManagePosition.id);setTpslManagePosId(null);}}>Remove TP/SL</StarBorder>
+            <StarBorder as="button" className="overlay-close" onClick={()=>setTpslManagePosId(null)}>Cancel</StarBorder>
+          </div>
+        </div>
+      </div>}
+
+      {tpslEditPosition&&<div className="overlay-backdrop" onClick={()=>setTpslEditPosId(null)}>
+        <div className="overlay-panel tpsl-modal" onClick={e=>e.stopPropagation()}>
+          <h3>Edit TP/SL</h3>
+          <div className="metric-row"><span>Entry</span><span>{fmtPrice(tpslEditPosition.entry_price)}</span></div>
+          <label className="tpsl-modal-field"><span>Take Profit</span><input type="number" value={tpslDraft.tp} onChange={e=>setTpslDraft(d=>({...d,tp:e.target.value}))}/></label>
+          <label className="tpsl-modal-field"><span>Stop Loss</span><input type="number" value={tpslDraft.sl} onChange={e=>setTpslDraft(d=>({...d,sl:e.target.value}))}/></label>
+          <div className="tpsl-summary">
+            <span>R/R {riskReward(tpslEditPosition,toOptionalPrice(tpslDraft.tp),toOptionalPrice(tpslDraft.sl))}</span>
+          </div>
+          <div className="detail-actions tpsl-modal-actions">
+            <StarBorder as="button" className="btn ctrl-green" onClick={saveTpslEditModal}>Save Changes</StarBorder>
+            <StarBorder as="button" className="btn ctrl-red" onClick={()=>setTpslDeletePosId(tpslEditPosition.id)}>Remove TP/SL</StarBorder>
+            <StarBorder as="button" className="overlay-close" onClick={()=>setTpslEditPosId(null)}>Cancel</StarBorder>
+          </div>
+        </div>
+      </div>}
+
+      {tpslDeletePosition&&<div className="overlay-backdrop" onClick={()=>setTpslDeletePosId(null)}>
+        <div className="overlay-panel tpsl-modal" onClick={e=>e.stopPropagation()}>
+          <h3>Remove TP/SL</h3>
+          <p className="tpsl-confirm-copy">Remove Take Profit and Stop Loss from this position?</p>
+          <div className="detail-actions">
+            <StarBorder as="button" className="btn ctrl-red" onClick={()=>removeTpsl(tpslDeletePosition)}>Remove TP/SL</StarBorder>
+            <StarBorder as="button" className="overlay-close" onClick={()=>setTpslDeletePosId(null)}>Cancel</StarBorder>
+          </div>
+        </div>
+      </div>}
+
       {detailsPosition&&<div className="overlay-backdrop" onClick={()=>setDetailsPosId(null)}>
         <div className="overlay-panel position-detail-panel" onClick={e=>e.stopPropagation()}>
           <h3>{detailsPosition.side.toUpperCase()} Position</h3>
@@ -481,11 +642,11 @@ export default function SimulatorPage({ onBack }) {
           <div className="metric-row"><span>Take Profit</span><span className="up">{detailsPosition.tp_price?fmtPrice(detailsPosition.tp_price):"—"}</span></div>
           <div className="metric-row"><span>Stop Loss</span><span className="dn">{detailsPosition.sl_price?fmtPrice(detailsPosition.sl_price):"—"}</span></div>
           <div className="metric-row"><span>Risk / Reward</span><span>{riskReward(detailsPosition)}</span></div>
-          <div className="metric-row"><span>PnL</span><span className={detailsPosition.upnl>=0?"up":"dn"}>{detailsPosition.upnl>=0?"+":""}${Math.abs(detailsPosition.upnl).toFixed(2)} ({detailsPosition.upnl_pct>=0?"+":""}{detailsPosition.upnl_pct.toFixed(1)}%)</span></div>
-          <div className="metric-row"><span>Trade size</span><span>${detailsPosition.size_usd.toFixed(2)} / {detailsPosition.qty} qty</span></div>
+          <div className="metric-row"><span>PnL</span><span className={detailsPosition.upnl>=0?"up":"dn"}>{detailsPosition.upnl>=0?"+":""}S{Math.abs(detailsPosition.upnl).toFixed(2)} ({detailsPosition.upnl_pct>=0?"+":""}{detailsPosition.upnl_pct.toFixed(1)}%)</span></div>
+          <div className="metric-row"><span>Trade size</span><span>S{detailsPosition.size_usd.toFixed(2)} / {detailsPosition.qty} qty</span></div>
           <div className="metric-row"><span>Liquidation</span><span className="dn">{fmtPrice(detailsPosition.liq_price)}</span></div>
           <div className="detail-actions">
-            <StarBorder as="button" className="btn ctrl-green" onClick={()=>openTpslPanel(detailsPosition)}>Edit TP/SL</StarBorder>
+            <StarBorder as="button" className="btn ctrl-green" onClick={()=>openTpslEditModal(detailsPosition)}>Edit TP/SL</StarBorder>
             <StarBorder as="button" className="overlay-close" onClick={()=>setDetailsPosId(null)}>Close</StarBorder>
           </div>
         </div>

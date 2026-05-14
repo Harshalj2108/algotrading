@@ -68,6 +68,26 @@ const INIT_SQL = `
     updated_at              TIMESTAMP DEFAULT NOW()
   );
 
+  CREATE TABLE IF NOT EXISTS trade_events (
+    event_id                BIGSERIAL PRIMARY KEY,
+    event_key               VARCHAR(128) NOT NULL,
+    trade_id                VARCHAR(128) NOT NULL,
+    user_id                 INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    asset_symbol            VARCHAR(64) NOT NULL,
+    asset_type              VARCHAR(16) NOT NULL CHECK (asset_type IN ('crypto', 'stock', 'simulator')),
+    buy_or_sell             VARCHAR(8) NOT NULL CHECK (buy_or_sell IN ('buy', 'sell')),
+    quantity                NUMERIC(24, 10) NOT NULL DEFAULT 0,
+    entry_price             NUMERIC(24, 10) NOT NULL DEFAULT 0,
+    exit_price              NUMERIC(24, 10),
+    execution_price         NUMERIC(24, 10) NOT NULL DEFAULT 0,
+    trade_value             NUMERIC(18, 2) NOT NULL DEFAULT 0,
+    profit_loss             NUMERIC(18, 2) NOT NULL DEFAULT 0,
+    event_timestamp         TIMESTAMP NOT NULL DEFAULT NOW(),
+    source_market           VARCHAR(16) NOT NULL CHECK (source_market IN ('crypto', 'stocks', 'simulator')),
+    created_at              TIMESTAMP DEFAULT NOW(),
+    UNIQUE (user_id, event_key)
+  );
+
   CREATE INDEX IF NOT EXISTS idx_trades_user_closed_at
     ON trades (user_id, closed_at DESC);
 
@@ -76,6 +96,9 @@ const INIT_SQL = `
 
   CREATE INDEX IF NOT EXISTS idx_paper_trades_user_symbol_status
     ON paper_trades (user_id, asset_type, asset_symbol, position_status);
+
+  CREATE INDEX IF NOT EXISTS idx_trade_events_user_timestamp
+    ON trade_events (user_id, event_timestamp DESC, event_id DESC);
 `;
 
 async function initDB() {

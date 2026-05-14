@@ -1,0 +1,942 @@
+============================================================
+  SynthCrypto v4 — FastAPI + Socket.IO
+  REST:      http://localhost:8000/docs
+  Socket.IO: ws://localhost:8000/ws/socket.io
+============================================================
+INFO:     127.0.0.1:57619 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57628 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58410 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dx1uuzze HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:50288 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dx1uwizt HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:50288 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dx3a239u HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:50288 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dx4ahp11 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:50288 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dx78c3ry HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52290 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dx78hs2m HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52290 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dx8alket HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52290 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxb0624n HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52290 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxdbk25w HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:55462 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxhy6cpw HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:58816 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxr7l1l1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53862 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxr7meye HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51140 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxr7ppyr HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54573 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxr7p1lb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53862 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxrgwm7z&sid=gRSyRZye1_G4VDCKAAAC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54573 - "POST /ws/socket.io/?EIO=4&transport=polling&t=dxrgvglr&sid=gRSyRZye1_G4VDCKAAAC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58816 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxrgwh88&sid=ohUBsKNshelbrzeSAAAD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51140 - "POST /ws/socket.io/?EIO=4&transport=polling&t=dxrgwh6v&sid=ohUBsKNshelbrzeSAAAD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58816 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxrhjo0w&sid=gRSyRZye1_G4VDCKAAAC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58816 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxrho1iu&sid=ohUBsKNshelbrzeSAAAD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58816 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxrhs1bn&sid=gRSyRZye1_G4VDCKAAAC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51140 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxrhuabi&sid=ohUBsKNshelbrzeSAAAD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51140 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxv57m15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51140 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxv5ajip HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:53862 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxv5smus&sid=e31mZkyUw5IPJ5ftAAAH HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58816 - "POST /ws/socket.io/?EIO=4&transport=polling&t=dxv5rgv7&sid=e31mZkyUw5IPJ5ftAAAH HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53862 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxv6cyq6&sid=e31mZkyUw5IPJ5ftAAAH HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53862 - "POST /ws/socket.io/?EIO=4&transport=polling&t=dxv6lcma&sid=e31mZkyUw5IPJ5ftAAAH HTTP/1.1" 200 OK
+[TKsLddU93LHFwkYsAAAI] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:58816 - "GET /ws/socket.io/?EIO=4&transport=polling&t=dxv6ly8p&sid=e31mZkyUw5IPJ5ftAAAH HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 2.1s
+INFO:     127.0.0.1:51140 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63250 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50858 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53935 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65515 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[TKsLddU93LHFwkYsAAAI] Unsubscribed from live market
+INFO:     127.0.0.1:63709 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e08ol8vo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e08omjac HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63709 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e08xjykf&sid=JMpe6v_rFxm9Ag5cAAAK HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "POST /ws/socket.io/?EIO=4&transport=polling&t=e08xidr5&sid=JMpe6v_rFxm9Ag5cAAAK HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e08xq1yr&sid=JMpe6v_rFxm9Ag5cAAAK HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e08xvfma&sid=JMpe6v_rFxm9Ag5cAAAK HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e093nz3n&sid=JMpe6v_rFxm9Ag5cAAAK HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e09pg4b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e09pi4k5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63709 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e09q46j4&sid=7PPUv1dD9FJpIKdWAAAN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "POST /ws/socket.io/?EIO=4&transport=polling&t=e09q3u3o&sid=7PPUv1dD9FJpIKdWAAAN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e09qbufq&sid=7PPUv1dD9FJpIKdWAAAN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e09qdq15&sid=7PPUv1dD9FJpIKdWAAAN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64159 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0a06kev&sid=7PPUv1dD9FJpIKdWAAAN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0pktdb7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0pkuegs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "POST /ws/socket.io/?EIO=4&transport=polling&t=e0pm2ozl&sid=bvRh_-hJkou4_vycAAAQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0pm3dxf&sid=bvRh_-hJkou4_vycAAAQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0ppaeaj&sid=bvRh_-hJkou4_vycAAAQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0ppfeqb&sid=bvRh_-hJkou4_vycAAAQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0s7brvf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51949 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0s7b8ug HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59381 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0s7cp02 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0s7dlzi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51949 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0s7wrtz&sid=Z-ZAGFjwnTu5kzz2AAAU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "POST /ws/socket.io/?EIO=4&transport=polling&t=e0s7w8y4&sid=Z-ZAGFjwnTu5kzz2AAAU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0s83l48&sid=p8mGlGa17ia7lPdZAAAV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51949 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0s8bbq7&sid=Z-ZAGFjwnTu5kzz2AAAU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59381 - "POST /ws/socket.io/?EIO=4&transport=polling&t=e0s835rl&sid=p8mGlGa17ia7lPdZAAAV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0scy4kk&sid=p8mGlGa17ia7lPdZAAAV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51949 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0sdesib&sid=Z-ZAGFjwnTu5kzz2AAAU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51949 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0se7cnx&sid=p8mGlGa17ia7lPdZAAAV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0se9gyp&sid=Z-ZAGFjwnTu5kzz2AAAU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51949 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0sen4wx&sid=p8mGlGa17ia7lPdZAAAV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x2g54r HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x2gqn5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x2h3h9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x2h9an HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "POST /ws/socket.io/?EIO=4&transport=polling&t=e0x2u74q&sid=wiqILMIGzuyhBd1sAAAa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x2u2hb&sid=wiqILMIGzuyhBd1sAAAa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "POST /ws/socket.io/?EIO=4&transport=polling&t=e0x2v78f&sid=7YPmLWAdvawE9qtwAAAb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x2vu8g&sid=7YPmLWAdvawE9qtwAAAb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x36g97&sid=wiqILMIGzuyhBd1sAAAa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50998 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0x3kb1l&sid=7YPmLWAdvawE9qtwAAAb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50998 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0xe7ofs&sid=wiqILMIGzuyhBd1sAAAa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51609 - "GET /ws/socket.io/?EIO=4&transport=polling&t=e0xe8vdv&sid=7YPmLWAdvawE9qtwAAAb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62466 - "GET /ws/socket.io/?EIO=4&transport=polling&t=f66y22pg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59147 - "GET /ws/socket.io/?EIO=4&transport=polling&t=f66y5ebm HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:62466 - "GET /ws/socket.io/?EIO=4&transport=polling&t=f6774fiz&sid=6qe3SFOUuUpS5UHjAAAf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59147 - "POST /ws/socket.io/?EIO=4&transport=polling&t=f6773jw6&sid=6qe3SFOUuUpS5UHjAAAf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62466 - "GET /ws/socket.io/?EIO=4&transport=polling&t=f6787xfa&sid=6qe3SFOUuUpS5UHjAAAf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59147 - "POST /ws/socket.io/?EIO=4&transport=polling&t=f678jjb6&sid=6qe3SFOUuUpS5UHjAAAf HTTP/1.1" 200 OK
+[FaCzktgVHchZs_ZIAAAg] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:62466 - "GET /ws/socket.io/?EIO=4&transport=polling&t=f678itri&sid=6qe3SFOUuUpS5UHjAAAf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62466 - "GET /ws/socket.io/?EIO=4&transport=polling&t=f67dcqud&sid=6qe3SFOUuUpS5UHjAAAf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62466 - "GET /ws/socket.io/?EIO=4&transport=polling&t=f67dfijf&sid=6qe3SFOUuUpS5UHjAAAf HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.7s
+INFO:     127.0.0.1:54050 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52414 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52414 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=1m limit=500
+[yfinance] BTC-USD 1m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/1m
+[API] /api/live/history: crypto/BTC/USDT/1m -> 500 candles in 1.0s
+INFO:     127.0.0.1:50748 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=1m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65040 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65040 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62568 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62568 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57720 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57720 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56510 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60168 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60168 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[FaCzktgVHchZs_ZIAAAg] Unsubscribed from live market
+INFO:     127.0.0.1:56037 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe2mudm9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe2mv0m6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56037 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe2vv3aw&sid=q5UF3Kz1ywzz1lGeAAAi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "POST /ws/socket.io/?EIO=4&transport=polling&t=fe2vui73&sid=q5UF3Kz1ywzz1lGeAAAi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe2x0s2z&sid=q5UF3Kz1ywzz1lGeAAAi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe2x4ozn&sid=q5UF3Kz1ywzz1lGeAAAi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe37b3vj&sid=q5UF3Kz1ywzz1lGeAAAi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe3u6o8l HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56037 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe3u8i94 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe3ur6ie&sid=Oj_41utEBJjKglWDAAAl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56037 - "POST /ws/socket.io/?EIO=4&transport=polling&t=fe3uq8lp&sid=Oj_41utEBJjKglWDAAAl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe3vu153&sid=Oj_41utEBJjKglWDAAAl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe3vxies&sid=Oj_41utEBJjKglWDAAAl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe43ggxh&sid=Oj_41utEBJjKglWDAAAl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fe43osrk&sid=Oj_41utEBJjKglWDAAAl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=febf4r6r HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=febf4nrd HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "POST /ws/socket.io/?EIO=4&transport=polling&t=febiav42&sid=jY9UqIAN4EY8Fr_eAAAo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=febianeh&sid=jY9UqIAN4EY8Fr_eAAAo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=febjg5fo&sid=jY9UqIAN4EY8Fr_eAAAo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fednsqb3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54328 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fedns2u7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60341 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fedntj6j HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fednud7a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60341 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fedo25kj&sid=3GUTtZt2YTeG0iEFAAAs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "POST /ws/socket.io/?EIO=4&transport=polling&t=fedo10bg&sid=3GUTtZt2YTeG0iEFAAAs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54328 - "POST /ws/socket.io/?EIO=4&transport=polling&t=fedo5908&sid=Fu0gEC2isG_Q6heMAAAt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fedo6rcw&sid=Fu0gEC2isG_Q6heMAAAt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54328 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fedpmku0&sid=3GUTtZt2YTeG0iEFAAAs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fedpumcu&sid=3GUTtZt2YTeG0iEFAAAs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54328 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fedpu691&sid=Fu0gEC2isG_Q6heMAAAt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fshjd0uy HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61789 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fshjgetu HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:51674 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fshu74vt&sid=w4MlAyheYuuzsAhgAAAx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61789 - "POST /ws/socket.io/?EIO=4&transport=polling&t=fshu6xn3&sid=w4MlAyheYuuzsAhgAAAx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61789 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fshvdvi4&sid=w4MlAyheYuuzsAhgAAAx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "POST /ws/socket.io/?EIO=4&transport=polling&t=fshvh1df&sid=w4MlAyheYuuzsAhgAAAx HTTP/1.1" 200 OK
+[5rHFeh8iWL68hhbkAAAy] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:61789 - "GET /ws/socket.io/?EIO=4&transport=polling&t=fshvg5pi&sid=w4MlAyheYuuzsAhgAAAx HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.9s
+INFO:     127.0.0.1:55555 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53516 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53516 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59089 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55687 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55687 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61441 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53629 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53629 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51911 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52244 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57163 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57163 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50814 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65440 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65440 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50535 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50535 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58774 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58774 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64703 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64703 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53161 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53161 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58967 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58967 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51782 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50883 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50883 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52535 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51628 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51628 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64522 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64522 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53662 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53369 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53369 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61391 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60575 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60575 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55658 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52966 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52966 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51667 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51667 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65260 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65260 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50733 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50733 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50185 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50185 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54104 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61184 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57289 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57289 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62946 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59045 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59045 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55306 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55306 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57656 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57656 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64734 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62416 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55157 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55945 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55945 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64514 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64514 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59065 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61848 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53090 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53090 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63014 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49788 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49788 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[5rHFeh8iWL68hhbkAAAy] Unsubscribed from live market
+INFO:     127.0.0.1:54994 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hex2ftns HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53436 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hex2gnra HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54994 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hexfa7iq&sid=q93PRVy0htoEuCkjAAA0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53436 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hexf93yw&sid=q93PRVy0htoEuCkjAAA0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54994 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hexh1vzy&sid=q93PRVy0htoEuCkjAAA0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54994 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hexh6vww&sid=q93PRVy0htoEuCkjAAA0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55538 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hhq4hgmy HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65082 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hhq4j50t HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:55538 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hhqhiy7y&sid=FLUw-s_n4OJyW1ctAAA3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65082 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hhqhifa6&sid=FLUw-s_n4OJyW1ctAAA3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55538 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hhqjosbc&sid=FLUw-s_n4OJyW1ctAAA3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65082 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hhqjvj1k&sid=FLUw-s_n4OJyW1ctAAA3 HTTP/1.1" 200 OK
+[0ixeSLkr_A3m1R-4AAA4] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:55538 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hhqjuwry&sid=FLUw-s_n4OJyW1ctAAA3 HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 1.4s
+INFO:     127.0.0.1:50217 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54533 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65064 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+[0ixeSLkr_A3m1R-4AAA4] Unsubscribed from live market
+INFO:     127.0.0.1:65505 - "GET /ws/socket.io/?EIO=4&transport=polling&t=his95yss HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65505 - "GET /ws/socket.io/?EIO=4&transport=polling&t=his963wv HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65505 - "POST /ws/socket.io/?EIO=4&transport=polling&t=his9ezrk&sid=KdbO7UNm5Csq3CGHAAA6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65505 - "GET /ws/socket.io/?EIO=4&transport=polling&t=his9fa7w&sid=KdbO7UNm5Csq3CGHAAA6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65505 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hisbhcj2&sid=KdbO7UNm5Csq3CGHAAA6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65505 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hiw9bxff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54614 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hiw9dr8h HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:54870 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hiw9os8q&sid=7KddMEAdHr8N3FmqAAA9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65505 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hiw9nohq&sid=7KddMEAdHr8N3FmqAAA9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54870 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hiwcrdh3&sid=7KddMEAdHr8N3FmqAAA9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65505 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hiwcv72c&sid=7KddMEAdHr8N3FmqAAA9 HTTP/1.1" 200 OK
+[EBEhn1O17a8-dpVjAAA-] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:54870 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hiwcv73n&sid=7KddMEAdHr8N3FmqAAA9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61305 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 1.9s
+INFO:     127.0.0.1:54614 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54055 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54055 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+[EBEhn1O17a8-dpVjAAA-] Unsubscribed from live market
+INFO:     127.0.0.1:55662 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hjdj6r37 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49779 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hjdj7sfk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55662 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hjdsy556&sid=hnqEPDZ6yyBYyrTuAABA HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49779 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hjdsxqsq&sid=hnqEPDZ6yyBYyrTuAABA HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55662 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hjdw1gqv&sid=hnqEPDZ6yyBYyrTuAABA HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55662 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hjdw687c&sid=hnqEPDZ6yyBYyrTuAABA HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hlbfo61p HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65170 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hlbfqpnu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hlboo7co&sid=SwMgvx3LHX034kyfAABD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65170 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hlbon9q8&sid=SwMgvx3LHX034kyfAABD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hlbr5a0a&sid=SwMgvx3LHX034kyfAABD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hlbr9q6i&sid=SwMgvx3LHX034kyfAABD HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hldrxpif HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65170 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hldry92b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hlds9phl&sid=LxJRnQhdHmj_Zx_9AABG HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65170 - "POST /ws/socket.io/?EIO=4&transport=polling&t=hlds8i0o&sid=LxJRnQhdHmj_Zx_9AABG HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hldw99z6&sid=LxJRnQhdHmj_Zx_9AABG HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52854 - "GET /ws/socket.io/?EIO=4&transport=polling&t=hldwltp8&sid=LxJRnQhdHmj_Zx_9AABG HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqgt8j9i HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61714 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqgt9pgl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqh1wuwm&sid=9lsrTpKVBIkU0vzoAABI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61714 - "POST /ws/socket.io/?EIO=4&transport=polling&t=iqh1v4zs&sid=9lsrTpKVBIkU0vzoAABI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqh1y9fb&sid=5mOwjBoFoJdfwdKmAABJ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61714 - "POST /ws/socket.io/?EIO=4&transport=polling&t=iqh1xux2&sid=5mOwjBoFoJdfwdKmAABJ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61714 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqh5ngzb&sid=9lsrTpKVBIkU0vzoAABI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61714 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqh89vmw&sid=5mOwjBoFoJdfwdKmAABJ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61714 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqh8erl4&sid=9lsrTpKVBIkU0vzoAABI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iqh8lxp7&sid=5mOwjBoFoJdfwdKmAABJ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63890 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxas0s9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxau41z HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63890 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxjw5s1&sid=mc0WIhLwPUUVRHuvAABM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "POST /ws/socket.io/?EIO=4&transport=polling&t=iuxjvcal&sid=mc0WIhLwPUUVRHuvAABM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63890 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxjyhvx&sid=fzD-yaS7V5rAmnsIAABN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "POST /ws/socket.io/?EIO=4&transport=polling&t=iuxjyn9j&sid=fzD-yaS7V5rAmnsIAABN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxkww7j&sid=mc0WIhLwPUUVRHuvAABM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxlorw6&sid=fzD-yaS7V5rAmnsIAABN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63890 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxlqrp8&sid=mc0WIhLwPUUVRHuvAABM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxly2xm&sid=fzD-yaS7V5rAmnsIAABN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxqv4gi&sid=mc0WIhLwPUUVRHuvAABM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63890 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxqw7b8&sid=fzD-yaS7V5rAmnsIAABN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63890 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxqxnap&sid=mc0WIhLwPUUVRHuvAABM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iuxqz8nh&sid=fzD-yaS7V5rAmnsIAABN HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59658 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ix8mpe40 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59658 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ix8vemhw&sid=PKydOpiJlEu7p5QKAABQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59658 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ix8vgbdk&sid=PKydOpiJlEu7p5QKAABQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59658 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ix91b0sh&sid=PKydOpiJlEu7p5QKAABQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59658 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ix93aef5&sid=PKydOpiJlEu7p5QKAABQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59658 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ix93gwg2&sid=PKydOpiJlEu7p5QKAABQ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55638 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ixrxbthv HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61021 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ixrxorz7&sid=HBtdv1RPfZzuwboOAABS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55638 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ixrxnagt&sid=HBtdv1RPfZzuwboOAABS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61021 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ixs0oycv&sid=HBtdv1RPfZzuwboOAABS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61021 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ixs0s15n&sid=HBtdv1RPfZzuwboOAABS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57969 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iy51mpni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57969 - "POST /ws/socket.io/?EIO=4&transport=polling&t=iy5ak7oa&sid=n3c95qZKCHLxiaRGAABU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57969 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iy5amnfn&sid=n3c95qZKCHLxiaRGAABU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57969 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iy5dwah7&sid=n3c95qZKCHLxiaRGAABU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56223 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iyb80hvi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iyb8wwn6&sid=4uY69l1uI-BFxa6vAABW HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56223 - "POST /ws/socket.io/?EIO=4&transport=polling&t=iyb8tl0e&sid=4uY69l1uI-BFxa6vAABW HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iybf7ivu&sid=4uY69l1uI-BFxa6vAABW HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iybh9mvt&sid=4uY69l1uI-BFxa6vAABW HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iybhprns&sid=4uY69l1uI-BFxa6vAABW HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=iybi8vnn&sid=4uY69l1uI-BFxa6vAABW HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50243 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65121 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ll7ot5k6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62752 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ll7owm8j HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:65121 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ll7y1s7n&sid=Fld4FhfBgqhYTdyvAABZ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62752 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ll7y099c&sid=Fld4FhfBgqhYTdyvAABZ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65121 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ll83qi6w&sid=Fld4FhfBgqhYTdyvAABZ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65121 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ll83yo1m&sid=Fld4FhfBgqhYTdyvAABZ HTTP/1.1" 200 OK
+[qxYmPO9rn8Ah-pzoAABa] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:62752 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ll83xk00&sid=Fld4FhfBgqhYTdyvAABZ HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.9s
+INFO:     127.0.0.1:49173 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51947 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51947 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64223 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[qxYmPO9rn8Ah-pzoAABa] Unsubscribed from live market
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm3zn30b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm3zo1ry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lm409jno&sid=ArYFJqFUyLMB0C3iAABc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm40984y&sid=ArYFJqFUyLMB0C3iAABc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm440qa2&sid=ArYFJqFUyLMB0C3iAABc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm6xg9al HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63969 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm6xhuku HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63969 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm6xjp7f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm6xj63m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63969 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm6xryii&sid=oxLdKhtL85mdd9PhAABg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lm6xqe85&sid=oxLdKhtL85mdd9PhAABg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65507 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lm6xs6rz&sid=AAfKammFolIvVaeiAABh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm6xswlt&sid=AAfKammFolIvVaeiAABh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65507 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm731bne&sid=oxLdKhtL85mdd9PhAABg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50667 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm745b13&sid=oxLdKhtL85mdd9PhAABg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65507 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lm742732&sid=AAfKammFolIvVaeiAABh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59564 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lmbmzntc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59564 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lmbn1hoj HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59564 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lmbrwv75&sid=QyJfao_mOTMe-O9dAABl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59564 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lmbrwlao&sid=QyJfao_mOTMe-O9dAABl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59564 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lmbvvn38&sid=QyJfao_mOTMe-O9dAABl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50525 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lo8ovicp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57744 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lo8ow58b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50525 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lo8xtw1i&sid=iaOub9GrQhQ_b5a7AABo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57744 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lo8xt3yn&sid=iaOub9GrQhQ_b5a7AABo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50525 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lo91a7fw&sid=iaOub9GrQhQ_b5a7AABo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50525 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lo91ib84&sid=iaOub9GrQhQ_b5a7AABo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lofylm27 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lofylkvx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lofymm0k HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lofynbc5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lofyw34b&sid=swdFmlvhu36L7BCfAABs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lofyxu4t&sid=swdFmlvhu36L7BCfAABs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lofyysf2&sid=zjLr75vVGPCjbaoPAABt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lofyy4eu&sid=zjLr75vVGPCjbaoPAABt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52105 - "GET /ws/socket.io/?EIO=4&transport=polling&t=log260xs&sid=swdFmlvhu36L7BCfAABs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56967 - "GET /ws/socket.io/?EIO=4&transport=polling&t=log5mukr&sid=zjLr75vVGPCjbaoPAABt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55742 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lp0rh3db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55742 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lp0rkzfh HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:53653 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lp0rxyin&sid=ZSfUcz0zbWmTPxH1AABx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55619 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lp0rwc4c&sid=ZSfUcz0zbWmTPxH1AABx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53653 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lp0wk39d&sid=ZSfUcz0zbWmTPxH1AABx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53653 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lp0wrd7t&sid=ZSfUcz0zbWmTPxH1AABx HTTP/1.1" 200 OK
+[g0yK4b4kju3_KddaAABy] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:55619 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lp0wqnnd&sid=ZSfUcz0zbWmTPxH1AABx HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.7s
+INFO:     127.0.0.1:55742 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61190 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61190 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63848 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[g0yK4b4kju3_KddaAABy] Unsubscribed from live market
+INFO:     127.0.0.1:61645 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lplizqmn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lplj1anw HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lpljhoql&sid=bkEtOZm2Wp_isT06AAB0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpljhmrp&sid=bkEtOZm2Wp_isT06AAB0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lplptkbc&sid=bkEtOZm2Wp_isT06AAB0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lplq6n04&sid=bkEtOZm2Wp_isT06AAB0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpmgmr9u HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52670 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpmgozi1 HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:53241 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpmh57g8&sid=MeaVFScJUHQfli1eAAB3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lpmh4k8n&sid=MeaVFScJUHQfli1eAAB3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53241 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpmpxl10&sid=MeaVFScJUHQfli1eAAB3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53241 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpmq2c2o&sid=MeaVFScJUHQfli1eAAB3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61645 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lpmq2sjr&sid=MeaVFScJUHQfli1eAAB3 HTTP/1.1" 200 OK
+[WBeEBg7lr1aIyDWTAAB4] Subscribed to crypto - BTC/USDT
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.6s
+INFO:     127.0.0.1:52670 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61790 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61790 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[WBeEBg7lr1aIyDWTAAB4] Unsubscribed from live market
+INFO:     127.0.0.1:65098 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpwwinfe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64906 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpwwi1v5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65098 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpx5j9sg&sid=1c1wGZ75-dUB-75XAAB6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64906 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lpx5ipxq&sid=1c1wGZ75-dUB-75XAAB6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65098 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpx9bpg6&sid=1c1wGZ75-dUB-75XAAB6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65098 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lpx9h155&sid=1c1wGZ75-dUB-75XAAB6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsflb6g HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsfmbpi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsfnd3m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsforv6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lqsg1cnp&sid=MHlPQW_TgFgBXYdEAAB- HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "POST /ws/socket.io/?EIO=4&transport=polling&t=lqsg3n6s&sid=w3Zwvi1SqkK8Q4iYAAB_ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsg2efd&sid=MHlPQW_TgFgBXYdEAAB- HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsg3f5j&sid=w3Zwvi1SqkK8Q4iYAAB_ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsga13d&sid=MHlPQW_TgFgBXYdEAAB- HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57302 - "GET /ws/socket.io/?EIO=4&transport=polling&t=lqsgc3sj&sid=w3Zwvi1SqkK8Q4iYAAB_ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55715 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2z4kadk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2z4leq8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2z4mewk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55715 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2z4m5zu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zd600f&sid=Y8C4kV4W5GAd-iNOAACE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55715 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m2zd6dc2&sid=Y8C4kV4W5GAd-iNOAACE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zd7j2h&sid=NVPdwapadlFzQksbAACF HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m2zd7o74&sid=NVPdwapadlFzQksbAACF HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zddrv9&sid=Y8C4kV4W5GAd-iNOAACE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zdemme&sid=NVPdwapadlFzQksbAACF HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zdiru6&sid=Y8C4kV4W5GAd-iNOAACE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zdkow2&sid=NVPdwapadlFzQksbAACF HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zwv69y HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m2zwyiw5 HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:52189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m3013sml&sid=F3_rH4Taqza0Us5PAACJ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m3012owp&sid=F3_rH4Taqza0Us5PAACJ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m301epku&sid=F3_rH4Taqza0Us5PAACJ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m301gf2o&sid=F3_rH4Taqza0Us5PAACJ HTTP/1.1" 200 OK
+[1mz5RYf5U44E_wSlAACK] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m301gvjz&sid=F3_rH4Taqza0Us5PAACJ HTTP/1.1" 200 OK
+[1mz5RYf5U44E_wSlAACK] Unsubscribed from live market
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30hkkd1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30hld4i HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30i5nct&sid=QtROdWLGnId40KMVAACM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m30i5h3f&sid=QtROdWLGnId40KMVAACM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52189 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30ie8m4&sid=QtROdWLGnId40KMVAACM HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.8s
+INFO:     127.0.0.1:55715 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m30srge5&sid=QtROdWLGnId40KMVAACM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30swrrj HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30syh6g HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30y3xpn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m30y4djt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m312gd1z&sid=QtROdWLGnId40KMVAACM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m3134cnm&sid=ztrJqAiomU5wlun5AACR HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m3134rkl&sid=ztrJqAiomU5wlun5AACR HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m313qmmy HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m313s8p9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m3142tlf&sid=ztrJqAiomU5wlun5AACR HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m31468ya&sid=XpmDkZj0nh5LzWhdAACU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m3146eks&sid=XpmDkZj0nh5LzWhdAACU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m314ckp3&sid=XpmDkZj0nh5LzWhdAACU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m318dslv&sid=XpmDkZj0nh5LzWhdAACU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m318e28c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m318en18 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m318p0hb&sid=XpmDkZj0nh5LzWhdAACU HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63921 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m318r6qj&sid=J3AOKObfbgyL_OUwAACX HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m318qbb7&sid=J3AOKObfbgyL_OUwAACX HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63921 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m318xqcz&sid=J3AOKObfbgyL_OUwAACX HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.4s
+INFO:     127.0.0.1:55715 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m31een87&sid=J3AOKObfbgyL_OUwAACX HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62502 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m31eiim7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55561 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m31ejb83 HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:62502 - "POST /ws/socket.io/?EIO=4&transport=polling&t=m31u4omv&sid=J3AOKObfbgyL_OUwAACX HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.5s
+INFO:     127.0.0.1:58171 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m321nl48 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:51022 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m321qab9 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:51022 - "GET /ws/socket.io/?EIO=4&transport=polling&t=m33hb4q5 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:63546 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n453relv HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62433 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n453t0ef HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n45coap6&sid=SzZNF4aZpAwZEtMtAACc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62433 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n45cnxmi&sid=SzZNF4aZpAwZEtMtAACc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n45cur9k&sid=SzZNF4aZpAwZEtMtAACc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n45cwr8g&sid=SzZNF4aZpAwZEtMtAACc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n48m89jk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62433 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n48mavgc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63546 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n48psirb&sid=rxXoK6HL34_TJgPmAACf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62433 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n48prwmv&sid=rxXoK6HL34_TJgPmAACf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62433 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n48r1kez&sid=rxXoK6HL34_TJgPmAACf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62433 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n48r48go&sid=rxXoK6HL34_TJgPmAACf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4fjle33 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4fjnbwr HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4fsdwh4&sid=sRbByg4coc12M9RNAACi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n4fscvlh&sid=sRbByg4coc12M9RNAACi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4fslcs6&sid=sRbByg4coc12M9RNAACi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4fsosfz&sid=sRbByg4coc12M9RNAACi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4ihmmpo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4ihnblc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4im2bp5&sid=b51Z0X1ChRxwdgAuAACl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n4im217f&sid=b51Z0X1ChRxwdgAuAACl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4imk1ts&sid=b51Z0X1ChRxwdgAuAACl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4imp51o&sid=b51Z0X1ChRxwdgAuAACl HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vrjw2l HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vrn8sx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vruia4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vrwke5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n4vs7j1w&sid=HxB0FYetNcPeLHMBAACo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vs8lwf&sid=HxB0FYetNcPeLHMBAACo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n4vs913v&sid=XrkY_rL98HFLjfBGAACq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vsanlv&sid=XrkY_rL98HFLjfBGAACq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vskb4q&sid=HxB0FYetNcPeLHMBAACo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n4vsn3xi&sid=XrkY_rL98HFLjfBGAACq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57521 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n55igxqm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50529 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n55ijfsm HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+INFO:     127.0.0.1:58768 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n55j1a4e&sid=-7EMRJVYs6Cd_4XNAACu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57521 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n55j0dxl&sid=-7EMRJVYs6Cd_4XNAACu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58768 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n55jdugs&sid=-7EMRJVYs6Cd_4XNAACu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57521 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n55jhj3x&sid=-7EMRJVYs6Cd_4XNAACu HTTP/1.1" 200 OK
+[iYdhUibB92iMdrefAACv] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:58768 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n55jgiw0&sid=-7EMRJVYs6Cd_4XNAACu HTTP/1.1" 200 OK
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 1.3s
+INFO:     127.0.0.1:50529 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65354 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65354 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=15m limit=500
+[yfinance] BTC-USD 15m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/15m
+[API] /api/live/history: crypto/BTC/USDT/15m -> 500 candles in 0.6s
+INFO:     127.0.0.1:52526 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=15m HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=5m limit=500
+[yfinance] BTC-USD 5m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/5m
+[API] /api/live/history: crypto/BTC/USDT/5m -> 500 candles in 0.6s
+INFO:     127.0.0.1:52526 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=5m HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=30m limit=500
+[yfinance] BTC-USD 30m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/30m
+[API] /api/live/history: crypto/BTC/USDT/30m -> 500 candles in 0.4s
+INFO:     127.0.0.1:52526 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=30m HTTP/1.1" 200 OK
+[iYdhUibB92iMdrefAACv] Unsubscribed from live market
+INFO:     127.0.0.1:64751 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n5zcd35f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59953 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n5zcfwi5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64751 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n5zl6b1u&sid=owsxaxJ7t8QdT2AyAACx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59953 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n5zl5x1z&sid=owsxaxJ7t8QdT2AyAACx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64751 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n5zli4ye&sid=owsxaxJ7t8QdT2AyAACx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64751 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n5zlpo4p&sid=owsxaxJ7t8QdT2AyAACx HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50725 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6fdebxp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50725 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6fdhk86 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50725 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n6fe0di3&sid=03cyZa5thzx9iC__AAC0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50725 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6fe04xf&sid=03cyZa5thzx9iC__AAC0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50725 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6fe9ubn&sid=03cyZa5thzx9iC__AAC0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6viq8rj HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53509 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6vir8nm HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6vjc3ws&sid=f96KvisGdUjcYaweAAC3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53509 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n6vjbo1z&sid=f96KvisGdUjcYaweAAC3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6vjqvbd&sid=f96KvisGdUjcYaweAAC3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6vjvpwp&sid=f96KvisGdUjcYaweAAC3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6vrg5ng&sid=f96KvisGdUjcYaweAAC3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6wil70m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53509 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6winu5k HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6wj80k3&sid=6yPeJl6A79WwUu0fAAC6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53509 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n6wj8fcx&sid=6yPeJl6A79WwUu0fAAC6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6wm9wcm&sid=6yPeJl6A79WwUu0fAAC6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6wp8i5m&sid=6yPeJl6A79WwUu0fAAC6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6wqjoq5&sid=6yPeJl6A79WwUu0fAAC6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50116 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n6wqpei8&sid=6yPeJl6A79WwUu0fAAC6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n79bjnmz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60837 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n79bkusi HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n79ke5b7&sid=rPfCd4kq5QjWeW09AAC9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60837 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n79kdtv6&sid=rPfCd4kq5QjWeW09AAC9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n79kp2m5&sid=rPfCd4kq5QjWeW09AAC9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n79kw1bj&sid=rPfCd4kq5QjWeW09AAC9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7bxghdt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60837 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7bxhyjq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53600 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7bxidja HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7bxiheb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53600 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7bxtgpy&sid=S0iSDD0FR2OvjTjvAADB HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n7bxs1zb&sid=S0iSDD0FR2OvjTjvAADB HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7bxx9hr&sid=vbVI-HtKO9aNDVbnAADC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60837 - "POST /ws/socket.io/?EIO=4&transport=polling&t=n7bxx1cn&sid=vbVI-HtKO9aNDVbnAADC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53600 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7by2z92&sid=S0iSDD0FR2OvjTjvAADB HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53600 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7by6o9o&sid=vbVI-HtKO9aNDVbnAADC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7by7xqe&sid=S0iSDD0FR2OvjTjvAADB HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53600 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7bya2z2&sid=vbVI-HtKO9aNDVbnAADC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53600 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7c48ymi&sid=S0iSDD0FR2OvjTjvAADB HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /ws/socket.io/?EIO=4&transport=polling&t=n7c48lx4&sid=vbVI-HtKO9aNDVbnAADC HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52965 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2r81cx5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52965 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2r85vp2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52965 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2r8bbil HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52965 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2r8d9ya HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52965 - "POST /ws/socket.io/?EIO=4&transport=polling&t=r2rglpyq&sid=pCEox35oo7uw2pzbAADG HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59953 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2rgmija&sid=pCEox35oo7uw2pzbAADG HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49451 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2rgoc9c&sid=NaVo8lYEsnYWgc1WAADI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51818 - "POST /ws/socket.io/?EIO=4&transport=polling&t=r2rgoict&sid=NaVo8lYEsnYWgc1WAADI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51818 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2ri83xe&sid=NaVo8lYEsnYWgc1WAADI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59953 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2rhib8i&sid=pCEox35oo7uw2pzbAADG HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51818 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r2riccfs&sid=NaVo8lYEsnYWgc1WAADI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57727 - "GET /api/live/search?q=tc&type=stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56133 - "GET /api/live/search?q=tcs&type=stock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51351 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r41pbzo1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49714 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r41pd893 HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=stock symbol=TCS.NS tf=30m limit=500
+INFO:     127.0.0.1:53432 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r41xzgiy&sid=AaP5JPewSmd6RE1mAADM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49714 - "POST /ws/socket.io/?EIO=4&transport=polling&t=r41xy0qa&sid=AaP5JPewSmd6RE1mAADM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49714 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r4261mhk&sid=AaP5JPewSmd6RE1mAADM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53432 - "POST /ws/socket.io/?EIO=4&transport=polling&t=r42652iw&sid=AaP5JPewSmd6RE1mAADM HTTP/1.1" 200 OK
+[Trq5a--WfHm_NcwlAADN] Subscribed to stock - TCS.NS
+INFO:     127.0.0.1:49714 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r4264gr2&sid=AaP5JPewSmd6RE1mAADM HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+[yfinance] Stock TCS.NS 30m: 758 candles
+[DataEngine] Returning 758 candles for stock/TCS.NS/30m
+[API] /api/live/history: stock/TCS.NS/30m -> 758 candles in 7.9s
+INFO:     127.0.0.1:51351 - "GET /api/live/history?symbol=TCS.NS&type=stock&tf=30m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52520 - "GET /api/live/ticker?type=stock&symbol=TCS.NS HTTP/1.1" 200 OK
+[Trq5a--WfHm_NcwlAADN] Unsubscribed from live market
+INFO:     127.0.0.1:51304 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r57x7wu0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61115 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r57xad8l HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51304 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5869et5&sid=Ix59i74Vey9oA_jRAADP HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61115 - "POST /ws/socket.io/?EIO=4&transport=polling&t=r5868nmc&sid=Ix59i74Vey9oA_jRAADP HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51304 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5873vgt&sid=Ix59i74Vey9oA_jRAADP HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51304 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5876qsn&sid=Ix59i74Vey9oA_jRAADP HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50833 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5mhqx8x HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50833 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5mhu3x1 HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=30m limit=500
+INFO:     127.0.0.1:51074 - "POST /ws/socket.io/?EIO=4&transport=polling&t=r5mlmhv6&sid=J6-OSf6uLxdBTrhOAADS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52000 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5mlmert&sid=J6-OSf6uLxdBTrhOAADS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52000 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5mv04lz&sid=J6-OSf6uLxdBTrhOAADS HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51074 - "POST /ws/socket.io/?EIO=4&transport=polling&t=r5mv1ptx&sid=J6-OSf6uLxdBTrhOAADS HTTP/1.1" 200 OK
+[A-yujXmbhodZx9zCAADT] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:51074 - "GET /ws/socket.io/?EIO=4&transport=polling&t=r5mvdxx7&sid=J6-OSf6uLxdBTrhOAADS HTTP/1.1" 200 OK
+[yfinance] BTC-USD 30m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/30m
+[API] /api/live/history: crypto/BTC/USDT/30m -> 500 candles in 0.7s
+INFO:     127.0.0.1:50833 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=30m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55891 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59238 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53904 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53904 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52211 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59334 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59334 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58894 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65444 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56314 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56314 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57396 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57396 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60354 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60354 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53127 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50856 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50856 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55962 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64321 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64321 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49209 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49209 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60958 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57183 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57183 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61052 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55659 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55659 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53717 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53717 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50114 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50114 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60453 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60453 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60585 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60585 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60422 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65210 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65210 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59722 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56125 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56125 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58667 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49663 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60318 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60318 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56985 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60348 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60348 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50687 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50687 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60083 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60083 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52292 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52292 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57090 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63030 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49222 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62103 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62103 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62619 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65099 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65099 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57969 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59907 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59907 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63330 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63330 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61462 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49612 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49612 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53724 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53295 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53295 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58857 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58857 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64315 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52540 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52540 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51105 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54374 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54374 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64305 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64305 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53195 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54142 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54142 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64811 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64811 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64336 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64336 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52342 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52342 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57604 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53289 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53289 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54485 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54485 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61973 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61973 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52511 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52511 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63901 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63901 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64108 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64994 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64994 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63790 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55403 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55403 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59305 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53141 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53141 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54624 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50555 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50555 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60858 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60858 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64185 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64185 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56084 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63255 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63255 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56362 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59155 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59155 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55136 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65489 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65489 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56511 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56511 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62470 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62470 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65430 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65430 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51019 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uj90l0u5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64340 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uj90ny1r HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51019 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uj99ft09&sid=J1wtC6M2KvBhQCV2AADV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64340 - "POST /ws/socket.io/?EIO=4&transport=polling&t=uj99ds7u&sid=J1wtC6M2KvBhQCV2AADV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51019 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uj9cb56c&sid=J1wtC6M2KvBhQCV2AADV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51019 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uj9chlq7&sid=J1wtC6M2KvBhQCV2AADV HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53146 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujeg3x0u HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51168 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujeg4nuk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujeg920t HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58739 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujeg9yym HTTP/1.1" 200 OK
+[DataEngine] get_history: asset=crypto symbol=BTC/USDT tf=30m limit=500
+INFO:     127.0.0.1:51168 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujepb3a4&sid=9jzVbU9nOA64y1J0AADZ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53146 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujepcciy&sid=6rwAXfjbtsxgOoDIAADa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58739 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ujepalhc&sid=9jzVbU9nOA64y1J0AADZ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ujepb7mh&sid=6rwAXfjbtsxgOoDIAADa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujexsmzs&sid=9jzVbU9nOA64y1J0AADZ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58739 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujexvuf5&sid=6rwAXfjbtsxgOoDIAADa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58739 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujey5soy&sid=9jzVbU9nOA64y1J0AADZ HTTP/1.1" 200 OK
+[HG4o7eRhT42eek6zAADb] Subscribed to crypto - BTC/USDT
+INFO:     127.0.0.1:56602 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujey6gww&sid=6rwAXfjbtsxgOoDIAADa HTTP/1.1" 200 OK
+[yfinance] BTC-USD 30m: 500 candles
+[DataEngine] Returning 500 candles for crypto/BTC/USDT/30m
+[API] /api/live/history: crypto/BTC/USDT/30m -> 500 candles in 0.7s
+INFO:     127.0.0.1:52464 - "GET /api/live/history?symbol=BTC%2FUSDT&type=crypto&tf=30m HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52464 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujgkn2fz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujgkojdf HTTP/1.1" 200 OK
+[HG4o7eRhT42eek6zAADb] Unsubscribed from live market
+INFO:     127.0.0.1:52464 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujgofuy3&sid=ToK0URzSCQ7IFZMyAADe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ujgof131&sid=ToK0URzSCQ7IFZMyAADe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujgrmnjl&sid=ToK0URzSCQ7IFZMyAADe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50791 - "GET /api/live/ticker?type=crypto&symbol=BTC%2FUSDT HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ujgrsg2z&sid=ToK0URzSCQ7IFZMyAADe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65136 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uk0h4vz8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65136 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uk0h7f9t HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65136 - "POST /ws/socket.io/?EIO=4&transport=polling&t=uk0hsb1b&sid=jf8zKKSfDaWOSWRIAADh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65136 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uk0hs4iv&sid=jf8zKKSfDaWOSWRIAADh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65136 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uk0linb4&sid=jf8zKKSfDaWOSWRIAADh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul5q08e9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul5q1eow HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul5qj37g&sid=YEyc2OATg-2wAuG6AADk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ul5qhlii&sid=YEyc2OATg-2wAuG6AADk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul5tjmkd&sid=YEyc2OATg-2wAuG6AADk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul5tocfm&sid=YEyc2OATg-2wAuG6AADk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul7icw9y HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul7ifxxf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul7lit53&sid=E_cLKZSog8YzRVO3AADn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ul7lhzqa&sid=E_cLKZSog8YzRVO3AADn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul7o55o6&sid=E_cLKZSog8YzRVO3AADn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul7obyab&sid=E_cLKZSog8YzRVO3AADn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul9oszmf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul9otwwf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul9p6gnw&sid=yqqRBHZviaSwc5dfAADq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ul9p62tz&sid=yqqRBHZviaSwc5dfAADq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul9rlikj&sid=yqqRBHZviaSwc5dfAADq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ul9rr09t&sid=yqqRBHZviaSwc5dfAADq HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulbbrquk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulbbwvog HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulbchxv4&sid=fQo4HZlLuG_TuGONAADt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54207 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ulbchz6j&sid=fQo4HZlLuG_TuGONAADt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulbhcwmn&sid=fQo4HZlLuG_TuGONAADt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulbjx0gc&sid=fQo4HZlLuG_TuGONAADt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulbmggrj&sid=fQo4HZlLuG_TuGONAADt HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59436 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulipkivu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulipko31 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59436 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uliydjgm&sid=-Yf7VpK5TDctiqzrAADw HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "POST /ws/socket.io/?EIO=4&transport=polling&t=uliycunu&sid=-Yf7VpK5TDctiqzrAADw HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59436 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulj0jgfm&sid=-Yf7VpK5TDctiqzrAADw HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59436 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulj0pmea&sid=-Yf7VpK5TDctiqzrAADw HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uloy35oj HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uloy53rn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "POST /ws/socket.io/?EIO=4&transport=polling&t=uloymjb0&sid=YR9jHCkfy89EUIq2AADz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "GET /ws/socket.io/?EIO=4&transport=polling&t=uloymy0p&sid=YR9jHCkfy89EUIq2AADz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulp04zgr&sid=YR9jHCkfy89EUIq2AADz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57269 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulz74y3x HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54115 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulz744uz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57269 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulz894bz&sid=HST2nwtIoSfk1vd8AAD2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54115 - "POST /ws/socket.io/?EIO=4&transport=polling&t=ulz89f6i&sid=HST2nwtIoSfk1vd8AAD2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57269 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulzbcl3x&sid=HST2nwtIoSfk1vd8AAD2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57269 - "GET /ws/socket.io/?EIO=4&transport=polling&t=ulzbi4m9&sid=HST2nwtIoSfk1vd8AAD2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62365 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un6dah0h HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un6df8c4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62365 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un6m4cf9&sid=B1g-_HxdvS1J7CyBAAD5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "POST /ws/socket.io/?EIO=4&transport=polling&t=un6m44jl&sid=B1g-_HxdvS1J7CyBAAD5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62365 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un6p9wdp&sid=B1g-_HxdvS1J7CyBAAD5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62365 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un6pdcet&sid=B1g-_HxdvS1J7CyBAAD5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62365 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un9egnwu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un9egxlc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62365 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un9gw4n7&sid=xO0Q2PZXDcOTOJZ2AAD8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "POST /ws/socket.io/?EIO=4&transport=polling&t=un9gv1d9&sid=xO0Q2PZXDcOTOJZ2AAD8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un9jjmby&sid=xO0Q2PZXDcOTOJZ2AAD8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "GET /ws/socket.io/?EIO=4&transport=polling&t=un9jx1ja&sid=xO0Q2PZXDcOTOJZ2AAD8 HTTP/1.1" 200 OK

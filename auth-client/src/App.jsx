@@ -18,6 +18,7 @@ import { HomePage, AboutUsPage, LearnTradingPage } from "./components/PublicPage
 import StarBorder from "./components/StarBorder";
 import AssetSearch from "./components/AssetSearch";
 import LiveMarketPage from "./components/LiveMarketPage";
+import Dither from "./components/Dither";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
@@ -49,6 +50,13 @@ function pageFromPathname(pathname) {
   if (path === "/learn" || path === "/learn-trading") return "learn";
   if (path === "/signup" || path === "/login") return "auth";
   if (path === "/dashboard") return "dashboard";
+  if (path.startsWith("/markets/crypto/")) {
+    return `live_market:crypto:${decodeURIComponent(path.slice("/markets/crypto/".length))}`;
+  }
+  if (path.startsWith("/markets/stocks/")) {
+    return `live_market:stock:${decodeURIComponent(path.slice("/markets/stocks/".length))}`;
+  }
+  if (path.startsWith("/simulation")) return "simulator";
   if (path === "/") return null;
   return null;
 }
@@ -57,6 +65,78 @@ function writePath(path) {
   if (window.location.pathname !== path) {
     window.history.pushState({}, "", path);
   }
+}
+
+function marketPath(assetClass, symbol) {
+  const encoded = encodeURIComponent(symbol || "");
+  return `/markets/${assetClass === "stock" ? "stocks" : "crypto"}/${encoded}`;
+}
+
+function simulationPath(symbol = "SIM") {
+  return `/simulation/${encodeURIComponent(symbol || "SIM")}`;
+}
+
+function tradeEventKey(trade) {
+  return trade?.event_key || trade?.trade_id || trade?.id || `${trade?.source_market || "simulator"}:${trade?.timestamp || Date.now()}`;
+}
+
+function prependUniqueTrade(prev, trade) {
+  const key = tradeEventKey(trade);
+  return [trade, ...prev.filter(item => tradeEventKey(item) !== key)].slice(0, 100);
+}
+
+function simulatorOpenTradeEvent(position, extra = {}) {
+  if (!position) return null;
+  const side = position.side === "short" ? "sell" : "buy";
+  return {
+    event_key: extra.event_key || `simulator:${position.id}:open`,
+    trade_id: position.id,
+    asset_symbol: "SIM",
+    asset_type: "simulator",
+    buy_or_sell: side,
+    side,
+    quantity: position.qty || 0,
+    entry_price: position.entry_price || 0,
+    execution_price: position.entry_price || 0,
+    trade_value: position.size_usd || 0,
+    profit_loss: 0,
+    timestamp: new Date().toISOString(),
+    source_market: "simulator",
+  };
+}
+
+function simulatorCloseTradeEvent(result, extra = {}) {
+  if (!result) return null;
+  const tradeId = result.position_id || result.trade_id || result.id;
+  if (!tradeId) return null;
+  const side = result.side === "short" ? "buy" : "sell";
+  return {
+    event_key: extra.event_key || `simulator:${tradeId}:close:${result.reason || "manual"}`,
+    trade_id: tradeId,
+    asset_symbol: result.symbol || "SIM",
+    asset_type: "simulator",
+    buy_or_sell: side,
+    side,
+    quantity: result.qty || result.quantity || 0,
+    entry_price: result.exit_price ?? result.entry_price ?? 0,
+    exit_price: result.exit_price ?? null,
+    execution_price: result.exit_price ?? result.entry_price ?? 0,
+    trade_value: result.size_usd || 0,
+    profit_loss: result.pnl || 0,
+    pnl: result.pnl || 0,
+    timestamp: new Date().toISOString(),
+    source_market: "simulator",
+  };
+}
+
+function persistTradeFeedEvent(trade) {
+  if (!trade) return;
+  fetch(`${AUTH_SERVER}/api/portfolio/trade-feed`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(trade),
+  }).catch(err => console.error("Failed to save trade feed event", err));
 }
 
 const SEO_BY_PAGE = {
@@ -110,7 +190,7 @@ function TickerBar() {
         {items.map((t, i) => (
           <div className="ticker-item" key={i}>
             <span className="sym">{t.sym}</span>
-            <span>${t.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+            <span>S{t.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
             <span className={t.chg >= 0 ? "up" : "dn"}>
               {t.chg >= 0 ? "+" : ""}{t.chg.toFixed(2)}%
             </span>
@@ -234,6 +314,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [focusedChartPosition, setFocusedChartPosition] = useState(null);
   const canvasRef = useRef(null);
 
   useParticles(canvasRef, page === "auth");
@@ -245,27 +326,35 @@ export default function App() {
     appSocket.connect();
 
     appSocket.on("order_result", d => {
-      if (d.status === "closed") {
-        const trade = {
-          id: `live-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          side: d.side || "—",
-          symbol: d.symbol || "SIM",
-          entry_price: d.entry_price || 0,
-          exit_price: d.exit_price || 0,
-          size_usd: d.size_usd || 0,
-          pnl: d.pnl || 0,
-          closed_at: new Date().toISOString(),
-          isLive: true,
-        };
-        setLiveTrades(prev => [trade, ...prev]);
+      let trade = null;
+      if (d.status === "filled" && d.position) {
+        trade = simulatorOpenTradeEvent(d.position);
+      } else if (d.status === "closed") {
+        trade = simulatorCloseTradeEvent(d);
+      }
+      if (!trade) return;
+      setLiveTrades(prev => prependUniqueTrade(prev, trade));
+      persistTradeFeedEvent(trade);
+    });
 
-        // Persist trade to DB
-        fetch(`${AUTH_SERVER}/api/portfolio/trade`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(trade),
-        }).catch(err => console.error("Failed to save trade", err));
+    appSocket.on("tick", d => {
+      for (const event of d?.events?.filled || []) {
+        const trade = simulatorOpenTradeEvent(event.position, {
+          event_key: `simulator:${event.position?.id || event.order_id}:open`,
+        });
+        if (trade) {
+          setLiveTrades(prev => prependUniqueTrade(prev, trade));
+          persistTradeFeedEvent(trade);
+        }
+      }
+      for (const event of d?.events?.tpsl_closed || []) {
+        const trade = simulatorCloseTradeEvent(event, {
+          event_key: `simulator:${event.position_id || event.trade_id || event.id}:close:${event.reason || "tpsl"}`,
+        });
+        if (trade) {
+          setLiveTrades(prev => prependUniqueTrade(prev, trade));
+          persistTradeFeedEvent(trade);
+        }
       }
     });
 
@@ -364,6 +453,9 @@ export default function App() {
     // If redirected back from Google OAuth with a token cookie, go to dashboard
     const oauthSuccess = params.get("auth");
     if (oauthSuccess === "success") {
+      if (params.get("isNew") === "true") {
+        localStorage.setItem("isNewRegistration", "true");
+      }
       setTimeout(() => {
         setIsAuthenticated(true);
         setPage("dashboard");
@@ -396,6 +488,36 @@ export default function App() {
   };
 
   // ── Render pages ──
+  const openDashboard = useCallback(() => {
+    setFocusedChartPosition(null);
+    setPage("dashboard");
+    writePath("/dashboard");
+  }, []);
+
+  const openSimulator = useCallback((focus = null) => {
+    setFocusedChartPosition(focus);
+    setPage("simulator");
+    writePath(simulationPath(focus?.asset_symbol || focus?.symbol || "SIM"));
+  }, []);
+
+  const openLiveMarket = useCallback((assetClass, symbol, focus = null) => {
+    const normalizedAssetClass = assetClass === "stock" || assetClass === "stocks" ? "stock" : "crypto";
+    const normalizedSymbol = String(symbol || "").toUpperCase();
+    setFocusedChartPosition(focus);
+    setPage(`live_market:${normalizedAssetClass}:${normalizedSymbol}`);
+    writePath(marketPath(normalizedAssetClass, normalizedSymbol));
+  }, []);
+
+  const openPositionChart = useCallback((position) => {
+    const source = String(position?.source_market || position?.asset_type || "").toLowerCase();
+    const symbol = position?.asset_symbol || position?.symbol || "SIM";
+    if (source === "simulator" || symbol === "SIM") {
+      openSimulator(position);
+      return;
+    }
+    openLiveMarket(source === "stock" || source === "stocks" ? "stock" : "crypto", symbol, position);
+  }, [openLiveMarket, openSimulator]);
+
   if (page === "home") {
     return <HomePage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} />;
   }
@@ -409,22 +531,29 @@ export default function App() {
   }
 
   if (page === "simulator") {
-    return <SimulatorPage onBack={() => setPage("dashboard")} />;
+    return <SimulatorPage onBack={openDashboard} focusPositionId={focusedChartPosition?.id || focusedChartPosition?.trade_id || null} />;
   }
 
   if (page === "crypto_search") {
-    return <SearchPageWrapper assetClass="crypto" onBack={() => setPage("dashboard")} onSelect={(sym) => setPage(`live_market:crypto:${sym}`)} />;
+    return <SearchPageWrapper assetClass="crypto" onBack={openDashboard} onSelect={(sym) => openLiveMarket("crypto", sym)} />;
   }
 
   if (page === "stocks_search") {
-    return <SearchPageWrapper assetClass="stock" onBack={() => setPage("dashboard")} onSelect={(sym) => setPage(`live_market:stock:${sym}`)} />;
+    return <SearchPageWrapper assetClass="stock" onBack={openDashboard} onSelect={(sym) => openLiveMarket("stock", sym)} />;
   }
 
   if (page && page.startsWith("live_market:")) {
     const parts = page.split(":");
     const assetClass = parts[1];
     const symbol = parts.slice(2).join(":"); // recombine rest in case symbol has a colon
-    return <LiveMarketPage assetClass={assetClass} symbol={symbol} onBack={() => setPage("dashboard")} />;
+    return (
+      <LiveMarketPage
+        assetClass={assetClass}
+        symbol={symbol}
+        onBack={openDashboard}
+        focusPositionId={focusedChartPosition?.id || focusedChartPosition?.trade_id || null}
+      />
+    );
   }
 
   if (page === "dashboard") {
@@ -434,9 +563,10 @@ export default function App() {
           setIsAuthenticated(false);
           navigatePublic("home");
         }}
-        onLaunchSimulator={() => setPage("simulator")}
+        onLaunchSimulator={() => openSimulator()}
         onLaunchCrypto={() => setPage("crypto_search")}
         onLaunchStocks={() => setPage("stocks_search")}
+        onOpenPosition={openPositionChart}
         liveTrades={liveTrades}
         onResetTrades={() => setLiveTrades([])}
       />
@@ -445,76 +575,55 @@ export default function App() {
 
   // ── Auth page ──
   return (
-    <>
-      {/* Background layers */}
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
-      <div className="orb orb-3" />
-      <canvas id="particles-canvas" ref={canvasRef} />
-
-      {/* Main content */}
-      <div className="app-wrapper">
-        <div className="auth-card">
-          {/* Brand */}
-          <div className="brand">
-            <div className="brand-icon">⬡</div>
-            <h1>SynthCrypto <span className="brand-tag">v3</span></h1>
-            <div className="brand-sub">Phase 2 Live Market Simulator</div>
+    <div className="auth-split-layout">
+      <div className="auth-left">
+        <Dither
+          waveColor={[0.486, 0.227, 0.929]}
+          disableAnimation={false}
+          enableMouseInteraction={true}
+          mouseRadius={0.3}
+          colorNum={4}
+          waveAmplitude={0.3}
+          waveFrequency={3}
+          waveSpeed={0.05}
+        />
+      </div>
+      <div className="auth-right">
+        <div className="ds-auth-container">
+          <div className="ds-brand">
+            <h1>SynthCrypto</h1>
+            <p>Phase 2 Live Market Simulator</p>
           </div>
 
-          {/* Tab switcher */}
-          <div className="tab-switcher">
-            <StarBorder
-              as="button"
-              className={`tab-btn${tab === "login" ? " active" : ""}`}
+          <div className="gooey-tabs">
+            <div className={`gooey-indicator ${tab}`} />
+            <button
+              className={`gooey-btn ${tab === "login" ? "active" : ""}`}
               onClick={() => switchTab("login")}
-              color="#26a69a"
             >
               Sign In
-            </StarBorder>
-            <StarBorder
-              as="button"
-              className={`tab-btn${tab === "register" ? " active" : ""}`}
+            </button>
+            <button
+              className={`gooey-btn ${tab === "register" ? "active" : ""}`}
               onClick={() => switchTab("register")}
-              color="#26a69a"
             >
               Create Account
-            </StarBorder>
+            </button>
           </div>
 
-          {/* Google OAuth */}
           <GoogleButton />
-
           <div className="divider"><span>or</span></div>
 
-          {/* Messages */}
-          {error && (
-            <div className="error-msg">
-              <span>⚠</span> {error}
-            </div>
-          )}
-          {success && (
-            <div className="success-msg">
-              <span>✓</span> {success}
-            </div>
-          )}
+          {error && <div className="error-msg"><span>⚠</span> {error}</div>}
+          {success && <div className="success-msg"><span>✓</span> {success}</div>}
 
-          {/* Forms */}
           {tab === "login" ? (
             <LoginForm onSuccess={handleSuccess} onError={handleError} />
           ) : (
             <RegisterForm onSuccess={handleSuccess} onError={handleError} />
           )}
-
-          {/* Footer */}
-          <div className="auth-footer">
-            <span>Engines:</span> GARCH · Volume · Slippage · Correlation · Cascade
-          </div>
         </div>
       </div>
-
-      {/* Ambient ticker */}
-      <TickerBar />
-    </>
+    </div>
   );
 }

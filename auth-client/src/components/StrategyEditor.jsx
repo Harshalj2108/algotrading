@@ -409,9 +409,9 @@ export default function StrategyEditor({ apiBase = "http://localhost:8000", toke
             ) : (
               <>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
-                  <MetricCard label="Net P&L" value={`$${metrics.net_pnl?.toFixed(2) ?? "—"}`}
+                  <MetricCard label="Net P&L" value={`S${metrics.net_pnl?.toFixed(2) ?? "—"}`}
                               color={pnlColor} />
-                  <MetricCard label="Capital" value={`$${metrics.capital?.toFixed(2) ?? "—"}`} />
+                  <MetricCard label="Capital" value={`S${metrics.capital?.toFixed(2) ?? "—"}`} />
                   <MetricCard label="Trades" value={metrics.total_trades ?? 0} />
                   <MetricCard label="Win Rate"
                               value={metrics.win_rate != null ? `${metrics.win_rate}%` : "—"}
@@ -505,7 +505,7 @@ export default function StrategyEditor({ apiBase = "http://localhost:8000", toke
                                    color: s.pnl == null ? "#546e7a"
                                          : s.pnl > 0    ? "#26a69a" : "#ef5350",
                                    fontFamily: "monospace" }}>
-                        {s.pnl != null ? `$${s.pnl.toFixed(2)}` : "—"}
+                        {s.pnl != null ? `S${s.pnl.toFixed(2)}` : "—"}
                       </td>
                     </tr>
                   ))}

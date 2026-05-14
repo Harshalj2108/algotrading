@@ -529,3 +529,150 @@ body::before {
   .brand h1 { font-size: 21px; }
   .brand-icon { width: 48px; height: 48px; font-size: 24px; }
 }
+
+/* ─── Modern Dark Auth Design System ───────────────────────────────────────── */
+
+.auth-split-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background: #000000;
+}
+
+.auth-left {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .auth-left {
+    display: block;
+  }
+}
+
+.auth-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0A0A0A;
+  padding: 24px;
+}
+
+.ds-auth-container {
+  max-width: 400px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 32px;
+  box-shadow: none;
+}
+
+.ds-brand {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.ds-brand h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.ds-brand p {
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+/* Gooey Tab Switcher */
+.gooey-tabs {
+  position: relative;
+  display: flex;
+  background: #121212;
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 24px;
+  border: 1px solid #262626;
+}
+
+.gooey-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  background: #FFFFFF;
+  border-radius: 6px;
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1;
+}
+
+.gooey-indicator.register {
+  transform: translateX(100%);
+}
+
+.gooey-indicator.login {
+  transform: translateX(0);
+}
+
+.gooey-btn {
+  flex: 1;
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition: color 0.3s ease;
+  font-family: inherit;
+}
+
+.gooey-btn.active {
+  color: #0A0A0A;
+}
+
+/* Overriding input fields & primary button for the new Auth Design System */
+.ds-auth-container .form-input {
+  background: #121212;
+  border: 1px solid #262626;
+  border-radius: 8px;
+}
+
+.ds-auth-container .form-input:focus {
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 1px #8B5CF6;
+}
+
+.ds-auth-container .btn-primary {
+  background: #8B5CF6;
+  border-radius: 8px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ds-auth-container .btn-primary:hover:not(:disabled) {
+  background: #7C3AED;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.ds-auth-container .btn-google {
+  background: #1A1A1A;
+  border: 1px solid #262626;
+}
+
+.ds-auth-container .btn-google:hover {
+  background: #222222;
+  border-color: #333333;
+}
+
+.ds-auth-container .divider::before,
+.ds-auth-container .divider::after {
+  background: #262626;
+}

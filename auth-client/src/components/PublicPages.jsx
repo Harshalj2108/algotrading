@@ -230,7 +230,7 @@ function MarketVisual() {
     <div className="market-visual" aria-label="Animated crypto market preview">
       <div className="market-toolbar">
         <span>BTC/USD</span>
-        <strong>$68,423.50</strong>
+        <strong>S68,423.50</strong>
         <em>+2.34%</em>
       </div>
       <div className="market-grid">

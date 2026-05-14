@@ -203,10 +203,28 @@ function fmtDuration(ms) {
   return `${minutes}m`;
 }
 
-export default function LiveMarketPage({ assetClass, symbol, onBack }) {
+function toOptionalPrice(value) {
+  if (value === "" || value == null) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function defaultTpsl(position) {
+  const step = Math.max(position.entry_price * 0.01, 0.000001);
+  return { tp: position.entry_price + step, sl: position.entry_price - step };
+}
+
+function riskReward(position, tp = position?.take_profit, sl = position?.stop_loss) {
+  if (!position || tp == null || sl == null) return "-";
+  const reward = Math.abs(tp - position.entry_price);
+  const risk = Math.abs(position.entry_price - sl);
+  return risk > 0 ? `${(reward / risk).toFixed(2)}R` : "-";
+}
+
+export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositionId = null }) {
   const decodedSymbol = decodeURIComponent(symbol).toUpperCase();
 
-  const [tf, setTf] = useState("5m");
+  const [tf, setTf] = useState(() => localStorage.getItem("synthcrypto_live_timeframe") || "5m");
   const tfRef = useRef(tf);
   const priceRef = useRef(0);
 
@@ -234,11 +252,15 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
   const [orderBusy, setOrderBusy] = useState(false);
   const [selectedPosId, setSelectedPosId] = useState(null);
   const [detailsPosId, setDetailsPosId] = useState(null);
+  const [tpslManagePosId, setTpslManagePosId] = useState(null);
+  const [tpslEditPosId, setTpslEditPosId] = useState(null);
+  const [tpslDeletePosId, setTpslDeletePosId] = useState(null);
   const [tradeMode, setTradeMode] = useState("buy");
   const [sizeUsd, setSizeUsd] = useState(100);
   const [quantity, setQuantity] = useState("");
   const [takeProfit, setTakeProfit] = useState("");
   const [stopLoss, setStopLoss] = useState("");
+  const [tpslDraft, setTpslDraft] = useState({ tp: "", sl: "" });
   const [historyFilter, setHistoryFilter] = useState("symbol");
   const [historySort, setHistorySort] = useState("newest");
   const [toast, setToast] = useState(null);
@@ -257,8 +279,14 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
     () => ({ ...summary, ...recalcSummary(wallet, positions, history) }),
     [history, positions, summary, wallet]
   );
-  const selectedPosition = symbolPositions.find(p => p.id === selectedPosId) || symbolPositions[0] || null;
+  const selectedPosition = symbolPositions.find(p => p.id === selectedPosId)
+    || symbolPositions.find(p => p.id === focusPositionId)
+    || symbolPositions[0]
+    || null;
   const detailsPosition = positions.find(p => p.id === detailsPosId) || null;
+  const tpslManagePosition = positions.find(p => p.id === tpslManagePosId) || null;
+  const tpslEditPosition = positions.find(p => p.id === tpslEditPosId) || null;
+  const tpslDeletePosition = positions.find(p => p.id === tpslDeletePosId) || null;
 
   const showToastMsg = useCallback((msg, type = "ok") => {
     setToast({ msg, type });
@@ -289,6 +317,10 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
     const timer = setTimeout(fetchPaperPortfolio, 0);
     return () => clearTimeout(timer);
   }, [fetchPaperPortfolio]);
+
+  useEffect(() => {
+    localStorage.setItem("synthcrypto_live_timeframe", tf);
+  }, [tf]);
 
   const fetchHistory = useCallback(async (currentTf) => {
     const requestId = historyRequestRef.current + 1;
@@ -340,9 +372,9 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
       syncPaperData(data);
       for (const event of data.events || []) {
         if (event.reason === "take_profit") {
-          showToastMsg(`Take profit closed +$${Math.abs(event.trade?.profit_loss || 0).toFixed(2)}`, "ok");
+          showToastMsg(`Take profit closed +S${Math.abs(event.trade?.profit_loss || 0).toFixed(2)}`, "ok");
         } else if (event.reason === "stop_loss") {
-          showToastMsg(`Stop loss closed -$${Math.abs(event.trade?.profit_loss || 0).toFixed(2)}`, "err");
+          showToastMsg(`Stop loss closed -S${Math.abs(event.trade?.profit_loss || 0).toFixed(2)}`, "err");
         }
       }
     } catch (err) {
@@ -486,7 +518,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
           }),
         });
         syncPaperData(data);
-        showToastMsg(`Closed ${decodedSymbol} ${data.trade?.profit_loss >= 0 ? "+" : "-"}$${Math.abs(data.trade?.profit_loss || 0).toFixed(2)}`, data.trade?.profit_loss >= 0 ? "ok" : "err");
+        showToastMsg(`Closed ${decodedSymbol} ${data.trade?.profit_loss >= 0 ? "+" : "-"}S${Math.abs(data.trade?.profit_loss || 0).toFixed(2)}`, data.trade?.profit_loss >= 0 ? "ok" : "err");
       }
     } catch (err) {
       showToastMsg(err.message || "Order failed", "err");
@@ -532,6 +564,58 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
     }
   }, [showToastMsg, syncPaperData]);
 
+  const removePositionTpsl = useCallback(async (positionId) => {
+    try {
+      setPositions(prev => prev.map(p => p.id === positionId ? {
+        ...p,
+        take_profit: null,
+        stop_loss: null,
+        tp_price: null,
+        sl_price: null,
+      } : p));
+      const data = await portfolioRequest(`/api/portfolio/paper/trades/${positionId}/tpsl`, {
+        method: "DELETE",
+      });
+      syncPaperData(data);
+      setTpslManagePosId(null);
+      setTpslEditPosId(null);
+      setTpslDeletePosId(null);
+      showToastMsg("TP/SL removed", "ok");
+      return true;
+    } catch (err) {
+      showToastMsg(err.message || "TP/SL remove failed", "err");
+      return false;
+    }
+  }, [showToastMsg, syncPaperData]);
+
+  const openTpslManage = useCallback((positionId) => {
+    const position = positions.find(p => p.id === positionId);
+    if (!position) return;
+    setSelectedPosId(position.id);
+    setTpslManagePosId(position.id);
+  }, [positions]);
+
+  const openTpslEditModal = useCallback((position) => {
+    if (!position) return;
+    const defaults = defaultTpsl(position);
+    setSelectedPosId(position.id);
+    setTpslDraft({
+      tp: String(position.take_profit ?? defaults.tp.toFixed(6)),
+      sl: String(position.stop_loss ?? defaults.sl.toFixed(6)),
+    });
+    setTpslManagePosId(null);
+    setTpslEditPosId(position.id);
+  }, []);
+
+  const saveTpslEditModal = useCallback(async () => {
+    if (!tpslEditPosition) return;
+    const ok = await updatePositionTpsl(tpslEditPosition.id, {
+      take_profit: tpslDraft.tp === "" ? null : tpslDraft.tp,
+      stop_loss: tpslDraft.sl === "" ? null : tpslDraft.sl,
+    });
+    if (ok) setTpslEditPosId(null);
+  }, [tpslDraft, tpslEditPosition, updatePositionTpsl]);
+
   const saveSelectedTpsl = () => {
     if (!selectedPosition) {
       showToastMsg("Select a position first", "err");
@@ -573,7 +657,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
     <div className="sim-page">
       <div className="toolbar">
         {onBack && <StarBorder as="button" className="btn" onClick={onBack} style={{ marginRight: 4 }}>Back</StarBorder>}
-        <span className="logo">SynthCrypto</span><span className="v3-tag">live</span>
+        <span className="logo">SynthCrypto</span>
         <div className="sep" />
         <span className="label-sm">TF</span>
         <div className="btn-group">
@@ -640,6 +724,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
                 onSelectPosition={setSelectedPosId}
                 onOpenPositionDetails={setDetailsPosId}
                 onUpdatePositionTpsl={updatePositionTpsl}
+                onManagePositionTpsl={openTpslManage}
               />
             </ChartErrorBoundary>
             {loading && (
@@ -672,7 +757,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
         <div className="trade-panel">
           <div className="tp-header">
             <span style={{ fontWeight: 700, color: "#d1d4dc" }}>Paper Trade</span>
-            <span className={portfolioSummary.total_profit_loss >= 0 ? "up" : "dn"}>${fmtMoney(portfolioSummary.total_portfolio_value)}</span>
+            <span className={portfolioSummary.total_profit_loss >= 0 ? "up" : "dn"}>S{fmtMoney(portfolioSummary.total_portfolio_value)}</span>
           </div>
 
           <div className="tp-row" style={{ gap: 4 }}>
@@ -689,7 +774,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
           </div>
 
           <div className="tp-row">
-            <span className="tp-lbl">Amount $</span>
+            <span className="tp-lbl">Amount S</span>
             <input type="number" min={1} value={sizeUsd} onChange={e => setSizeUsd(e.target.value)} style={{ flex: 1 }} disabled={tradeMode === "sell"} />
           </div>
           <div className="tp-row">
@@ -706,9 +791,9 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
           </div>
 
           <div className="tp-info">
-            <div><span className="tp-lbl">Cash</span><span>${fmtMoney(wallet.virtual_balance)}</span></div>
-            <div><span className="tp-lbl">Value</span><span>${fmtMoney(portfolioSummary.total_portfolio_value)}</span></div>
-            <div><span className="tp-lbl">U-PnL</span><span className={portfolioSummary.unrealized_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.unrealized_profit_loss >= 0 ? "+" : ""}${Math.abs(portfolioSummary.unrealized_profit_loss || 0).toFixed(2)}</span></div>
+            <div><span className="tp-lbl">Cash</span><span>S{fmtMoney(wallet.virtual_balance)}</span></div>
+            <div><span className="tp-lbl">Value</span><span>S{fmtMoney(portfolioSummary.total_portfolio_value)}</span></div>
+            <div><span className="tp-lbl">U-PnL</span><span className={portfolioSummary.unrealized_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.unrealized_profit_loss >= 0 ? "+" : ""}S{Math.abs(portfolioSummary.unrealized_profit_loss || 0).toFixed(2)}</span></div>
             <div><span className="tp-lbl">Est Qty</span><span>{tradeMode === "buy" ? estimatedQty.toFixed(8) : selectedPosition?.quantity?.toFixed?.(8) || "-"}</span></div>
           </div>
 
@@ -723,16 +808,16 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
           {toast && <div className={`tp-toast toast-${toast.type}`}>{toast.msg}</div>}
           {paperLoading && <div className="tp-empty">Loading portfolio...</div>}
 
-          <div className="tp-section"><span>Open Positions</span><span className={totalUpnl >= 0 ? "up" : "dn"}>{symbolPositions.length ? `${totalUpnl >= 0 ? "+" : ""}$${totalUpnl.toFixed(2)}` : "-"}</span></div>
+          <div className="tp-section"><span>Open Positions</span><span className={totalUpnl >= 0 ? "up" : "dn"}>{symbolPositions.length ? `${totalUpnl >= 0 ? "+" : ""}S${totalUpnl.toFixed(2)}` : "-"}</span></div>
           <div>
             {!symbolPositions.length ? <div className="tp-empty">No open positions for {decodedSymbol}</div> : symbolPositions.map(position => (
               <div className={`pos-card${selectedPosition?.id === position.id ? " selected" : ""}`} key={position.id} onClick={() => selectPositionForEdit(position)}>
-                <div className="pos-card-row"><span className="up">BUY {position.asset_symbol}</span><span className={position.upnl >= 0 ? "up" : "dn"}>{position.upnl >= 0 ? "+" : ""}${position.upnl.toFixed(2)} ({position.upnl_pct >= 0 ? "+" : ""}{position.upnl_pct.toFixed(1)}%)</span></div>
+                <div className="pos-card-row"><span className="up">BUY {position.asset_symbol}</span><span className={position.upnl >= 0 ? "up" : "dn"}>{position.upnl >= 0 ? "+" : ""}S{position.upnl.toFixed(2)} ({position.upnl_pct >= 0 ? "+" : ""}{position.upnl_pct.toFixed(1)}%)</span></div>
                 <div className="pos-card-row" style={{ color: "#787b86" }}><span>Entry: {fmtPrice(position.entry_price)}</span><span>Qty: {position.quantity.toFixed(6)}</span></div>
                 <div className="pos-card-row tpsl-card-row"><span>TP: <span className="up">{position.take_profit ? fmtPrice(position.take_profit) : "-"}</span></span><span>SL: <span className="dn">{position.stop_loss ? fmtPrice(position.stop_loss) : "-"}</span></span></div>
-                <div className="pos-card-row" style={{ color: "#787b86" }}><span>Invested: ${position.size_usd.toFixed(2)}</span><span>Value: ${position.current_value.toFixed(2)}</span></div>
+                <div className="pos-card-row" style={{ color: "#787b86" }}><span className="up">Invested: S{position.size_usd.toFixed(2)}</span><span>Value: S{position.current_value.toFixed(2)}</span></div>
                 <div className="pos-card-actions">
-                  <StarBorder as="button" className="pos-card-tpsl" onClick={e => { e.stopPropagation(); selectPositionForEdit(position); }}>Edit TP/SL</StarBorder>
+                  <StarBorder as="button" className="pos-card-tpsl" onClick={e => { e.stopPropagation(); openTpslEditModal(position); }}>Edit TP/SL</StarBorder>
                   <StarBorder as="button" className="pos-card-tpsl" onClick={e => { e.stopPropagation(); setDetailsPosId(position.id); }}>Details</StarBorder>
                 </div>
                 <StarBorder as="button" className="pos-card-close" onClick={e => { e.stopPropagation(); closePosition(position.id); }}>Close</StarBorder>
@@ -740,9 +825,9 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
             ))}
           </div>
 
-          <div className="tp-section"><span>Portfolio</span><span className={portfolioSummary.total_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.total_profit_loss >= 0 ? "+" : ""}${Math.abs(portfolioSummary.total_profit_loss || 0).toFixed(2)}</span></div>
+          <div className="tp-section"><span>Portfolio</span><span className={portfolioSummary.total_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.total_profit_loss >= 0 ? "+" : ""}S{Math.abs(portfolioSummary.total_profit_loss || 0).toFixed(2)}</span></div>
           <div className="tp-info">
-            <div><span className="tp-lbl">Realized</span><span className={portfolioSummary.realized_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.realized_profit_loss >= 0 ? "+" : ""}${Math.abs(portfolioSummary.realized_profit_loss || 0).toFixed(2)}</span></div>
+            <div><span className="tp-lbl">Realized</span><span className={portfolioSummary.realized_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.realized_profit_loss >= 0 ? "+" : ""}S{Math.abs(portfolioSummary.realized_profit_loss || 0).toFixed(2)}</span></div>
             <div><span className="tp-lbl">Win Rate</span><span>{portfolioSummary.win_rate_percentage == null ? "-" : `${portfolioSummary.win_rate_percentage.toFixed(1)}%`}</span></div>
             <div><span className="tp-lbl">Closed</span><span>{portfolioSummary.closed_trades || 0}</span></div>
           </div>
@@ -762,14 +847,62 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
           <div>
             {!visibleHistory.length ? <div className="tp-empty">No closed trades</div> : visibleHistory.map(trade => (
               <div className="ord-card" key={trade.id}>
-                <div className="pos-card-row"><span>{trade.asset_symbol}</span><span className={trade.profit_loss >= 0 ? "up" : "dn"}>{trade.profit_loss >= 0 ? "+" : ""}${trade.profit_loss.toFixed(2)}</span></div>
+                <div className="pos-card-row"><span>{trade.asset_symbol}</span><span className={trade.profit_loss >= 0 ? "up" : "dn"}>{trade.profit_loss >= 0 ? "+" : ""}S{trade.profit_loss.toFixed(2)}</span></div>
                 <div className="pos-card-row" style={{ color: "#787b86" }}><span>{fmtPrice(trade.entry_price)}{" -> "}{fmtPrice(trade.exit_price)}</span><span>{fmtDuration(tradeDurationMs(trade))}</span></div>
-                <div className="pos-card-row" style={{ color: "#787b86" }}><span>Qty {trade.quantity.toFixed(6)}</span><span>${trade.invested_amount.toFixed(2)}</span></div>
+                <div className="pos-card-row" style={{ color: "#787b86" }}><span>Qty {trade.quantity.toFixed(6)}</span><span>S{trade.invested_amount.toFixed(2)}</span></div>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {tpslManagePosition && (
+        <div className="overlay-backdrop" onClick={() => setTpslManagePosId(null)}>
+          <div className="overlay-panel tpsl-modal" onClick={e => e.stopPropagation()}>
+            <h3>Manage TP/SL</h3>
+            <div className="metric-row"><span>Position</span><span>{tpslManagePosition.asset_symbol} @ {fmtPrice(tpslManagePosition.entry_price)}</span></div>
+            <div className="metric-row"><span>Take profit</span><span className="up">{tpslManagePosition.take_profit ? fmtPrice(tpslManagePosition.take_profit) : "-"}</span></div>
+            <div className="metric-row"><span>Stop loss</span><span className="dn">{tpslManagePosition.stop_loss ? fmtPrice(tpslManagePosition.stop_loss) : "-"}</span></div>
+            <div className="detail-actions tpsl-modal-actions">
+              <StarBorder as="button" className="btn ctrl-green" onClick={() => openTpslEditModal(tpslManagePosition)}>Edit</StarBorder>
+              <StarBorder as="button" className="btn ctrl-red" onClick={() => { setTpslDeletePosId(tpslManagePosition.id); setTpslManagePosId(null); }}>Remove TP/SL</StarBorder>
+              <StarBorder as="button" className="overlay-close" onClick={() => setTpslManagePosId(null)}>Cancel</StarBorder>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tpslEditPosition && (
+        <div className="overlay-backdrop" onClick={() => setTpslEditPosId(null)}>
+          <div className="overlay-panel tpsl-modal" onClick={e => e.stopPropagation()}>
+            <h3>Edit TP/SL</h3>
+            <div className="metric-row"><span>Entry</span><span>{fmtPrice(tpslEditPosition.entry_price)}</span></div>
+            <label className="tpsl-modal-field"><span>Take Profit</span><input type="number" value={tpslDraft.tp} onChange={e => setTpslDraft(d => ({ ...d, tp: e.target.value }))} /></label>
+            <label className="tpsl-modal-field"><span>Stop Loss</span><input type="number" value={tpslDraft.sl} onChange={e => setTpslDraft(d => ({ ...d, sl: e.target.value }))} /></label>
+            <div className="tpsl-summary">
+              <span>R/R {riskReward(tpslEditPosition, toOptionalPrice(tpslDraft.tp), toOptionalPrice(tpslDraft.sl))}</span>
+            </div>
+            <div className="detail-actions tpsl-modal-actions">
+              <StarBorder as="button" className="btn ctrl-green" onClick={saveTpslEditModal}>Save Changes</StarBorder>
+              <StarBorder as="button" className="btn ctrl-red" onClick={() => setTpslDeletePosId(tpslEditPosition.id)}>Remove TP/SL</StarBorder>
+              <StarBorder as="button" className="overlay-close" onClick={() => setTpslEditPosId(null)}>Cancel</StarBorder>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tpslDeletePosition && (
+        <div className="overlay-backdrop" onClick={() => setTpslDeletePosId(null)}>
+          <div className="overlay-panel tpsl-modal" onClick={e => e.stopPropagation()}>
+            <h3>Remove TP/SL</h3>
+            <p className="tpsl-confirm-copy">Remove Take Profit and Stop Loss from this position?</p>
+            <div className="detail-actions">
+              <StarBorder as="button" className="btn ctrl-red" onClick={() => removePositionTpsl(tpslDeletePosition.id)}>Remove TP/SL</StarBorder>
+              <StarBorder as="button" className="overlay-close" onClick={() => setTpslDeletePosId(null)}>Cancel</StarBorder>
+            </div>
+          </div>
+        </div>
+      )}
 
       {detailsPosition && (
         <div className="overlay-backdrop" onClick={() => setDetailsPosId(null)}>
@@ -779,11 +912,11 @@ export default function LiveMarketPage({ assetClass, symbol, onBack }) {
             <div className="metric-row"><span>Current price</span><span>{fmtPrice(price)}</span></div>
             <div className="metric-row"><span>Take profit</span><span className="up">{detailsPosition.take_profit ? fmtPrice(detailsPosition.take_profit) : "-"}</span></div>
             <div className="metric-row"><span>Stop loss</span><span className="dn">{detailsPosition.stop_loss ? fmtPrice(detailsPosition.stop_loss) : "-"}</span></div>
-            <div className="metric-row"><span>P/L</span><span className={detailsPosition.profit_loss >= 0 ? "up" : "dn"}>{detailsPosition.profit_loss >= 0 ? "+" : ""}${Math.abs(detailsPosition.profit_loss).toFixed(2)} ({detailsPosition.profit_loss_percentage >= 0 ? "+" : ""}{detailsPosition.profit_loss_percentage.toFixed(1)}%)</span></div>
+            <div className="metric-row"><span>P/L</span><span className={detailsPosition.profit_loss >= 0 ? "up" : "dn"}>{detailsPosition.profit_loss >= 0 ? "+" : ""}S{Math.abs(detailsPosition.profit_loss).toFixed(2)} ({detailsPosition.profit_loss_percentage >= 0 ? "+" : ""}{detailsPosition.profit_loss_percentage.toFixed(1)}%)</span></div>
             <div className="metric-row"><span>Quantity</span><span>{detailsPosition.quantity.toFixed(8)}</span></div>
-            <div className="metric-row"><span>Invested</span><span>${detailsPosition.invested_amount.toFixed(2)}</span></div>
+            <div className="metric-row"><span>Invested</span><span>S{detailsPosition.invested_amount.toFixed(2)}</span></div>
             <div className="detail-actions">
-              <StarBorder as="button" className="btn ctrl-green" onClick={() => selectPositionForEdit(detailsPosition)}>Edit TP/SL</StarBorder>
+              <StarBorder as="button" className="btn ctrl-green" onClick={() => openTpslEditModal(detailsPosition)}>Edit TP/SL</StarBorder>
               <StarBorder as="button" className="overlay-close" onClick={() => setDetailsPosId(null)}>Close</StarBorder>
             </div>
           </div>

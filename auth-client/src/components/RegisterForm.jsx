@@ -50,6 +50,7 @@ export default function RegisterForm({ onSuccess, onError }) {
         return;
       }
 
+      localStorage.setItem("isNewRegistration", "true");
       onSuccess(data.user);
     } catch {
       onError("Cannot reach auth server. Is it running on port 3001?");

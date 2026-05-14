@@ -12,9 +12,21 @@ SynthCrypto is an advanced synthetic cryptocurrency market simulator designed to
 - **Real-Time Risk Metrics**: Constantly tracks account status, maximum drawdown, Value at Risk (VaR), Sharpe ratios, and overall system expectancy.
 - **Advanced Stress Testing**: Allows manual toggling of extreme environments by injecting spread spikes, volatility multipliers, and latency delays into active runs.
 
+## 🚀 New Features & Enhancements
+- **Live Paper Trading**: Transitioned from a purely synthetic simulation to a live, production-ready environment integrated with real-time market data. Execute paper trades on live crypto assets with real-time price updates and slippage.
+- **Modern React Frontend**: Replaced the previous Flask-based HTML UI with a visually stunning React SPA (Vite). Features premium design aesthetics using components like `StarBorder` and `LightRays`.
+- **Decoupled Trading Engine & Portfolio Manager**: Re-architected state management to independently handle live account balances, multi-asset positions, and order states seamlessly.
+- **Real-Time Synchronization**: Full integration of live market ticks via Socket.IO directly into the trading dashboard (`LiveMarketPage.jsx`), enabling robust updates for positions, unrealized PnL, and automatic TP/SL executions.
+- **Unified Recent Trades Feed**: A real-time WebSocket feed that instantly displays every executed trade across Live Crypto, Live Stocks, and Paper Trading, complete with infinite scrolling and market source badges.
+- **Interactive Dashboard Positions**: Current positions on the dashboard are now clickable, allowing traders to instantly jump to the corresponding interactive chart to monitor and manage specific trades.
+- **Advanced TP/SL Chart Management**: Traders can now edit, save, and remove Take Profit (TP) and Stop Loss (SL) orders directly from the chart using intuitive contextual menus, with instant visual line updates.
+- **Improved UI Stability**: Resolved critical rendering crashes and stabilized the Lightweight Charts component with proper React error boundaries and timestamp deduplication.
+
 ## System Architecture
-- **Web Interface (`simulator_web_v3.py`)**: The primary runner using Flask and Socket.IO. It streams granular tick data and indicators down to a responsive HTML/JS web dashboard at 20 frames per second.
-- **Core Market Engine (`synthetic_market_simulator*.py`)**: Handling complex time-series price fabrication, multi-timeframe aggregation (1s through 1d), position lifecycle management, and fee/margin structures.
+- **React Frontend (`auth-client`)**: A modern Single Page Application built with React and Vite. It handles real-time charting, order placement, portfolio management, and strategy toggling with a premium user interface.
+- **FastAPI Backend (`simulator_api.py`)**: The primary runner using FastAPI and Socket.IO. It serves REST endpoints and WebSocket streams for real-time market data and simulation state.
+- **Real-Time Engine (`realtime_engine.py`)**: Responsible for fetching and streaming live crypto market data to power paper trading.
+- **Core Market Engine (`simulator_core.py` & `synthetic_market_simulator*.py`)**: Handling complex time-series price fabrication, multi-timeframe aggregation, decoupled portfolio management, and fee/margin structures.
 - **Unified Runner (`synthetic_market_simulator_unified.py`)**: Designed for headless benchmarking, automated unit tests, and large-scale, standalone strategy evaluations.
 
 ## Included Trading Strategies
@@ -39,22 +51,35 @@ An adaptive, high-frequency mean-reversion and trend-following strategy heavily 
 
 ### Prerequisites
 - Python 3.9+
-- The project utilizes a virtual environment for dependency management.
+- Node.js & npm (for the React frontend)
 
 ### Installation
 1. Clone the repository and navigate into the `synthetic_market` directory.
-2. Activate the local virtual environment:
+2. Activate the local Python virtual environment:
    ```bash
    .venv\scripts\activate
    ```
-3. Install any missing dependencies if necessary (requires `flask`, `flask-socketio`, `numpy`).
+   *(Install backend dependencies via `pip install fastapi uvicorn python-socketio PyJWT numpy` if not already installed).*
+3. Install frontend dependencies:
+   ```bash
+   cd auth-client
+   npm install
+   ```
 
-### Running the Live Simulator
-To launch the interactive Phase 2 Simulator:
-```bash
-python simulator_web_v3.py
-```
-After the server initializes, open your browser and navigate to:
-http://localhost:5000
+### Running the Application
 
-From the web console, you can manually test long/short executions, adjust algorithmic speeds, toggle specific mathematical models, and analyze chart data. 
+You will need to run both the backend API and the frontend development server.
+
+1. **Start the FastAPI Backend**:
+   ```bash
+   # From the root synthetic_market directory
+   uvicorn simulator_api:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+2. **Start the React Frontend**:
+   ```bash
+   # In a new terminal, from the auth-client directory
+   npm run dev
+   ```
+
+Open your browser and navigate to the frontend URL (typically `http://localhost:5173`) to access the dashboard. From there, you can interact with live paper trading, manage your portfolio, and visualize real-time market data.
