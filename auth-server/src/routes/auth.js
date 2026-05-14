@@ -43,7 +43,7 @@ const COOKIE_OPTS = {
 
 router.post("/register", async (req, res) => {
   try {
-    const { email, username, password } = req.body;
+    const { email, username, password, referralCode } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
@@ -58,19 +58,46 @@ router.post("/register", async (req, res) => {
       return res.status(409).json({ error: "An account with this email already exists" });
     }
 
+    let referrerId = null;
+    let cleanRefCode = referralCode;
+    if (referralCode && referralCode.includes("ref=")) {
+      try {
+        const parsedUrl = new URL(referralCode);
+        cleanRefCode = parsedUrl.searchParams.get("ref") || referralCode;
+      } catch {
+        cleanRefCode = referralCode.split("ref=")[1] || referralCode;
+      }
+    }
+
+    if (cleanRefCode) cleanRefCode = cleanRefCode.trim();
+
+    if (cleanRefCode) {
+      const referrer = await pool.query("SELECT id FROM users WHERE referral_code = $1", [cleanRefCode]);
+      if (referrer.rows.length > 0) {
+        referrerId = referrer.rows[0].id;
+      }
+    }
+
+    const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
     // Hash password
     const salt = await bcrypt.genSalt(12);
     const password_hash = await bcrypt.hash(password, salt);
 
     // Insert user
     const result = await pool.query(
-      `INSERT INTO users (email, username, password_hash)
-       VALUES ($1, $2, $3)
+      `INSERT INTO users (email, username, password_hash, referral_code, referred_by)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING id, email, username, avatar_url, created_at`,
-      [email.toLowerCase(), username || email.split("@")[0], password_hash]
+      [email.toLowerCase(), username || email.split("@")[0], password_hash, myReferralCode, referrerId]
     );
 
     const user = result.rows[0];
+
+    if (referrerId) {
+      await pool.query("UPDATE users SET balance = balance + 1000 WHERE id = $1", [referrerId]);
+    }
+
     const token = signToken(user);
 
     res.cookie("token", token, COOKIE_OPTS);
@@ -141,7 +168,11 @@ router.get("/google", (req, res) => {
   }
 
   // Generate CSRF state token
-  const state = crypto.randomBytes(16).toString("hex");
+  let state = crypto.randomBytes(16).toString("hex");
+  if (req.query.ref) {
+    state += `_REF_${req.query.ref}`;
+  }
+
   // Store state in a short-lived cookie for verification
   res.cookie("oauth_state", state, {
     httpOnly: true,
@@ -180,6 +211,11 @@ router.get("/google/callback", async (req, res) => {
     }
     // Clear state cookie
     res.clearCookie("oauth_state");
+
+    let referralCode = null;
+    if (state.includes("_REF_")) {
+      referralCode = state.split("_REF_")[1];
+    }
 
     if (!code) {
       return res.redirect(`${CLIENT_URL}?error=No+authorization+code`);
@@ -238,13 +274,44 @@ router.get("/google/callback", async (req, res) => {
         user.avatar_url = picture;
       } else {
         // Create new user
+        let referrerId = null;
+        let cleanRefCode = referralCode;
+        if (referralCode && referralCode.includes("ref=")) {
+          try {
+            const parsedUrl = new URL(referralCode);
+            cleanRefCode = parsedUrl.searchParams.get("ref") || referralCode;
+          } catch {
+            cleanRefCode = referralCode.split("ref=")[1] || referralCode;
+          }
+        }
+        
+        if (cleanRefCode) cleanRefCode = cleanRefCode.trim();
+        
+        console.log("Processing new Google user. cleanRefCode extracted:", cleanRefCode);
+        if (cleanRefCode) {
+          const referrer = await pool.query("SELECT id FROM users WHERE referral_code = $1", [cleanRefCode]);
+          console.log("Referrer query result:", referrer.rows);
+          if (referrer.rows.length > 0) {
+            referrerId = referrer.rows[0].id;
+          }
+        }
+
+        console.log("Final referrerId for new user:", referrerId);
+        const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
         const result = await pool.query(
-          `INSERT INTO users (email, username, google_id, avatar_url)
-           VALUES ($1, $2, $3, $4)
+          `INSERT INTO users (email, username, google_id, avatar_url, referral_code, referred_by)
+           VALUES ($1, $2, $3, $4, $5, $6)
            RETURNING id, email, username, avatar_url`,
-          [email.toLowerCase(), name || email.split("@")[0], google_id, picture]
+          [email.toLowerCase(), name || email.split("@")[0], google_id, picture, myReferralCode, referrerId]
         );
         user = result.rows[0];
+        
+        if (referrerId) {
+          await pool.query("UPDATE users SET balance = balance + 1000 WHERE id = $1", [referrerId]);
+          console.log("Updated referrer balance for ID:", referrerId);
+        }
+        
+        isNewGoogleUser = true;
         isNewGoogleUser = true;
       }
     }
@@ -274,8 +341,26 @@ router.post("/logout", (req, res) => {
 
 // ─── GET /api/auth/me — Return current authenticated user ────────────────────
 
-router.get("/me", requireAuth, (req, res) => {
-  res.json({ user: req.user });
+router.get("/me", requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, email, username, avatar_url, referral_code FROM users WHERE id = $1", [req.user.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: "User not found" });
+    const user = result.rows[0];
+
+    // Auto-generate referral code for existing users who don't have one
+    if (!user.referral_code) {
+      const newRefCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      await pool.query("UPDATE users SET referral_code = $1 WHERE id = $2", [newRefCode, req.user.id]);
+      user.referral_code = newRefCode;
+    }
+
+    const refCount = await pool.query("SELECT COUNT(*) FROM users WHERE referred_by = $1", [req.user.id]);
+    user.referral_count = parseInt(refCount.rows[0].count, 10);
+    res.json({ user });
+  } catch (err) {
+    console.error("Get /me error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 

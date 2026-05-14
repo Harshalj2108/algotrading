@@ -52,7 +52,7 @@ function pageFromPathname(pathname) {
   const path = pathname.replace(/\/+$/, "") || "/";
   if (path === "/about") return "about";
   if (path === "/learn" || path === "/learn-trading") return "learn";
-  if (path === "/signup" || path === "/login") return "auth";
+  if (path === "/signup" || path === "/login" || path === "/register") return "auth";
   if (path === "/dashboard") return "dashboard";
   if (path.startsWith("/markets/crypto/")) {
     return `live_market:crypto:${decodeURIComponent(path.slice("/markets/crypto/".length))}`;
@@ -315,7 +315,7 @@ export default function App() {
     const saved = localStorage.getItem("synthcrypto_page");
     return normalizeStoredPage(saved);
   });
-  const [tab, setTab] = useState(() => window.location.pathname === "/signup" ? "register" : "login");        // "login" | "register"
+  const [tab, setTab] = useState(() => (window.location.pathname === "/signup" || window.location.pathname === "/register") ? "register" : "login");        // "login" | "register"
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -392,7 +392,7 @@ export default function App() {
     const handlePopState = () => {
       const routedPage = pageFromPathname(window.location.pathname) || "home";
       setPage(routedPage);
-      if (window.location.pathname === "/signup") setTab("register");
+      if (window.location.pathname === "/signup" || window.location.pathname === "/register") setTab("register");
       if (window.location.pathname === "/login") setTab("login");
     };
 

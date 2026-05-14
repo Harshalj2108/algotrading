@@ -8,7 +8,13 @@ const AUTH_SERVER = "http://localhost:3001";
 
 export default function GoogleButton() {
   const handleClick = () => {
-    window.location.href = `${AUTH_SERVER}/api/auth/google`;
+    let ref = new URLSearchParams(window.location.search).get("ref");
+    const refInput = document.getElementById("reg-referral");
+    if (refInput && refInput.value) {
+      ref = refInput.value;
+    }
+    const url = ref ? `${AUTH_SERVER}/api/auth/google?ref=${ref}` : `${AUTH_SERVER}/api/auth/google`;
+    window.location.href = url;
   };
 
   return (

@@ -107,6 +107,7 @@ function mergePositions(positions) {
 }
 
 // ── Animated counter ─────────────────────────────────────────────────────────
+
 function AnimatedValue({ value, prefix = "S", decimals = 2, duration = 1000 }) {
   const [display, setDisplay] = useState(0);
   const ref = useRef(null);
@@ -672,9 +673,14 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
             </button>
             <button
               className="dash-dropdown-item"
-              onClick={() => { setMenuOpen(false); alert("Referral feature coming soon!"); }}
+              onClick={() => { 
+                setMenuOpen(false); 
+                if (user?.referral_code) {
+                  prompt("Copy your referral link:", `http://localhost:5173/register?ref=${user.referral_code}`);
+                }
+              }}
             >
-              Refer a Friend
+              Show Referral Link
             </button>
             <div className="dash-dropdown-divider" />
             <button
@@ -697,8 +703,21 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
             <h1 className="dash-title">
               Portfolio
             </h1>
-            <div className="dash-subtitle">
-              {user?.username || user?.email || "Trader"}
+            <div className="dash-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span>{user?.username || user?.email || "Trader"}</span>
+              {user?.referral_code && (
+                <span style={{ fontSize: '0.85em', color: '#D8B4FE', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>Referrals: {user?.referral_count || 0}</span>
+                  <button 
+                    onClick={() => {
+                      prompt("Copy your referral link:", `http://localhost:5173/register?ref=${user.referral_code}`);
+                    }}
+                    style={{ background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '4px', padding: '2px 8px', color: '#fff', cursor: 'pointer' }}
+                  >
+                    Show Link
+                  </button>
+                </span>
+              )}
             </div>
           </div>
 

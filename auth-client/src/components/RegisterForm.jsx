@@ -24,6 +24,9 @@ export default function RegisterForm({ onSuccess, onError }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState(() => {
+    return new URLSearchParams(window.location.search).get("ref") || "";
+  });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +43,7 @@ export default function RegisterForm({ onSuccess, onError }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, username, password }),
+        body: JSON.stringify({ email, username, password, referralCode }),
       });
       const data = await res.json();
 
@@ -135,6 +138,22 @@ export default function RegisterForm({ onSuccess, onError }) {
             <div className="strength-label">{strength.label}</div>
           </>
         )}
+      </div>
+
+      <div className="form-group">
+        <label className="form-label" htmlFor="reg-referral">Referral Code (Optional)</label>
+        <div className="input-wrap">
+          <input
+            className="form-input"
+            type="text"
+            id="reg-referral"
+            name="referralCode"
+            placeholder="Got an invite code?"
+            value={referralCode}
+            onChange={(e) => setReferralCode(e.target.value)}
+            style={{ paddingLeft: '14px' }}
+          />
+        </div>
       </div>
 
       <StarBorder

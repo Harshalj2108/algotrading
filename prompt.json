@@ -1,198 +1,52 @@
 {
-    "project": "Trading Platform Improvements",
-    "objective": "Fix trade synchronization issues and improve trade management UX across dashboard, simulator, crypto, and stock trading modules.",
-    "tasks": [
-        {
-            "id": 1,
-            "title": "Fix Recent Trades Feed",
-            "priority": "high",
-            "problem": "The Recent Trades section is not showing all executed trades from every trading module.",
-            "goal": "Display every buy/sell trade happening across Live Crypto, Live Stocks, and Simulator/Paper Trading in one unified real-time feed.",
-            "requirements": [
-                "Show all BUY trades",
-                "Show all SELL trades",
-                "Include Live Crypto trades",
-                "Include Live Stock trades",
-                "Include Simulator/Paper Trading trades",
-                "Update trades instantly in real-time",
-                "Newest trades should appear at the top",
-                "Do not require page refresh",
-                "Prevent duplicate trade entries",
-                "Support simultaneous multi-user trades"
-            ],
-            "backend_changes": {
-                "create_unified_trade_feed": true,
-                "merge_sources": [
-                    "live_crypto_trades",
-                    "live_stock_trades",
-                    "paper_trades"
-                ],
-                "required_trade_fields": [
-                    "trade_id",
-                    "user_id",
-                    "asset_symbol",
-                    "asset_type",
-                    "buy_or_sell",
-                    "quantity",
-                    "entry_price",
-                    "trade_value",
-                    "timestamp",
-                    "source_market"
-                ],
-                "realtime_updates": {
-                    "method": "websocket",
-                    "broadcast_trade_updates": true
-                }
-            },
-            "frontend_changes": {
-                "component": "RecentTradesPanel",
-                "features": [
-                    "live updates",
-                    "infinite scrolling",
-                    "trade type badges",
-                    "market source labels",
-                    "buy/sell color indicators"
-                ],
-                "ui_rules": {
-                    "buy_trade_color": "green",
-                    "sell_trade_color": "red",
-                    "crypto_badge": "Crypto",
-                    "stock_badge": "Stocks",
-                    "simulator_badge": "Simulator"
-                }
-            },
-            "expected_result": {
-                "behavior": [
-                    "Every executed trade appears instantly",
-                    "Trade feed remains synchronized across the app",
-                    "No missing trades",
-                    "No duplicated trades"
-                ]
-            }
-        },
-        {
-            "id": 2,
-            "title": "Make Current Positions Clickable",
-            "priority": "high",
-            "problem": "Trades shown under Current Positions on the dashboard are static and not interactive.",
-            "goal": "Allow users to click any current position and instantly navigate to its corresponding trading chart.",
-            "requirements": [
-                "Every current position card should behave like a button",
-                "Clicking should redirect to the asset chart page",
-                "Chart should automatically open the correct symbol",
-                "Maintain selected timeframe if possible",
-                "Highlight active position on chart after navigation"
-            ],
-            "navigation_behavior": {
-                "crypto_trade": "/markets/crypto/{symbol}",
-                "stock_trade": "/markets/stocks/{symbol}",
-                "paper_trade": "/simulation/{symbol}"
-            },
-            "frontend_changes": {
-                "component": "CurrentPositions",
-                "features": [
-                    "hover effect",
-                    "pointer cursor",
-                    "smooth navigation animation",
-                    "active position highlighting"
-                ]
-            },
-            "chart_behavior": {
-                "auto_focus_position": true,
-                "scroll_to_trade_entry": true,
-                "show_position_marker": true
-            },
-            "expected_result": {
-                "behavior": [
-                    "Users can instantly jump to any trade chart",
-                    "Trade management becomes faster",
-                    "Dashboard becomes interactive"
-                ]
-            }
-        },
-        {
-            "id": 3,
-            "title": "Improve TP/SL Position Management",
-            "priority": "critical",
-            "problem": [
-                "TP/SL boxes currently cannot remove positions",
-                "Editing TP/SL has no save button",
-                "Users cannot properly manage existing TP/SL orders"
-            ],
-            "goal": "Allow users to edit, save, and remove Take Profit and Stop Loss positions directly from the chart.",
-            "requirements": [
-                "Clicking TP/SL rectangle box should open management popup",
-                "Popup must contain Edit option",
-                "Popup must contain Remove option",
-                "Editing TP/SL values must include Save button",
-                "Changes should update instantly on chart",
-                "Removing TP/SL should remove chart lines immediately",
-                "Prevent accidental deletion with confirmation modal"
-            ],
-            "ui_flow": {
-                "step_1": "User clicks TP/SL rectangle on chart",
-                "step_2": "Context menu/modal appears",
-                "step_3": "User chooses Edit or Remove",
-                "step_4_edit": "Editable TP/SL inputs appear",
-                "step_5_edit": "User clicks Save button",
-                "step_6_edit": "Chart updates immediately",
-                "step_4_remove": "Confirmation modal appears",
-                "step_5_remove": "User confirms deletion",
-                "step_6_remove": "TP/SL lines and box removed"
-            },
-            "frontend_changes": {
-                "components": [
-                    "TPSLContextMenu",
-                    "TPSLEditModal",
-                    "TPSLDeleteConfirmation"
-                ],
-                "buttons_required": [
-                    "Save Changes",
-                    "Remove TP/SL",
-                    "Cancel"
-                ]
-            },
-            "backend_changes": {
-                "new_endpoints": [
-                    "PATCH /trade/update-tpsl",
-                    "DELETE /trade/remove-tpsl"
-                ],
-                "validations": [
-                    "TP must be above entry for long trades",
-                    "SL must be below entry for long trades",
-                    "Prevent invalid negative values"
-                ]
-            },
-            "chart_updates": {
-                "live_refresh": true,
-                "remove_lines_on_delete": true,
-                "update_lines_on_edit": true
-            },
-            "expected_result": {
-                "behavior": [
-                    "Users can fully manage TP/SL directly from chart",
-                    "Editing feels responsive",
-                    "TP/SL management becomes intuitive",
-                    "No missing save functionality"
-                ]
-            }
-        }
+  "task": "Update Database Schema for Referrals",
+  "files_to_modify": ["auth-server/src/db.js"],
+  "instructions": {
+    "target_table": "users",
+    "actions": [
+      "Add a column 'referral_code' (VARCHAR(20), UNIQUE) to store the user's unique invite code.",
+      "Add a column 'referred_by' (INTEGER, REFERENCES users(id)) to track who invited the user.",
+      "Update the INIT_SQL string to include these ALTER TABLE statements or modify the CREATE TABLE definition."
     ],
-    "global_requirements": {
-        "performance": [
-            "Avoid unnecessary rerenders",
-            "Optimize websocket listeners",
-            "Debounce excessive updates"
-        ],
-        "ui_consistency": [
-            "Use same styling across crypto, stocks, and simulator",
-            "Maintain responsive design",
-            "Use consistent modal behavior"
-        ],
-        "error_handling": [
-            "Show toast on TP/SL save success",
-            "Show toast on remove success",
-            "Show proper validation errors"
-        ]
-    }
+    "logic": "Generate the 'referral_code' automatically during user creation if not provided, or ensure the column exists for existing users."
+  }
+}
+{
+  "task": "Implement Referral Logic in Auth Routes",
+  "files_to_modify": ["auth-server/src/routes/auth.js"],
+  "instructions": {
+    "endpoint": "POST /api/auth/register",
+    "modifications": [
+      "Extract 'referralCode' from req.body.",
+      "Before inserting a new user, check if the provided 'referralCode' exists in the database to find the 'referrerId'.",
+      "Generate a unique 6-8 character alphanumeric 'referral_code' for the new user.",
+      "Update the INSERT query to include 'referral_code' and 'referred_by' fields.",
+      "Optional: If a valid referrer is found, increment their 'balance' in the users table as a reward."
+    ]
+  }
+}{
+  "task": "Add Referral Code Field to RegisterForm",
+  "files_to_modify": ["auth-client/src/components/RegisterForm.jsx"],
+  "instructions": {
+    "ui_changes": [
+      "Add a new state variable 'referralCode' using useState.",
+      "Add an input field for 'Referral Code' (optional) above the submit button.",
+      "Ensure the input field is styled consistently with other form-inputs."
+    ],
+    "functionality": [
+      "Update the 'handleSubmit' function to include 'referralCode' in the JSON body of the fetch request to /api/auth/register."
+    ]
+  }
+}
+{
+  "task": "Display Referral Link on Dashboard",
+  "files_to_modify": ["auth-client/src/components/Dashboard.jsx"],
+  "instructions": {
+    "ui_changes": [
+      "Locate the user profile or account section.",
+      "Display the user's 'referral_code' fetched from the backend (ensure the /me endpoint returns this field).",
+      "Add a 'Copy Referral Link' button that copies 'http://localhost:5173/register?ref={code}' to the clipboard."
+    ],
+    "enhancement": "If possible, display a count of successful referrals by querying the users table where 'referred_by' equals current user ID."
+  }
 }
