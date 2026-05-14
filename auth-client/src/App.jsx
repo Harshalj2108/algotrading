@@ -18,10 +18,11 @@ import { HomePage, AboutUsPage, LearnTradingPage } from "./components/PublicPage
 import StarBorder from "./components/StarBorder";
 import AssetSearch from "./components/AssetSearch";
 import LiveMarketPage from "./components/LiveMarketPage";
-import Dither from "./components/Dither";
+import FaultyTerminal from "./components/FaultyTerminal";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
+const TERMINAL_GRID = [2, 1];
 const PUBLIC_PATHS = {
   home: "/",
   about: "/about",
@@ -577,15 +578,24 @@ export default function App() {
   return (
     <div className="auth-split-layout">
       <div className="auth-left">
-        <Dither
-          waveColor={[0.486, 0.227, 0.929]}
-          disableAnimation={false}
-          enableMouseInteraction={true}
-          mouseRadius={0.3}
-          colorNum={4}
-          waveAmplitude={0.3}
-          waveFrequency={3}
-          waveSpeed={0.05}
+        <FaultyTerminal
+          scale={1.5}
+          gridMul={TERMINAL_GRID}
+          digitSize={1.2}
+          timeScale={1}
+          pause={false}
+          scanlineIntensity={1}
+          glitchAmount={1}
+          flickerAmount={1}
+          noiseAmp={1}
+          chromaticAberration={0}
+          dither={0}
+          curvature={0}
+          tint="#8B5CF6"
+          mouseReact={true}
+          mouseStrength={0.5}
+          pageLoadAnimation={false}
+          brightness={1}
         />
       </div>
       <div className="auth-right">
@@ -627,3 +637,5 @@ export default function App() {
     </div>
   );
 }
+
+// Triggering HMR cache invalidation
