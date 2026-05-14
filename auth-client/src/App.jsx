@@ -171,18 +171,18 @@ const appSocket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" 
 
 // ── Ticker data ──────────────────────────────────────────────────────────────
 const TICKERS = [
-  { sym: "BTC/USD", price: 68423.5,  chg: 2.34 },
-  { sym: "ETH/USD", price: 3891.2,   chg: -0.87 },
-  { sym: "SOL/USD", price: 178.45,   chg: 5.12 },
-  { sym: "BNB/USD", price: 612.3,    chg: 1.03 },
-  { sym: "XRP/USD", price: 0.6234,   chg: -1.45 },
-  { sym: "ADA/USD", price: 0.4821,   chg: 3.67 },
-  { sym: "DOGE/USD", price: 0.1534,  chg: -2.11 },
-  { sym: "AVAX/USD", price: 38.92,   chg: 4.28 },
-  { sym: "DOT/USD", price: 7.45,     chg: 0.92 },
-  { sym: "LINK/USD", price: 16.78,   chg: 1.56 },
-  { sym: "MATIC/USD", price: 0.812,  chg: -0.42 },
-  { sym: "UNI/USD", price: 9.34,     chg: 2.88 },
+  { sym: "BTC/USD", price: 68423.5, chg: 2.34 },
+  { sym: "ETH/USD", price: 3891.2, chg: -0.87 },
+  { sym: "SOL/USD", price: 178.45, chg: 5.12 },
+  { sym: "BNB/USD", price: 612.3, chg: 1.03 },
+  { sym: "XRP/USD", price: 0.6234, chg: -1.45 },
+  { sym: "ADA/USD", price: 0.4821, chg: 3.67 },
+  { sym: "DOGE/USD", price: 0.1534, chg: -2.11 },
+  { sym: "AVAX/USD", price: 38.92, chg: 4.28 },
+  { sym: "DOT/USD", price: 7.45, chg: 0.92 },
+  { sym: "LINK/USD", price: 16.78, chg: 1.56 },
+  { sym: "MATIC/USD", price: 0.812, chg: -0.42 },
+  { sym: "UNI/USD", price: 9.34, chg: 2.88 },
 ];
 
 function TickerBar() {
@@ -288,8 +288,8 @@ function useParticles(canvasRef, active) {
 function SearchPageWrapper({ assetClass, onBack, onSelect }) {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0e17', position: 'relative' }}>
-      <button 
-        onClick={onBack} 
+      <button
+        onClick={onBack}
         style={{
           position: 'absolute', top: '20px', left: '20px', background: 'transparent',
           color: '#787b86', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 16px',
@@ -421,7 +421,7 @@ export default function App() {
   // On mount: check if already logged in
   useEffect(() => {
     fetch(`${AUTH_SERVER}/api/auth/me`, { credentials: "include" })
-      .then((r) => { 
+      .then((r) => {
         if (r.ok) {
           setIsAuthenticated(true);
           setPage(prev => {

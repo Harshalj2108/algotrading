@@ -39,7 +39,7 @@ export default function BuyMore({ onBack }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ sAmount }) 
+        body: JSON.stringify({ sAmount })
       });
       const orderData = await orderResponse.json();
 
@@ -49,7 +49,7 @@ export default function BuyMore({ onBack }) {
 
       // 2. Open Razorpay Checkout
       const options = {
-        key: orderData.key_id, 
+        key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "SynthCrypto",
@@ -68,7 +68,7 @@ export default function BuyMore({ onBack }) {
               sAmount: sAmount
             })
           });
-          
+
           const verifyData = await verifyRes.json();
           if (verifyRes.ok) {
             setMessage(`✅ Payment Successful! ${sAmount.toLocaleString()} S added to your wallet.`);
@@ -101,7 +101,7 @@ export default function BuyMore({ onBack }) {
       <div className="buy-more-bg">
         <Orb hue={260} hoverIntensity={0.5} backgroundColor="#0a0a0a" />
       </div>
-      
+
       <div className="buy-more-content">
         <button className="buy-more-back" onClick={onBack}>
           ← Back to Dashboard
@@ -110,37 +110,37 @@ export default function BuyMore({ onBack }) {
         <div className="buy-more-card">
           <h2>Top Up Simulator Wallet</h2>
           <p className="buy-more-sub">Add virtual currency to your paper trading account to test larger strategies.</p>
-          
+
           <div className="buy-more-offer">
             <div className="offer-amount">{sAmount.toLocaleString()} <span>S</span></div>
             <div className="offer-price">₹{inrCost.toLocaleString()}</div>
           </div>
 
           <div className="slider-section">
-            <input 
-              type="range" 
-              className="s-slider" 
-              min="1000" 
-              max="100000" 
-              step="1000" 
-              value={sAmount} 
-              onChange={(e) => setSAmount(Number(e.target.value))} 
+            <input
+              type="range"
+              className="s-slider"
+              min="1000"
+              max="100000"
+              step="1000"
+              value={sAmount}
+              onChange={(e) => setSAmount(Number(e.target.value))}
             />
             <div className="slider-presets">
               {[5000, 10000, 50000, 100000].map(val => (
-                <button 
+                <button
                   key={val}
                   className={`preset-btn ${sAmount === val ? 'active' : ''}`}
                   onClick={() => setSAmount(val)}
                 >
-                  {val >= 1000 ? `${val/1000}k` : val}
+                  {val >= 1000 ? `${val / 1000}k` : val}
                 </button>
               ))}
             </div>
           </div>
 
-          <button 
-            className={`buy-more-btn ${loading ? "loading" : ""}`} 
+          <button
+            className={`buy-more-btn ${loading ? "loading" : ""}`}
             onClick={handlePayment}
             disabled={loading}
           >
@@ -148,7 +148,7 @@ export default function BuyMore({ onBack }) {
           </button>
 
           {message && <div className="buy-more-msg">{message}</div>}
-          
+
           <p className="buy-more-disclaimer">
             * S is a virtual simulation currency intended solely for use within the SynthCrypto platform. It holds no real-world value.
           </p>
