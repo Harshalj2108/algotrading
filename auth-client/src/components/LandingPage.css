@@ -1,117 +1,160 @@
 .landing-page {
+  background-color: #000000;
+  color: #ffffff;
   width: 100vw;
   height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background: #0b0e14;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
-.landing-rays {
+.dotfield-background {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 0;
 }
 
-.landing-content {
+.landing-nav {
   position: relative;
-  z-index: 5;
-  text-align: center;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 4rem;
+  background: transparent;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #fff;
-  padding: 40px;
-  background: rgba(19, 23, 34, 0.4);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-  max-width: 600px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-
-  transform: translateX(-500px);
 }
 
-.landing-content .brand-icon {
-  font-size: 64px;
-  color: #26a69a;
-  margin-bottom: 16px;
+.logo-icon {
+  color: #8B5CF6;
 }
 
-.landing-content h1 {
-  font-size: 48px;
-  margin-bottom: 8px;
+.nav-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.landing-main {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 4rem;
+}
+
+.landing-hero-content {
+  text-align: left;
+  max-width: 700px;
+  pointer-events: none; /* Let mouse pass through to background */
+}
+
+.landing-hero-content > * {
+  pointer-events: auto; /* Enable interaction for text and buttons */
+}
+
+.landing-hero-content h1 {
+  font-size: 4rem;
   font-weight: 800;
-  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(to right, #ffffff, #D8B4FE);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.landing-content h2 {
-  font-size: 20px;
-  color: #d1d4dc;
-  margin-bottom: 24px;
-  font-weight: 400;
-}
-
-.landing-content p {
-  color: #787b86;
-  font-size: 16px;
-  margin-bottom: 32px;
+.landing-hero-content p {
+  font-size: 1.25rem;
+  color: #9CA3AF;
+  margin-bottom: 2.5rem;
   line-height: 1.6;
 }
 
-.get-started-btn {
-  background: #2962ff;
-  color: #fff;
-  border: none;
-  padding: 16px 48px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(41, 98, 255, 0.3);
-}
-
-.get-started-btn:hover {
-  background: #3a71ff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(41, 98, 255, 0.4);
-}
-
-.top-left-brand {
-  position: absolute;
-  top: 40px;
-  left: 40px;
-  width: 140px;
-  height: 140px;
+.hero-buttons {
   display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+/* Base Button Styles */
+.btn-primary.purple-btn, 
+.btn-secondary.purple-outline {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  z-index: 20;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.top-left-logo {
-  font-size: 42px;
-  color: #26a69a;
-  position: absolute;
-  z-index: 2;
+.btn-primary.purple-btn {
+  background: #8B5CF6;
+  color: #ffffff;
+  border: 1px solid transparent;
 }
 
-.brand-circular-text {
-  width: 100% !important;
-  height: 100% !important;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
+.btn-primary.purple-btn:hover {
+  background: #7C3AED;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
 }
 
-.brand-circular-text span {
-  font-size: 13px !important;
-  color: #26a69a;
-  letter-spacing: 2px;
+.btn-secondary.purple-outline {
+  background: transparent;
+  color: #D8B4FE;
+  border: 1px solid #8B5CF6;
+}
+
+.btn-secondary.purple-outline:hover {
+  background: rgba(139, 92, 246, 0.1);
+  box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+/* Specific Button Sizes */
+.nav-btn {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.hero-btn {
+  height: 52px;
+  font-size: 16px;
+  width: 200px;
+  padding: 0; /* Let flex/width handle size */
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .landing-page {
+    height: auto;
+    min-height: 100vh;
+  }
+  .landing-nav, .landing-main {
+    padding: 1.5rem;
+  }
+  .landing-hero-content h1 {
+    font-size: 2.5rem;
+  }
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-btn {
+    width: 100%;
+  }
 }

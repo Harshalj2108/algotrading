@@ -14,7 +14,8 @@ import RegisterForm from "./components/RegisterForm";
 import GoogleButton from "./components/GoogleButton";
 import Dashboard from "./components/Dashboard";
 import SimulatorPage from "./components/SimulatorPage";
-import { HomePage, AboutUsPage, LearnTradingPage } from "./components/PublicPages";
+import { AboutUsPage, LearnTradingPage } from "./components/PublicPages";
+import LandingPage from "./components/LandingPage";
 import StarBorder from "./components/StarBorder";
 import AssetSearch from "./components/AssetSearch";
 import LiveMarketPage from "./components/LiveMarketPage";
@@ -523,7 +524,7 @@ export default function App() {
   }, [openLiveMarket, openSimulator]);
 
   if (page === "home") {
-    return <HomePage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} />;
+    return <LandingPage onNavigate={navigatePublic} />;
   }
 
   if (page === "about") {
