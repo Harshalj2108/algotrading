@@ -11,7 +11,7 @@
 
 :root {
   /* ── Brand Colors ── */
-  --bg-primary: #0a0e17;
+  --bg-primary: #000000;
   --bg-card: rgba(26, 29, 43, 0.72);
   --bg-input: rgba(19, 23, 34, 0.85);
   --bg-input-focus: rgba(19, 23, 34, 1);
@@ -69,18 +69,7 @@ body {
   justify-content: center;
 }
 
-/* ─── Animated Background ──────────────────────────────────────────────────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(38, 166, 154, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(38, 166, 154, 0.025) 1px, transparent 1px);
-  background-size: 60px 60px;
-  z-index: 0;
-  pointer-events: none;
-}
+
 
 /* ─── Animated Orbs ────────────────────────────────────────────────────────── */
 .orb {
@@ -829,22 +818,25 @@ body::before {
 }
 
 /* ─── PURPLE & BLACK THEME OVERRIDES ───────────────────────────────────────── */
-body, html, #root {
+body,
+html,
+#root {
   background-color: #000000;
 }
 
-.auth-split-layout, .buy-more-layout {
+.auth-split-layout,
+.buy-more-layout {
   background-color: #000000;
 }
 
 /* Targeted specific cards instead of global wildcard */
-.ds-auth-container, 
-.buy-more-card, 
-.dash-card, 
-.dash-panel, 
-.portfolio-card, 
-.trade-card, 
-.stat-card, 
+.ds-auth-container,
+.buy-more-card,
+.dash-card,
+.dash-panel,
+.portfolio-card,
+.trade-card,
+.stat-card,
 .live-trades-panel {
   background-color: #0A0A0A;
   border: 1px solid rgba(139, 92, 246, 0.5);
@@ -853,27 +845,31 @@ body, html, #root {
 }
 
 /* Inputs */
-.form-input, .search-input {
+.form-input,
+.search-input {
   background-color: #121212;
   border: 1px solid rgba(139, 92, 246, 0.4);
   color: #fff;
 }
 
-.form-input:focus, .search-input:focus {
+.form-input:focus,
+.search-input:focus {
   border-color: #8B5CF6;
   box-shadow: 0 0 0 1px #8B5CF6;
   outline: none;
 }
 
 /* Buttons */
-.btn-primary, .buy-more-btn {
+.btn-primary,
+.buy-more-btn {
   background: #8B5CF6;
   color: #fff;
   border: none;
   transition: all 0.2s ease;
 }
 
-.btn-primary:hover, .buy-more-btn:hover {
+.btn-primary:hover,
+.buy-more-btn:hover {
   background: #7C3AED;
   box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
 }

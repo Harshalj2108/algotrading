@@ -2,19 +2,19 @@
   background-color: #000000;
   color: #ffffff;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .dotfield-background {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: 0;
 }
 
@@ -52,14 +52,18 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   padding: 0 4rem;
+  padding-bottom: 4rem;
 }
 
 .landing-hero-content {
   text-align: left;
   max-width: 700px;
   pointer-events: none; /* Let mouse pass through to background */
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .landing-hero-content > * {

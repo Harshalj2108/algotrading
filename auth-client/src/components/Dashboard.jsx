@@ -10,7 +10,6 @@ import { io } from "socket.io-client";
 import "./Dashboard.css";
 import "./LandingPage.css";
 import MagicBento from "./MagicBento";
-import CircularText from "./CircularText";
 import StarBorder from "./StarBorder";
 import GooeyNav from "./GooeyNav";
 
@@ -291,7 +290,13 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
     const connect = () => {
       if (stopped) return;
       ws = new WebSocket(`${AUTH_WS}/api/portfolio/trade-feed/ws`);
+      
+      ws.onopen = () => {
+        if (stopped) ws.close();
+      };
+
       ws.onmessage = (event) => {
+        if (stopped) return;
         try {
           const payload = JSON.parse(event.data);
           if (payload.type === "trade" && payload.trade) {
@@ -301,17 +306,30 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
           // Ignore malformed websocket payloads.
         }
       };
+      
       ws.onclose = () => {
         if (!stopped) reconnectTimer = setTimeout(connect, 2500);
       };
-      ws.onerror = () => ws?.close();
+      
+      ws.onerror = () => {
+        if (ws && ws.readyState === 1) ws.close();
+      };
     };
 
     connect();
     return () => {
       stopped = true;
       clearTimeout(reconnectTimer);
-      if (ws && ws.readyState <= 1) ws.close();
+      if (ws) {
+        ws.onclose = null; // Prevent reconnect loop on unmount
+        ws.onerror = null;
+        if (ws.readyState === 1) {
+          ws.close();
+        } else if (ws.readyState === 0) {
+          // If still connecting, close it immediately upon open to suppress browser warnings
+          ws.onopen = () => ws.close();
+        }
+      }
     };
   }, []);
 
@@ -319,7 +337,8 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
     setTimeout(fetchUserData, 0);
     const interval = setInterval(fetchUserData, 30000);
     return () => clearInterval(interval);
-  }, [fetchUserData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => fetchTradeFeed(), 0);
@@ -328,7 +347,8 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [fetchTradeFeed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLogout = async () => {
     await fetch(`${AUTH_SERVER}/api/auth/logout`, { method: "POST", credentials: "include" });
@@ -488,7 +508,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
         <div className="bento-positions-list">
           {activePositions === 0 ? (
             <div className="bento-pos-empty">
-              <div style={{fontSize: 28, marginBottom: 8, opacity: 0.4}}>📭</div>
+              <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.4 }}>📭</div>
               <div className="dash-stat-muted">No open positions</div>
             </div>
           ) : (
@@ -535,13 +555,13 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
           <div className="dash-stat-value">
             <AnimatedValue value={portfolioValue} />
           </div>
-          <div className="dash-stat-sub" style={{marginTop: '6px'}}>
+          <div className="dash-stat-sub" style={{ marginTop: '6px' }}>
             <span className="dash-stat-muted">Cash: S{balance.toFixed(2)}</span>
             {totalPositionValue > 0 && (
               <span className="dash-stat-muted"> + Positions: S{totalPositionValue.toFixed(0)}</span>
             )}
           </div>
-          <div className="dash-stat-sparkline" style={{marginTop: '8px'}}>
+          <div className="dash-stat-sparkline" style={{ marginTop: '8px' }}>
             <Sparkline data={equityData} color={pnlPositive ? "#26a69a" : "#ef5350"} width={200} height={32} />
           </div>
         </>
@@ -562,7 +582,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
           />
         </div>
       ),
-      color: 'rgba(38, 166, 154, 0.05)',
+      color: 'rgba(139, 92, 246, 0.05)',
     },
     // Card 6: Available Balance (rectangle, row 3 col 3-4)
 
@@ -592,16 +612,6 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       <div className="orb orb-2" />
       <div className="orb orb-3" />
 
-      {/* Circular brand — top left */}
-      <div className="top-left-brand dash-brand-pos">
-        <div className="top-left-logo">⬡</div>
-        <CircularText
-          text="SYNTHCRYPTO*SIMULATOR*"
-          onHover="speedUp"
-          spinDuration={20}
-          className="brand-circular-text"
-        />
-      </div>
 
       {/* Profile Menu — top right */}
       <div className="dash-top-right-actions" ref={menuRef}>
@@ -621,7 +631,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
               <span className="dash-dropdown-email">{user?.email || ""}</span>
             </div>
             <div className="dash-dropdown-divider" />
-            <button className="dash-dropdown-item" onClick={() => { setMenuOpen(false); if(onBuyMore) onBuyMore(); }}>
+            <button className="dash-dropdown-item" onClick={() => { setMenuOpen(false); if (onBuyMore) onBuyMore(); }}>
               Buy More S
             </button>
             <button
@@ -659,7 +669,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
 
           <MagicBento
             cards={bentoCards}
-            glowColor="38, 166, 154"
+            glowColor="139, 92, 246"
             enableStars={true}
             enableTilt={true}
             enableMagnetism={true}
@@ -746,7 +756,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
                     })}
                   </tbody>
                 </table>
-                {feedLoadingMore && <div className="dash-trades-loading">Loading more trades...</div>}
+
               </div>
             )}
           </div>
@@ -757,7 +767,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
           <div className="reward-popup-content">
             <h2>🎉 Congratulations!</h2>
             <p>You have received 10,000S</p>
-            <button 
+            <button
               className="reward-popup-close-btn"
               onClick={handleClaimReward}
             >

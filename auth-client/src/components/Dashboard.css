@@ -139,8 +139,15 @@
   font-size: 12px;
 }
 
-.pnl-up { color: #26a69a; font-weight: 600; }
-.pnl-dn { color: #ef5350; font-weight: 600; }
+.pnl-up {
+  color: #26a69a;
+  font-weight: 600;
+}
+
+.pnl-dn {
+  color: #ef5350;
+  font-weight: 600;
+}
 
 .dash-stat-sparkline {
   flex-shrink: 0;
@@ -200,7 +207,7 @@
   color: #d1d4dc;
 }
 
-.bento-pos-row + .bento-pos-row {
+.bento-pos-row+.bento-pos-row {
   margin-top: 4px;
 }
 
@@ -213,7 +220,11 @@
 .bento-positions-list::-webkit-scrollbar {
   width: 4px;
 }
-.bento-positions-list::-webkit-scrollbar-track { background: transparent; }
+
+.bento-positions-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .bento-positions-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 2px;
@@ -297,12 +308,19 @@
 }
 
 /* Scrollbar styling */
-.dash-trades-table-wrap::-webkit-scrollbar { width: 6px; }
-.dash-trades-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.dash-trades-table-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dash-trades-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .dash-trades-table-wrap::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
+
 .dash-trades-table-wrap::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -341,6 +359,7 @@
 .dash-trade-live td {
   border-left: 2px solid rgba(38, 166, 154, 0.4);
 }
+
 .dash-trade-live td:first-child {
   border-left: 2px solid #26a69a;
 }
@@ -383,18 +402,47 @@
   font-size: 10px;
   font-weight: 700;
   color: #d1d4dc;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.dash-source-badge.crypto { color: #26a69a; background: rgba(38,166,154,0.12); border-color: rgba(38,166,154,0.28); }
-.dash-source-badge.stocks { color: #f38720; background: rgba(243,135,32,0.12); border-color: rgba(243,135,32,0.28); }
-.dash-source-badge.simulator { color: #9fb3ff; background: rgba(41,98,255,0.12); border-color: rgba(41,98,255,0.28); }
+.dash-source-badge.crypto {
+  color: #26a69a;
+  background: rgba(38, 166, 154, 0.12);
+  border-color: rgba(38, 166, 154, 0.28);
+}
 
-.dash-trade-symbol { color: #d1d4dc; font-weight: 600; }
-.dash-trade-mono { font-family: "JetBrains Mono", monospace; color: #9599a4; }
-.dash-trade-pnl { font-weight: 600; font-family: "JetBrains Mono", monospace; }
-.dash-trade-date { color: #787b86; font-size: 12px; }
+.dash-source-badge.stocks {
+  color: #f38720;
+  background: rgba(243, 135, 32, 0.12);
+  border-color: rgba(243, 135, 32, 0.28);
+}
+
+.dash-source-badge.simulator {
+  color: #9fb3ff;
+  background: rgba(41, 98, 255, 0.12);
+  border-color: rgba(41, 98, 255, 0.28);
+}
+
+.dash-trade-symbol {
+  color: #d1d4dc;
+  font-weight: 600;
+}
+
+.dash-trade-mono {
+  font-family: "JetBrains Mono", monospace;
+  color: #9599a4;
+}
+
+.dash-trade-pnl {
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.dash-trade-date {
+  color: #787b86;
+  font-size: 12px;
+}
 
 /* ── Empty state ── */
 .dash-trades-empty {
@@ -403,8 +451,16 @@
   color: #787b86;
 }
 
-.dash-trades-empty-icon { font-size: 48px; margin-bottom: 12px; }
-.dash-trades-empty-sub { font-size: 13px; color: #5d606b; }
+.dash-trades-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.dash-trades-empty-sub {
+  font-size: 13px;
+  color: #5d606b;
+}
+
 .dash-trades-loading {
   padding: 12px;
   text-align: center;
@@ -444,9 +500,16 @@
   margin: 0 auto 16px;
 }
 
-.dash-loader-text { color: #787b86; font-size: 14px; }
+.dash-loader-text {
+  color: #787b86;
+  font-size: 14px;
+}
 
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── Responsive ── */
 @media (max-width: 1200px) {
@@ -454,11 +517,13 @@
     flex-direction: column;
     padding-top: 160px;
   }
+
   .dash-left-col {
     flex: none;
     padding-left: 0;
     min-height: auto;
   }
+
   .dash-right-col {
     flex: none;
     min-height: 400px;
@@ -466,11 +531,16 @@
 }
 
 @media (max-width: 768px) {
-  .dash-left-col { padding-left: 0; }
+  .dash-left-col {
+    padding-left: 0;
+  }
+
   .dash-trades-table th:nth-child(3),
   .dash-trades-table td:nth-child(3),
   .dash-trades-table th:nth-child(4),
-  .dash-trades-table td:nth-child(4) { display: none; }
+  .dash-trades-table td:nth-child(4) {
+    display: none;
+  }
 }
 
 /* ── Reward Popup ────────────────────────────────────────────────────────── */
@@ -534,8 +604,15 @@
 }
 
 @keyframes popIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ── Profile Dropdown Menu ─────────────────────────────────────────────── */
@@ -593,8 +670,15 @@
 }
 
 @keyframes dropDownAnim {
-  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .dash-dropdown-header {
