@@ -8,13 +8,14 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "express": "^4.21.0",
-    "pg": "^8.13.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
     "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "cookie-parser": "^1.4.6"
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.0",
+    "razorpay": "^2.9.6"
   }
 }

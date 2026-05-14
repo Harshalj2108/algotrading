@@ -19,6 +19,7 @@ import StarBorder from "./components/StarBorder";
 import AssetSearch from "./components/AssetSearch";
 import LiveMarketPage from "./components/LiveMarketPage";
 import FaultyTerminal from "./components/FaultyTerminal";
+import BuyMore from "./components/BuyMore";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
@@ -37,6 +38,7 @@ const VALID_PAGES = new Set([
   "simulator",
   "crypto_search",
   "stocks_search",
+  "buy_more",
 ]);
 
 function normalizeStoredPage(page) {
@@ -58,6 +60,7 @@ function pageFromPathname(pathname) {
     return `live_market:stock:${decodeURIComponent(path.slice("/markets/stocks/".length))}`;
   }
   if (path.startsWith("/simulation")) return "simulator";
+  if (path === "/buy-s") return "buy_more";
   if (path === "/") return null;
   return null;
 }
@@ -557,6 +560,10 @@ export default function App() {
     );
   }
 
+  if (page === "buy_more") {
+    return <BuyMore onBack={() => { setPage("dashboard"); writePath("/dashboard"); }} />;
+  }
+
   if (page === "dashboard") {
     return (
       <Dashboard
@@ -570,6 +577,10 @@ export default function App() {
         onOpenPosition={openPositionChart}
         liveTrades={liveTrades}
         onResetTrades={() => setLiveTrades([])}
+        onBuyMore={() => {
+          setPage("buy_more");
+          writePath("/buy-s");
+        }}
       />
     );
   }

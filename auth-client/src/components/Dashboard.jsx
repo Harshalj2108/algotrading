@@ -167,7 +167,7 @@ function Sparkline({ data, color = "#26a69a", width = 120, height = 32 }) {
 }
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
-export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto, onLaunchStocks, onOpenPosition, liveTrades = [], onResetTrades }) {
+export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto, onLaunchStocks, onOpenPosition, liveTrades = [], onResetTrades, onBuyMore }) {
   const [showRewardPopup, setShowRewardPopup] = useState(() => {
     return localStorage.getItem("isNewRegistration") === "true";
   });
@@ -621,8 +621,8 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
               <span className="dash-dropdown-email">{user?.email || ""}</span>
             </div>
             <div className="dash-dropdown-divider" />
-            <button className="dash-dropdown-item" onClick={() => setMenuOpen(false)}>
-              Settings
+            <button className="dash-dropdown-item" onClick={() => { setMenuOpen(false); if(onBuyMore) onBuyMore(); }}>
+              Buy More S
             </button>
             <button
               className="dash-dropdown-item"

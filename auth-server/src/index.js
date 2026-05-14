@@ -17,6 +17,7 @@ const cookieParser = require("cookie-parser");
 const { initDB } = require("./db");
 const authRoutes = require("./routes/auth");
 const portfolioRoutes = require("./routes/portfolio");
+const paymentsRoutes = require('./routes/payments');
 const { attachTradeFeedWebSocket } = require("./tradeFeed");
 
 const app = express();
@@ -41,6 +42,7 @@ app.use(cors({
 
 app.use("/api/auth", authRoutes);
 app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
