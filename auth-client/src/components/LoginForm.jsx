@@ -13,6 +13,9 @@ export default function LoginForm({ onSuccess, onError }) {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [step, setStep] = useState("login");
+  const [otp, setOtp] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -29,6 +32,11 @@ export default function LoginForm({ onSuccess, onError }) {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.error === "verification_required") {
+          setStep("verify");
+          setLoading(false);
+          return;
+        }
         onError(data.error || "Login failed");
         setLoading(false);
         return;
@@ -40,6 +48,75 @@ export default function LoginForm({ onSuccess, onError }) {
       setLoading(false);
     }
   };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    if (!otp || otp.length !== 6) return;
+    setLoading(true);
+    onError("");
+
+    try {
+      const res = await fetch(`${AUTH_SERVER}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, otp }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        onError(data.error || "Verification failed");
+        setLoading(false);
+        return;
+      }
+
+      onSuccess(data.user);
+    } catch {
+      onError("Cannot reach auth server.");
+      setLoading(false);
+    }
+  };
+
+  if (step === "verify") {
+    return (
+      <form onSubmit={handleVerifyOTP} autoComplete="off">
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h3 style={{ color: '#f8fafc', marginBottom: '8px' }}>Verify Your Email</h3>
+          <p style={{ color: '#94a3b8', fontSize: '14px' }}>
+            We sent a 6-digit code to <strong>{email}</strong>.
+          </p>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label" htmlFor="login-otp">Verification Code</label>
+          <div className="input-wrap">
+            <input
+              className="form-input"
+              type="text"
+              id="login-otp"
+              name="otp"
+              placeholder="123456"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              style={{ letterSpacing: '6px', textAlign: 'center', fontSize: '20px', paddingLeft: '10px' }}
+              required
+            />
+          </div>
+        </div>
+
+        <StarBorder
+          as="button"
+          type="submit"
+          className={`btn-primary${loading ? " loading" : ""}`}
+          disabled={loading || otp.length !== 6}
+          color="#26a69a"
+        >
+          <span className="btn-text">Verify Account</span>
+        </StarBorder>
+      </form>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} autoComplete="on">

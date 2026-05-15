@@ -706,16 +706,24 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
             <div className="dash-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <span>{user?.username || user?.email || "Trader"}</span>
               {user?.referral_code && (
-                <span style={{ fontSize: '0.85em', color: '#D8B4FE', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>Referrals: {user?.referral_count || 0}</span>
-                  <button 
-                    onClick={() => {
-                      prompt("Copy your referral link:", `http://localhost:5173/register?ref=${user.referral_code}`);
-                    }}
-                    style={{ background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '4px', padding: '2px 8px', color: '#fff', cursor: 'pointer' }}
-                  >
-                    Show Link
-                  </button>
+                <span style={{ fontSize: '0.85em', color: '#D8B4FE', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ opacity: 0.7 }}>|</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>Code: <strong style={{ color: '#fff', letterSpacing: '1px' }}>{user.referral_code}</strong></span>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`http://localhost:5173/register?ref=${user.referral_code}`);
+                        alert("Referral link copied to clipboard!");
+                      }}
+                      style={{ background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '4px', padding: '2px 8px', color: '#fff', cursor: 'pointer' }}
+                    >
+                      Copy Link
+                    </button>
+                  </span>
+                  <span style={{ opacity: 0.7 }}>|</span>
+                  <span>Share your code to earn 2000S per referral!</span>
+                  <span style={{ opacity: 0.7 }}>|</span>
+                  <span>Referrals: <strong style={{ color: '#fff' }}>{user?.referral_count || 0}</strong></span>
                 </span>
               )}
             </div>

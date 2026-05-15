@@ -14,10 +14,21 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const axios = require("axios");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const { pool } = require("../db");
 const { signToken, verifyToken, requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.ethereal.email",
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER || "ethereal.user@ethereal.email",
+    pass: (process.env.SMTP_PASS || "ethereal_password").replace(/\s+/g, ""),
+  },
+});
 
 // ─── env vars ────────────────────────────────────────────────────────────────
 
@@ -52,12 +63,13 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
-    // Check if user exists
+    // Reject if already a verified user
     const existing = await pool.query("SELECT id FROM users WHERE email = $1", [email.toLowerCase()]);
     if (existing.rows.length > 0) {
       return res.status(409).json({ error: "An account with this email already exists" });
     }
 
+    // Sanitize referral code
     let referrerId = null;
     let cleanRefCode = referralCode;
     if (referralCode && referralCode.includes("ref=")) {
@@ -68,42 +80,45 @@ router.post("/register", async (req, res) => {
         cleanRefCode = referralCode.split("ref=")[1] || referralCode;
       }
     }
-
     if (cleanRefCode) cleanRefCode = cleanRefCode.trim();
-
     if (cleanRefCode) {
       const referrer = await pool.query("SELECT id FROM users WHERE referral_code = $1", [cleanRefCode]);
-      if (referrer.rows.length > 0) {
-        referrerId = referrer.rows[0].id;
-      }
+      if (referrer.rows.length > 0) referrerId = referrer.rows[0].id;
     }
 
     const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-    // Hash password
     const salt = await bcrypt.genSalt(12);
     const password_hash = await bcrypt.hash(password, salt);
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Insert user
-    const result = await pool.query(
-      `INSERT INTO users (email, username, password_hash, referral_code, referred_by)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, email, username, avatar_url, created_at`,
-      [email.toLowerCase(), username || email.split("@")[0], password_hash, myReferralCode, referrerId]
-    );
-
-    const user = result.rows[0];
-
-    if (referrerId) {
-      await pool.query("UPDATE users SET balance = balance + 1000 WHERE id = $1", [referrerId]);
+    // Send email FIRST — only persist to DB if email succeeds
+    try {
+      await transporter.sendMail({
+        from: '"SynthCrypto" <noreply@synthcrypto.com>',
+        to: email,
+        subject: "Your SynthCrypto Verification Code",
+        text: `Your verification code is: ${otpCode}. It expires in 10 minutes.`,
+      });
+      console.log(`[SMTP] OTP sent successfully.`);
+    } catch (err) {
+      console.error(`[SMTP] Email delivery failed: ${err.message}`);
+      return res.status(500).json({ error: "We couldn't send a verification email to that address. Please check it and try again." });
     }
 
-    const token = signToken(user);
+    // Email delivered — store as pending registration (upsert in case of retry)
+    await pool.query(
+      `INSERT INTO pending_registrations (email, username, password_hash, referral_code, referred_by, otp_code, otp_expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW() + INTERVAL '10 minutes')
+       ON CONFLICT (email) DO UPDATE SET
+         otp_code = EXCLUDED.otp_code,
+         otp_expires_at = EXCLUDED.otp_expires_at`,
+      [email.toLowerCase(), username || email.split("@")[0], password_hash, myReferralCode, referrerId, otpCode]
+    );
 
-    res.cookie("token", token, COOKIE_OPTS);
     res.status(201).json({
-      message: "Account created successfully",
-      user: { id: user.id, email: user.email, username: user.username, avatar_url: user.avatar_url },
+      status: "verification_required",
+      message: "Please check your email for the verification code.",
+      email: email.toLowerCase()
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -111,6 +126,82 @@ router.post("/register", async (req, res) => {
   }
 });
 
+
+// ─── POST /api/auth/verify-otp ───────────────────────────────────────────────
+
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: "Email and OTP are required" });
+
+    // Look up the pending registration (not yet a real user)
+    const pending = await pool.query(
+      "SELECT * FROM pending_registrations WHERE email = $1",
+      [email.toLowerCase()]
+    );
+
+    if (pending.rows.length === 0) {
+      return res.status(400).json({ error: "No pending registration found. Please sign up again." });
+    }
+    const p = pending.rows[0];
+
+    if (p.otp_code !== otp) return res.status(400).json({ error: "Invalid verification code" });
+    if (new Date() > new Date(p.otp_expires_at)) {
+      await pool.query("DELETE FROM pending_registrations WHERE email = $1", [email.toLowerCase()]);
+      return res.status(400).json({ error: "Verification code expired. Please sign up again." });
+    }
+
+    // OTP valid — now create the real user
+    const result = await pool.query(
+      `INSERT INTO users (email, username, password_hash, referral_code, referred_by, balance, is_verified)
+       VALUES ($1, $2, $3, $4, $5, 10000, TRUE)
+       RETURNING id, email, username, avatar_url, referral_code, referred_by`,
+      [p.email, p.username, p.password_hash, p.referral_code, p.referred_by]
+    );
+    const user = result.rows[0];
+
+    // Clean up pending record
+    await pool.query("DELETE FROM pending_registrations WHERE email = $1", [email.toLowerCase()]);
+
+    // Distribute referral rewards now that user is real
+    if (user.referred_by) {
+      await pool.query("UPDATE users SET balance = balance + 1000 WHERE id = $1", [user.id]);
+      await pool.query("UPDATE users SET balance = balance + 2000 WHERE id = $1", [user.referred_by]);
+
+      await pool.query(`
+        INSERT INTO paper_wallets (user_id, virtual_balance, total_portfolio_value, total_profit_loss)
+        VALUES ($1, 11000, 11000, 0)
+        ON CONFLICT (user_id) DO UPDATE SET
+          virtual_balance = paper_wallets.virtual_balance + 1000,
+          total_portfolio_value = paper_wallets.total_portfolio_value + 1000
+      `, [user.id]);
+
+      await pool.query(`
+        INSERT INTO paper_wallets (user_id, virtual_balance, total_portfolio_value, total_profit_loss)
+        VALUES ($1, 12000, 12000, 0)
+        ON CONFLICT (user_id) DO UPDATE SET
+          virtual_balance = paper_wallets.virtual_balance + 2000,
+          total_portfolio_value = paper_wallets.total_portfolio_value + 2000
+      `, [user.referred_by]);
+
+      console.log(`Referral rewards distributed for user ${user.id} and referrer ${user.referred_by}`);
+    }
+
+    const refCount = await pool.query("SELECT COUNT(*) FROM users WHERE referred_by = $1", [user.id]);
+    user.referral_count = parseInt(refCount.rows[0].count, 10);
+
+    const token = signToken(user);
+    res.cookie("token", token, COOKIE_OPTS);
+
+    res.json({
+      message: "Account verified successfully",
+      user: { id: user.id, email: user.email, username: user.username, avatar_url: user.avatar_url, referral_code: user.referral_code, referral_count: user.referral_count }
+    });
+  } catch (err) {
+    console.error("Verify OTP error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // ─── POST /api/auth/login ────────────────────────────────────────────────────
 
@@ -124,7 +215,7 @@ router.post("/login", async (req, res) => {
 
     // Find user
     const result = await pool.query(
-      "SELECT id, email, username, password_hash, avatar_url FROM users WHERE email = $1",
+      "SELECT id, email, username, password_hash, avatar_url, referral_code, is_verified FROM users WHERE email = $1",
       [email.toLowerCase()]
     );
     if (result.rows.length === 0) {
@@ -144,6 +235,30 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    // Check OTP Verification
+    if (!user.is_verified) {
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await pool.query("UPDATE users SET otp_code = $1, otp_expires_at = NOW() + INTERVAL '10 minutes' WHERE id = $2", [otpCode, user.id]);
+
+      try {
+        await transporter.sendMail({
+          from: '"SynthCrypto" <noreply@synthcrypto.com>',
+          to: user.email,
+          subject: "Your SynthCrypto Verification Code",
+          text: `Your new verification code is: ${otpCode}. It expires in 10 minutes.`,
+        });
+        console.log(`Sent new OTP ${otpCode} to ${user.email}`);
+      } catch (err) {
+        console.log(`Failed to send email to ${user.email}. OTP is: ${otpCode}`);
+      }
+
+      return res.status(403).json({ error: "verification_required", message: "Account not verified. A new code has been sent.", email: user.email });
+    }
+
+    // Fetch referral count
+    const refCount = await pool.query("SELECT COUNT(*) FROM users WHERE referred_by = $1", [user.id]);
+    user.referral_count = parseInt(refCount.rows[0].count, 10);
+
     // Update last_login
     await pool.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.id]);
 
@@ -151,7 +266,7 @@ router.post("/login", async (req, res) => {
     res.cookie("token", token, COOKIE_OPTS);
     res.json({
       message: "Login successful",
-      user: { id: user.id, email: user.email, username: user.username, avatar_url: user.avatar_url },
+      user: { id: user.id, email: user.email, username: user.username, avatar_url: user.avatar_url, referral_code: user.referral_code, referral_count: user.referral_count },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -284,9 +399,9 @@ router.get("/google/callback", async (req, res) => {
             cleanRefCode = referralCode.split("ref=")[1] || referralCode;
           }
         }
-        
+
         if (cleanRefCode) cleanRefCode = cleanRefCode.trim();
-        
+
         console.log("Processing new Google user. cleanRefCode extracted:", cleanRefCode);
         if (cleanRefCode) {
           const referrer = await pool.query("SELECT id FROM users WHERE referral_code = $1", [cleanRefCode]);
@@ -298,19 +413,44 @@ router.get("/google/callback", async (req, res) => {
 
         console.log("Final referrerId for new user:", referrerId);
         const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        let startingBalance = 10000;
+        if (referrerId) {
+          startingBalance = 11000;
+        }
+
         const result = await pool.query(
-          `INSERT INTO users (email, username, google_id, avatar_url, referral_code, referred_by)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           RETURNING id, email, username, avatar_url`,
-          [email.toLowerCase(), name || email.split("@")[0], google_id, picture, myReferralCode, referrerId]
+          `INSERT INTO users (email, username, google_id, avatar_url, referral_code, referred_by, balance, is_verified)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)
+           RETURNING id, email, username, avatar_url, balance`,
+          [email.toLowerCase(), name || email.split("@")[0], google_id, picture, myReferralCode, referrerId, startingBalance]
         );
         user = result.rows[0];
-        
+
         if (referrerId) {
-          await pool.query("UPDATE users SET balance = balance + 1000 WHERE id = $1", [referrerId]);
+          // Update users table
+          await pool.query("UPDATE users SET balance = balance + 2000 WHERE id = $1", [referrerId]);
+
+          // Update paper_wallets table for referrer and new user
+          await pool.query(`
+            INSERT INTO paper_wallets (user_id, virtual_balance, total_portfolio_value, total_profit_loss)
+            VALUES ($1, 11000, 11000, 0)
+            ON CONFLICT (user_id) DO UPDATE SET 
+              virtual_balance = paper_wallets.virtual_balance + 1000,
+              total_portfolio_value = paper_wallets.total_portfolio_value + 1000
+          `, [user.id]);
+
+          await pool.query(`
+            INSERT INTO paper_wallets (user_id, virtual_balance, total_portfolio_value, total_profit_loss)
+            VALUES ($1, 12000, 12000, 0)
+            ON CONFLICT (user_id) DO UPDATE SET 
+              virtual_balance = paper_wallets.virtual_balance + 2000,
+              total_portfolio_value = paper_wallets.total_portfolio_value + 2000
+          `, [referrerId]);
+
           console.log("Updated referrer balance for ID:", referrerId);
         }
-        
+
         isNewGoogleUser = true;
         isNewGoogleUser = true;
       }
@@ -345,7 +485,7 @@ router.get("/me", async (req, res) => {
   try {
     const token = req.cookies?.token;
     if (!token) return res.status(200).json({ user: null });
-    
+
     const payload = verifyToken(token);
     if (!payload) return res.status(200).json({ user: null });
 

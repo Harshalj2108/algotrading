@@ -26,7 +26,22 @@ const INIT_SQL = `
   ALTER TABLE users
     ADD COLUMN IF NOT EXISTS balance NUMERIC(18, 2) NOT NULL DEFAULT 10000,
     ADD COLUMN IF NOT EXISTS referral_code VARCHAR(20) UNIQUE,
-    ADD COLUMN IF NOT EXISTS referred_by INTEGER REFERENCES users(id);
+    ADD COLUMN IF NOT EXISTS referred_by INTEGER REFERENCES users(id),
+    ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS otp_code VARCHAR(6),
+    ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMP;
+
+  CREATE TABLE IF NOT EXISTS pending_registrations (
+    id            SERIAL PRIMARY KEY,
+    email         VARCHAR(255) UNIQUE NOT NULL,
+    username      VARCHAR(100),
+    password_hash VARCHAR(255) NOT NULL,
+    referral_code VARCHAR(20),
+    referred_by   INTEGER,
+    otp_code      VARCHAR(6) NOT NULL,
+    otp_expires_at TIMESTAMP NOT NULL,
+    created_at    TIMESTAMP DEFAULT NOW()
+  );
 
   CREATE TABLE IF NOT EXISTS trades (
     id          SERIAL PRIMARY KEY,
