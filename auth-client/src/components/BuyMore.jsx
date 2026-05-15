@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import Orb from './Orb';
 import './BuyMore.css';
+import { AUTH_SERVER } from '../config';
 
-const AUTH_SERVER = "http://localhost:3001";
+
 
 export default function BuyMore({ onBack }) {
   const [loading, setLoading] = useState(false);

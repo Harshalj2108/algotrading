@@ -4,13 +4,15 @@
  * Paste-and-run strategy panel for the SynthCrypto simulator.
  *
  * Props:
- *   apiBase   – e.g. "http://localhost:8000"
+ *   apiBase   – e.g. "${SIMULATOR_URL}"
  *   token     – JWT bearer token from auth-server
  *   socket    – connected socket.io-client instance
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import StarBorder from "./StarBorder";
+import { SIMULATOR_URL } from '../config';
+
 
 // ─── tiny syntax-highlight tokeniser (no external dep) ────────────────────────
 function tokenise(code) {
@@ -97,7 +99,7 @@ function MetricCard({ label, value, color = "#e0e0e0", sub }) {
 }
 
 // ─── main component ────────────────────────────────────────────────────────────
-export default function StrategyEditor({ apiBase = "http://localhost:8000", token, socket }) {
+export default function StrategyEditor({ apiBase = SIMULATOR_URL, token, socket }) {
   const [code, setCode]           = useState("");
   const [template, setTemplate]   = useState("");
   const [status, setStatus]       = useState("idle"); // idle | loading | loaded | error

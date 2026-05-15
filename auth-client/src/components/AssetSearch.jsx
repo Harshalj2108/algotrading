@@ -73,9 +73,9 @@ export default function AssetSearch({ assetClass, onSelect }) {
       </p>
 
       <div style={{ position: 'relative' }}>
-        <input 
+        <input
           ref={inputRef}
-          type="text" 
+          type="text"
           style={{
             width: '100%',
             fontSize: '18px',
@@ -114,21 +114,21 @@ export default function AssetSearch({ assetClass, onSelect }) {
 
       {/* Search results */}
       {results.length > 0 && (
-        <div style={{ 
-          marginTop: '10px', 
-          background: 'rgba(19, 23, 34, 0.95)', 
-          border: '1px solid rgba(255,255,255,0.08)', 
+        <div style={{
+          marginTop: '10px',
+          background: 'rgba(19, 23, 34, 0.95)',
+          border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '12px',
           overflow: 'hidden',
           maxHeight: '400px',
           overflowY: 'auto',
         }}>
           {results.map((r, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               onClick={() => handleSelect(r.symbol)}
-              style={{ 
-                padding: '14px 16px', 
+              style={{
+                padding: '14px 16px',
                 borderBottom: i < results.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                 cursor: 'pointer',
                 transition: 'background 0.15s',
@@ -145,7 +145,7 @@ export default function AssetSearch({ assetClass, onSelect }) {
           ))}
         </div>
       )}
-      
+
       {/* No results */}
       {!loading && query.length >= 2 && results.length === 0 && !error && (
         <div style={{ marginTop: '20px', color: '#787b86', textAlign: 'center', padding: '20px' }}>

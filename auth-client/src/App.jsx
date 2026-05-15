@@ -602,7 +602,7 @@ export default function App() {
   return (
     <div className="auth-split-layout">
       <div className="auth-left">
-        <DotField 
+        <DotField
           gradientFrom="#8B5CF6"
           gradientTo="#D8B4FE"
           dotRadius={2}

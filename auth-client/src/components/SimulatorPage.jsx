@@ -5,6 +5,8 @@ import StrategyEditor from "./StrategyEditor";
 import { MetricsOverlay, StressOverlay, EBBOverlay } from "./SimOverlays";
 import "./SimulatorPage.css";
 import StarBorder from "./StarBorder";
+import { AUTH_SERVER } from '../config';
+
 
 class ChartErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
@@ -23,8 +25,6 @@ class ChartErrorBoundary extends Component {
   }
 }
 
-const API = "http://localhost:8000";
-const AUTH_SERVER = "http://localhost:3001";
 const socket = io(API, { autoConnect: false, path: "/ws/socket.io" });
 
 const TFS = ["1s","1m","5m","15m","30m","1h","1d"];

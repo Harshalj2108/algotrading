@@ -4,8 +4,9 @@
 
 import { useState, useMemo } from "react";
 import StarBorder from "./StarBorder";
+import { AUTH_SERVER } from '../config';
 
-const AUTH_SERVER = "http://localhost:3001";
+
 
 function getStrength(pw) {
   if (!pw) return { score: 0, label: "" };

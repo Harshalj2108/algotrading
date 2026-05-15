@@ -12,9 +12,9 @@ import "./LandingPage.css";
 import MagicBento from "./MagicBento";
 import StarBorder from "./StarBorder";
 import GooeyNav from "./GooeyNav";
+import { AUTH_SERVER, SIMULATOR_URL, APP_URL } from '../config';
 
-const AUTH_SERVER = "http://localhost:3001";
-const SIMULATOR_URL = "http://localhost:8000";
+
 const AUTH_WS = AUTH_SERVER.replace(/^http/, "ws");
 
 const simSocket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" });
@@ -291,7 +291,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
     const connect = () => {
       if (stopped) return;
       ws = new WebSocket(`${AUTH_WS}/api/portfolio/trade-feed/ws`);
-      
+
       ws.onopen = () => {
         if (stopped) ws.close();
       };
@@ -307,11 +307,11 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
           // Ignore malformed websocket payloads.
         }
       };
-      
+
       ws.onclose = () => {
         if (!stopped) reconnectTimer = setTimeout(connect, 2500);
       };
-      
+
       ws.onerror = () => {
         if (ws && ws.readyState === 1) ws.close();
       };
@@ -617,13 +617,13 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       <div style={{ position: 'absolute', top: '24px', left: '32px', zIndex: 100 }}>
         <button
           onClick={onGoHome}
-          style={{ 
-            padding: '8px 16px', 
-            borderRadius: '8px', 
-            cursor: 'pointer', 
-            background: 'transparent', 
-            border: '1px solid rgba(139, 92, 246, 0.5)', 
-            color: '#D8B4FE', 
+          style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            background: 'transparent',
+            border: '1px solid rgba(139, 92, 246, 0.5)',
+            color: '#D8B4FE',
             fontWeight: 600,
             transition: 'all 0.2s ease',
             display: 'flex',
@@ -673,10 +673,10 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
             </button>
             <button
               className="dash-dropdown-item"
-              onClick={() => { 
-                setMenuOpen(false); 
+              onClick={() => {
+                setMenuOpen(false);
                 if (user?.referral_code) {
-                  prompt("Copy your referral link:", `http://localhost:5173/register?ref=${user.referral_code}`);
+                  prompt("Copy your referral link:", `${APP_URL}/register?ref=${user.referral_code}`);
                 }
               }}
             >
@@ -710,9 +710,9 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
                   <span style={{ opacity: 0.7 }}>|</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>Code: <strong style={{ color: '#fff', letterSpacing: '1px' }}>{user.referral_code}</strong></span>
-                    <button 
+                    <button
                       onClick={() => {
-                        navigator.clipboard.writeText(`http://localhost:5173/register?ref=${user.referral_code}`);
+                        navigator.clipboard.writeText(`${APP_URL}/register?ref=${user.referral_code}`);
                         alert("Referral link copied to clipboard!");
                       }}
                       style={{ background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '4px', padding: '2px 8px', color: '#fff', cursor: 'pointer' }}

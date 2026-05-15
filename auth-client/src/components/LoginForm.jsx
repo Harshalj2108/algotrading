@@ -4,8 +4,9 @@
 
 import { useState } from "react";
 import StarBorder from "./StarBorder";
+import { AUTH_SERVER } from '../config';
 
-const AUTH_SERVER = "http://localhost:3001";
+
 
 export default function LoginForm({ onSuccess, onError }) {
   const [email, setEmail] = useState("");
