@@ -31,11 +31,11 @@ app.use(cookieParser());
 
 app.set("trust proxy", 1);
 app.use(cors({
-  origin: function (origin, callback) {
-    // Automatically allow and reflect the origin to solve cross-domain cookie issues
-    if (!origin) return callback(null, true);
-    callback(null, origin);
-  },
+  origin: [
+    process.env.CLIENT_URL, // Your Frontend
+    process.env.AUTH_URL,           // Your Auth Server itself
+    process.env.SIMULATOR_URL                  // Your Simulator API
+  ],
   credentials: true,
 }));
 
