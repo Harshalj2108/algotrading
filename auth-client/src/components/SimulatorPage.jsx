@@ -25,7 +25,7 @@ class ChartErrorBoundary extends Component {
   }
 }
 
-const socket = io(API, { autoConnect: false, path: "/ws/socket.io" });
+const socket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" });
 
 const TFS = ["1s","1m","5m","15m","30m","1h","1d"];
 const SPEEDS = [{l:"×1",v:1},{l:"×10",v:10},{l:"×100",v:100},{l:"×1000",v:1000},{l:"MAX",v:"max"}];
@@ -394,7 +394,7 @@ export default function SimulatorPage({ onBack, focusPositionId = null }) {
         {onBack&&<><div className="sep"/><StarBorder as="button" className="btn" onClick={onBack}>📁 Portfolio</StarBorder></>}
       </div>
       <div className="strategy-lab-container">
-        <StrategyEditor socket={socket} apiBase={API}/>
+        <StrategyEditor socket={socket} apiBase={SIMULATOR_URL}/>
       </div>
     </div>
   );
