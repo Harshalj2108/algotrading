@@ -19,12 +19,11 @@ import LandingPage from "./components/LandingPage";
 import StarBorder from "./components/StarBorder";
 import AssetSearch from "./components/AssetSearch";
 import LiveMarketPage from "./components/LiveMarketPage";
-import FaultyTerminal from "./components/FaultyTerminal";
+import DotField from "./components/DotField";
 import BuyMore from "./components/BuyMore";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
-const TERMINAL_GRID = [2, 1];
 const PUBLIC_PATHS = {
   home: "/",
   about: "/about",
@@ -328,6 +327,8 @@ export default function App() {
   const [liveTrades, setLiveTrades] = useState([]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     appSocket.connect();
 
     appSocket.on("order_result", d => {
@@ -368,7 +369,7 @@ export default function App() {
     });
 
     return () => { appSocket.off(); appSocket.disconnect(); };
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     localStorage.setItem("synthcrypto_page", page);
@@ -422,14 +423,24 @@ export default function App() {
   // On mount: check if already logged in
   useEffect(() => {
     fetch(`${AUTH_SERVER}/api/auth/me`, { credentials: "include" })
-      .then((r) => {
+      .then(async (r) => {
         if (r.ok) {
-          setIsAuthenticated(true);
-          setPage(prev => {
-            if (prev !== "auth") return prev;
-            writePath("/dashboard");
-            return "dashboard";
-          });
+          const data = await r.json();
+          if (data.user) {
+            setIsAuthenticated(true);
+            setPage(prev => {
+              if (prev !== "auth") return prev;
+              writePath("/dashboard");
+              return "dashboard";
+            });
+          } else {
+            setIsAuthenticated(false);
+            setPage(prev => {
+              if (prev !== "dashboard") return prev;
+              writePath("/");
+              return "home";
+            });
+          }
         } else {
           setIsAuthenticated(false);
           setPage(prev => {
@@ -591,24 +602,13 @@ export default function App() {
   return (
     <div className="auth-split-layout">
       <div className="auth-left">
-        <FaultyTerminal
-          scale={1.5}
-          gridMul={TERMINAL_GRID}
-          digitSize={1.2}
-          timeScale={1}
-          pause={false}
-          scanlineIntensity={1}
-          glitchAmount={1}
-          flickerAmount={1}
-          noiseAmp={1}
-          chromaticAberration={0}
-          dither={0}
-          curvature={0}
-          tint="#8B5CF6"
-          mouseReact={true}
-          mouseStrength={0.5}
-          pageLoadAnimation={false}
-          brightness={1}
+        <DotField 
+          gradientFrom="#8B5CF6"
+          gradientTo="#D8B4FE"
+          dotRadius={2}
+          dotSpacing={12}
+          glowColor="rgba(139, 92, 246, 0.3)"
+          sparkle={true}
         />
       </div>
       <div className="auth-right">

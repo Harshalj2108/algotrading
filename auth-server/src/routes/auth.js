@@ -341,20 +341,26 @@ router.post("/logout", (req, res) => {
 
 // ─── GET /api/auth/me — Return current authenticated user ────────────────────
 
-router.get("/me", requireAuth, async (req, res) => {
+router.get("/me", async (req, res) => {
   try {
-    const result = await pool.query("SELECT id, email, username, avatar_url, referral_code FROM users WHERE id = $1", [req.user.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: "User not found" });
+    const token = req.cookies?.token;
+    if (!token) return res.status(200).json({ user: null });
+    
+    const payload = verifyToken(token);
+    if (!payload) return res.status(200).json({ user: null });
+
+    const result = await pool.query("SELECT id, email, username, avatar_url, referral_code FROM users WHERE id = $1", [payload.id]);
+    if (result.rows.length === 0) return res.status(200).json({ user: null });
     const user = result.rows[0];
 
     // Auto-generate referral code for existing users who don't have one
     if (!user.referral_code) {
       const newRefCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-      await pool.query("UPDATE users SET referral_code = $1 WHERE id = $2", [newRefCode, req.user.id]);
+      await pool.query("UPDATE users SET referral_code = $1 WHERE id = $2", [newRefCode, payload.id]);
       user.referral_code = newRefCode;
     }
 
-    const refCount = await pool.query("SELECT COUNT(*) FROM users WHERE referred_by = $1", [req.user.id]);
+    const refCount = await pool.query("SELECT COUNT(*) FROM users WHERE referred_by = $1", [payload.id]);
     user.referral_count = parseInt(refCount.rows[0].count, 10);
     res.json({ user });
   } catch (err) {
