@@ -17,8 +17,6 @@ export default function AssetSearch({ assetClass, onSelect }) {
 
   useEffect(() => {
     if (!query || query.length < 2) {
-      setResults([]);
-      setError(null);
       return;
     }
 
@@ -52,6 +50,15 @@ export default function AssetSearch({ assetClass, onSelect }) {
 
   const handleSelect = (symbol) => {
     if (onSelect) onSelect(symbol);
+  };
+
+  const handleQueryChange = (event) => {
+    const nextQuery = event.target.value;
+    setQuery(nextQuery);
+    if (!nextQuery || nextQuery.length < 2) {
+      setResults([]);
+      setError(null);
+    }
   };
 
   const popularItems = assetClass === 'crypto' ? POPULAR_CRYPTO : POPULAR_STOCKS;
@@ -91,7 +98,7 @@ export default function AssetSearch({ assetClass, onSelect }) {
           }}
           placeholder={assetClass === 'crypto' ? 'Search (e.g. BTC, ETH, SOL)...' : 'Search (e.g. AAPL, TSLA, MSFT)...'}
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={handleQueryChange}
         />
         <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', color: '#787b86', fontSize: '14px' }}>
           {loading ? '⏳' : '🔍'}

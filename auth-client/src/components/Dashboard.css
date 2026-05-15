@@ -139,8 +139,15 @@
   font-size: 12px;
 }
 
-.pnl-up { color: #26a69a; font-weight: 600; }
-.pnl-dn { color: #ef5350; font-weight: 600; }
+.pnl-up {
+  color: #26a69a;
+  font-weight: 600;
+}
+
+.pnl-dn {
+  color: #ef5350;
+  font-weight: 600;
+}
 
 .dash-stat-sparkline {
   flex-shrink: 0;
@@ -173,6 +180,23 @@
   border-radius: 10px;
   padding: 10px 12px;
   flex-shrink: 0;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.bento-pos-clickable {
+  cursor: pointer;
+  color: inherit;
+}
+
+.bento-pos-clickable:hover,
+.bento-pos-clickable:focus-visible {
+  background: rgba(41, 98, 255, 0.08);
+  border-color: rgba(41, 98, 255, 0.42);
+  transform: translateY(-1px);
+  outline: none;
 }
 
 .bento-pos-row {
@@ -183,7 +207,7 @@
   color: #d1d4dc;
 }
 
-.bento-pos-row + .bento-pos-row {
+.bento-pos-row+.bento-pos-row {
   margin-top: 4px;
 }
 
@@ -196,7 +220,11 @@
 .bento-positions-list::-webkit-scrollbar {
   width: 4px;
 }
-.bento-positions-list::-webkit-scrollbar-track { background: transparent; }
+
+.bento-positions-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .bento-positions-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 2px;
@@ -280,12 +308,19 @@
 }
 
 /* Scrollbar styling */
-.dash-trades-table-wrap::-webkit-scrollbar { width: 6px; }
-.dash-trades-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.dash-trades-table-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dash-trades-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .dash-trades-table-wrap::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
+
 .dash-trades-table-wrap::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -324,6 +359,7 @@
 .dash-trade-live td {
   border-left: 2px solid rgba(38, 166, 154, 0.4);
 }
+
 .dash-trade-live td:first-child {
   border-left: 2px solid #26a69a;
 }
@@ -345,22 +381,68 @@
   letter-spacing: 0.5px;
 }
 
-.dash-side-badge.long {
+.dash-side-badge.long,
+.dash-side-badge.buy {
   background: rgba(38, 166, 154, 0.15);
   color: #26a69a;
   border: 1px solid rgba(38, 166, 154, 0.3);
 }
 
-.dash-side-badge.short {
+.dash-side-badge.short,
+.dash-side-badge.sell {
   background: rgba(239, 83, 80, 0.15);
   color: #ef5350;
   border: 1px solid rgba(239, 83, 80, 0.3);
 }
 
-.dash-trade-symbol { color: #d1d4dc; font-weight: 600; }
-.dash-trade-mono { font-family: "JetBrains Mono", monospace; color: #9599a4; }
-.dash-trade-pnl { font-weight: 600; font-family: "JetBrains Mono", monospace; }
-.dash-trade-date { color: #787b86; font-size: 12px; }
+.dash-source-badge {
+  display: inline-block;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #d1d4dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dash-source-badge.crypto {
+  color: #26a69a;
+  background: rgba(38, 166, 154, 0.12);
+  border-color: rgba(38, 166, 154, 0.28);
+}
+
+.dash-source-badge.stocks {
+  color: #f38720;
+  background: rgba(243, 135, 32, 0.12);
+  border-color: rgba(243, 135, 32, 0.28);
+}
+
+.dash-source-badge.simulator {
+  color: #9fb3ff;
+  background: rgba(41, 98, 255, 0.12);
+  border-color: rgba(41, 98, 255, 0.28);
+}
+
+.dash-trade-symbol {
+  color: #d1d4dc;
+  font-weight: 600;
+}
+
+.dash-trade-mono {
+  font-family: "JetBrains Mono", monospace;
+  color: #9599a4;
+}
+
+.dash-trade-pnl {
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.dash-trade-date {
+  color: #787b86;
+  font-size: 12px;
+}
 
 /* ── Empty state ── */
 .dash-trades-empty {
@@ -369,8 +451,22 @@
   color: #787b86;
 }
 
-.dash-trades-empty-icon { font-size: 48px; margin-bottom: 12px; }
-.dash-trades-empty-sub { font-size: 13px; color: #5d606b; }
+.dash-trades-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.dash-trades-empty-sub {
+  font-size: 13px;
+  color: #5d606b;
+}
+
+.dash-trades-loading {
+  padding: 12px;
+  text-align: center;
+  color: #787b86;
+  font-size: 12px;
+}
 
 /* ── Loading / Error wrappers ── */
 .dash-wrapper {
@@ -404,9 +500,16 @@
   margin: 0 auto 16px;
 }
 
-.dash-loader-text { color: #787b86; font-size: 14px; }
+.dash-loader-text {
+  color: #787b86;
+  font-size: 14px;
+}
 
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── Responsive ── */
 @media (max-width: 1200px) {
@@ -414,11 +517,13 @@
     flex-direction: column;
     padding-top: 160px;
   }
+
   .dash-left-col {
     flex: none;
     padding-left: 0;
     min-height: auto;
   }
+
   .dash-right-col {
     flex: none;
     min-height: 400px;
@@ -426,9 +531,205 @@
 }
 
 @media (max-width: 768px) {
-  .dash-left-col { padding-left: 0; }
+  .dash-left-col {
+    padding-left: 0;
+  }
+
   .dash-trades-table th:nth-child(3),
   .dash-trades-table td:nth-child(3),
   .dash-trades-table th:nth-child(4),
-  .dash-trades-table td:nth-child(4) { display: none; }
+  .dash-trades-table td:nth-child(4) {
+    display: none;
+  }
+}
+
+/* ── Reward Popup ────────────────────────────────────────────────────────── */
+.reward-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 14, 23, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.reward-popup-content {
+  background: rgba(26, 29, 43, 0.95);
+  border: 1px solid rgba(38, 166, 154, 0.4);
+  box-shadow: 0 0 40px rgba(38, 166, 154, 0.2);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  color: #d1d4dc;
+  max-width: 400px;
+  width: 90%;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.reward-popup-content h2 {
+  color: #26a69a;
+  margin-bottom: 12px;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.reward-popup-content p {
+  font-size: 16px;
+  margin-bottom: 28px;
+  color: #9599a4;
+}
+
+.reward-popup-close-btn {
+  background: #26a69a;
+  color: #0d1117;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.reward-popup-close-btn:hover {
+  background: #2bbbad;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(38, 166, 154, 0.3);
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ── Profile Dropdown Menu ─────────────────────────────────────────────── */
+.dash-profile-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: transform 0.2s ease;
+}
+
+.dash-profile-btn:hover {
+  transform: scale(1.05);
+}
+
+.dash-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #26a69a, #2bbbad);
+  color: #0d1117;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(38, 166, 154, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.dash-top-right-actions {
+  position: fixed;
+  top: 28px;
+  right: 28px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+}
+
+.dash-dropdown-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 220px;
+  background: rgba(26, 29, 43, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  animation: dropDownAnim 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes dropDownAnim {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dash-dropdown-header {
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dash-dropdown-name {
+  color: #d1d4dc;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.dash-dropdown-email {
+  color: #787b86;
+  font-size: 12px;
+}
+
+.dash-dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 6px 0;
+}
+
+.dash-dropdown-item {
+  background: transparent;
+  border: none;
+  color: #d1d4dc;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.dash-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dash-dropdown-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dash-dropdown-item.text-danger {
+  color: #ef5350;
+}
+
+.dash-dropdown-item.text-danger:hover {
+  background: rgba(239, 83, 80, 0.1);
 }

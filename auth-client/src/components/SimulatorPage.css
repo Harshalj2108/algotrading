@@ -190,6 +190,8 @@
   white-space: nowrap;
   background: #131722;
   border: 1px solid currentColor;
+  cursor: pointer;
+  pointer-events: auto;
 }
 .chart-tpsl-line.tp span { color: #26a69a; }
 .chart-tpsl-line.sl span { color: #ef5350; }
@@ -542,6 +544,35 @@
 }
 .detail-actions .overlay-close {
   margin-top: 0;
+}
+.tpsl-modal { min-width: 360px; }
+.tpsl-modal-actions {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.tpsl-modal-field {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  color: #787b86;
+  font-size: 11px;
+}
+.tpsl-modal-field input {
+  background: #131722;
+  border: 1px solid #2a2e39;
+  color: #d1d4dc;
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+.tpsl-modal-field input:focus {
+  outline: none;
+  border-color: #2962ff;
+}
+.tpsl-confirm-copy {
+  color: #d1d4dc;
+  font-size: 12px;
+  margin: 8px 0 2px;
 }
 
 /* stress panel */

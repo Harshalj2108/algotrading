@@ -86,6 +86,7 @@ export default function SimChart({
   onSelectPosition,
   onOpenPositionDetails,
   onUpdatePositionTpsl,
+  onManagePositionTpsl,
 }) {
   const containerRef = useRef(null);
   const chartRef = useRef(null);
@@ -482,7 +483,16 @@ export default function SimChart({
                   onMouseDown={event => startDrag(event, overlay, "tp")}
                   title="Drag Take Profit"
                 >
-                  <span>TP {fmtPrice(tp)}</span>
+                  <span
+                    onMouseDown={event => event.stopPropagation()}
+                    onClick={event => {
+                      event.stopPropagation();
+                      onSelectPosition?.(position.id);
+                      onManagePositionTpsl?.(position.id);
+                    }}
+                  >
+                    TP {fmtPrice(tp)}
+                  </span>
                 </div>
               )}
               {active && slY != null && (
@@ -492,7 +502,16 @@ export default function SimChart({
                   onMouseDown={event => startDrag(event, overlay, "sl")}
                   title="Drag Stop Loss"
                 >
-                  <span>SL {fmtPrice(sl)}</span>
+                  <span
+                    onMouseDown={event => event.stopPropagation()}
+                    onClick={event => {
+                      event.stopPropagation();
+                      onSelectPosition?.(position.id);
+                      onManagePositionTpsl?.(position.id);
+                    }}
+                  >
+                    SL {fmtPrice(sl)}
+                  </span>
                 </div>
               )}
               <button

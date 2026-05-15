@@ -10,11 +10,12 @@ import { io } from "socket.io-client";
 import "./Dashboard.css";
 import "./LandingPage.css";
 import MagicBento from "./MagicBento";
-import CircularText from "./CircularText";
 import StarBorder from "./StarBorder";
+import GooeyNav from "./GooeyNav";
 
 const AUTH_SERVER = "http://localhost:3001";
 const SIMULATOR_URL = "http://localhost:8000";
+const AUTH_WS = AUTH_SERVER.replace(/^http/, "ws");
 
 const simSocket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" });
 
@@ -37,8 +38,77 @@ function fmtPrice(v) {
   return v.toFixed(6);
 }
 
+function normalizeSource(value, assetType = "") {
+  const source = String(value || assetType || "").toLowerCase();
+  if (source === "stock" || source === "stocks") return "stocks";
+  if (source === "sim" || source === "simulator") return "simulator";
+  return "crypto";
+}
+
+function marketLabel(value, assetType = "") {
+  const source = normalizeSource(value, assetType);
+  if (source === "stocks") return "Stocks";
+  if (source === "simulator") return "Simulator";
+  return "Crypto";
+}
+
+function tradeSide(trade) {
+  const side = String(trade.buy_or_sell || trade.order_type || trade.side || "buy").toLowerCase();
+  if (side === "sell" || side === "short" || side === "closed") return "sell";
+  return "buy";
+}
+
+function tradeKey(trade) {
+  const side = tradeSide(trade);
+  const source = normalizeSource(trade.source_market, trade.asset_type);
+  return trade.event_key || `${source}:${trade.trade_id || trade.id}:${side}`;
+}
+
+function mergeTrades(trades) {
+  const byKey = new Map();
+  for (const trade of trades || []) {
+    if (!trade) continue;
+    byKey.set(tradeKey(trade), trade);
+  }
+  return Array.from(byKey.values()).sort((a, b) => {
+    const at = new Date(a.timestamp || a.created_at || a.closed_at || 0).getTime();
+    const bt = new Date(b.timestamp || b.created_at || b.closed_at || 0).getTime();
+    return bt - at;
+  });
+}
+
+function normalizeSimPosition(position) {
+  return {
+    ...position,
+    id: position.id,
+    trade_id: position.id,
+    asset_symbol: "SIM",
+    symbol: "SIM",
+    asset_type: "simulator",
+    source_market: "simulator",
+    order_type: position.side === "short" ? "sell" : "buy",
+    current_value: Number(position.size_usd) || 0,
+    quantity: Number(position.qty) || 0,
+    profit_loss: Number(position.upnl) || 0,
+  };
+}
+
+function positionKey(position) {
+  return `${normalizeSource(position.source_market, position.asset_type)}:${position.id || position.trade_id}`;
+}
+
+function mergePositions(positions) {
+  const byKey = new Map();
+  for (const position of positions || []) {
+    if (!position) continue;
+    byKey.set(positionKey(position), position);
+  }
+  return Array.from(byKey.values());
+}
+
 // ── Animated counter ─────────────────────────────────────────────────────────
-function AnimatedValue({ value, prefix = "$", decimals = 2, duration = 800 }) {
+
+function AnimatedValue({ value, prefix = "S", decimals = 2, duration = 1000 }) {
   const [display, setDisplay] = useState(0);
   const ref = useRef(null);
 
@@ -55,7 +125,7 @@ function AnimatedValue({ value, prefix = "$", decimals = 2, duration = 800 }) {
     }
     ref.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(ref.current);
-  }, [value, duration, display]);
+  }, [value, duration]);
 
   return (
     <span>
@@ -97,19 +167,46 @@ function Sparkline({ data, color = "#26a69a", width = 120, height = 32 }) {
 }
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
-export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto, onLaunchStocks, liveTrades = [], onResetTrades }) {
+export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto, onLaunchStocks, onOpenPosition, liveTrades = [], onResetTrades, onBuyMore, onGoHome }) {
+  const [showRewardPopup, setShowRewardPopup] = useState(() => {
+    return localStorage.getItem("isNewRegistration") === "true";
+  });
+
+  const handleClaimReward = () => {
+    localStorage.removeItem("isNewRegistration");
+    setShowRewardPopup(false);
+  };
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Live data from simulator
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Live persisted paper-trading data
   const [balance, setBalance] = useState(10000);
   const [rpnl, setRpnl] = useState(0);
   const [positions, setPositions] = useState([]);
+  const [paperSummary, setPaperSummary] = useState({});
   const [connected, setConnected] = useState(false);
 
   // Persisted trades from auth-server DB
   const [dbTrades, setDbTrades] = useState([]);
+  const [tradeFeed, setTradeFeed] = useState([]);
+  const [feedHasMore, setFeedHasMore] = useState(true);
+  const [feedLoadingMore, setFeedLoadingMore] = useState(false);
+  const [simPositions, setSimPositions] = useState([]);
 
   const goToLogin = useCallback(() => {
     if (onLogout) onLogout();
@@ -127,7 +224,16 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
         const res = await fetch(`${AUTH_SERVER}/api/portfolio/me`, { credentials: "include" });
         if (res.ok) {
           const data = await readJsonResponse(res);
-          if (data.trades) setDbTrades(data.trades);
+          if (data.paper) {
+            setBalance(Number(data.paper.wallet?.virtual_balance) || 0);
+            setRpnl(Number(data.paper.summary?.realized_profit_loss) || 0);
+            setPositions(data.paper.positions || []);
+            setPaperSummary(data.paper.summary || {});
+            setDbTrades(data.paper.history || []);
+            if (data.trade_feed) setTradeFeed(prev => mergeTrades([...data.trade_feed, ...prev]));
+          } else if (data.trades) {
+            setDbTrades(data.trades);
+          }
         }
       } catch { /* portfolio endpoint optional */ }
     } catch (err) {
@@ -137,43 +243,113 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
     }
   }, [goToLogin]);
 
+  const fetchTradeFeed = useCallback(async ({ append = false } = {}) => {
+    if (append && (!feedHasMore || feedLoadingMore)) return;
+    setFeedLoadingMore(true);
+    try {
+      const params = new URLSearchParams({ limit: "50" });
+      if (append && tradeFeed.length) {
+        const before = tradeFeed[tradeFeed.length - 1]?.timestamp
+          || tradeFeed[tradeFeed.length - 1]?.created_at
+          || tradeFeed[tradeFeed.length - 1]?.closed_at;
+        if (before) params.set("before", before);
+      }
+      const res = await fetch(`${AUTH_SERVER}/api/portfolio/trade-feed?${params.toString()}`, {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      const data = await readJsonResponse(res);
+      const nextTrades = data.trades || [];
+      setTradeFeed(prev => append ? mergeTrades([...prev, ...nextTrades]) : mergeTrades([...nextTrades, ...prev]));
+      setFeedHasMore(Boolean(data.has_more) && nextTrades.length > 0);
+    } catch {
+      // Live feed is best-effort; the portfolio fetch still keeps the dashboard usable.
+    } finally {
+      setFeedLoadingMore(false);
+    }
+  }, [feedHasMore, feedLoadingMore, tradeFeed]);
+
   // Connect to simulator socket for live balance/positions data
   useEffect(() => {
     simSocket.connect();
 
     simSocket.on("connect", () => setConnected(true));
     simSocket.on("disconnect", () => setConnected(false));
-
-    simSocket.on("init", d => {
-      if (d.balance !== undefined) setBalance(d.balance);
-    });
-
     simSocket.on("tick", d => {
-      if (d.balance !== undefined) setBalance(d.balance);
-      if (d.rpnl !== undefined) setRpnl(d.rpnl);
-      if (d.positions !== undefined) setPositions(d.positions);
+      if (d.positions) setSimPositions(d.positions.map(normalizeSimPosition));
     });
-
-    simSocket.on("new_sim", d => {
-      setBalance(d.balance || 10000);
-      setRpnl(0);
-      setPositions([]);
-    });
-
-    simSocket.on("order_result", d => {
-      if (d.status === "closed" && d.balance !== undefined) {
-        setBalance(d.balance);
-      }
-    });
+    simSocket.on("new_sim", () => setSimPositions([]));
 
     return () => { simSocket.off(); simSocket.disconnect(); };
+  }, []);
+
+  useEffect(() => {
+    let stopped = false;
+    let reconnectTimer = null;
+    let ws = null;
+
+    const connect = () => {
+      if (stopped) return;
+      ws = new WebSocket(`${AUTH_WS}/api/portfolio/trade-feed/ws`);
+      
+      ws.onopen = () => {
+        if (stopped) ws.close();
+      };
+
+      ws.onmessage = (event) => {
+        if (stopped) return;
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.type === "trade" && payload.trade) {
+            setTradeFeed(prev => mergeTrades([payload.trade, ...prev]));
+          }
+        } catch {
+          // Ignore malformed websocket payloads.
+        }
+      };
+      
+      ws.onclose = () => {
+        if (!stopped) reconnectTimer = setTimeout(connect, 2500);
+      };
+      
+      ws.onerror = () => {
+        if (ws && ws.readyState === 1) ws.close();
+      };
+    };
+
+    connect();
+    return () => {
+      stopped = true;
+      clearTimeout(reconnectTimer);
+      if (ws) {
+        ws.onclose = null; // Prevent reconnect loop on unmount
+        ws.onerror = null;
+        if (ws.readyState === 1) {
+          ws.close();
+        } else if (ws.readyState === 0) {
+          // If still connecting, close it immediately upon open to suppress browser warnings
+          ws.onopen = () => ws.close();
+        }
+      }
+    };
   }, []);
 
   useEffect(() => {
     setTimeout(fetchUserData, 0);
     const interval = setInterval(fetchUserData, 30000);
     return () => clearInterval(interval);
-  }, [fetchUserData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => fetchTradeFeed(), 0);
+    const interval = setInterval(() => fetchTradeFeed(), 15000);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLogout = async () => {
     await fetch(`${AUTH_SERVER}/api/auth/logout`, { method: "POST", credentials: "include" });
@@ -185,7 +361,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
 
   const handleReset = async () => {
     if (!window.confirm(
-      "Reset your entire portfolio?\n\nThis will:\n• Delete all trade history\n• Reset balance to $10,000\n• Start a new simulation\n\nThis cannot be undone."
+      "Reset your entire portfolio?\n\nThis will:\n• Delete all trade history\n• Reset balance to S10,000\n• Start a new simulation\n\nThis cannot be undone."
     )) return;
 
     setResetting(true);
@@ -202,6 +378,10 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       setBalance(10000);
       setRpnl(0);
       setPositions([]);
+      setPaperSummary({});
+      setTradeFeed([]);
+      setFeedHasMore(true);
+      setSimPositions([]);
 
       // 3. Clear App-level live trades
       if (onResetTrades) onResetTrades();
@@ -256,22 +436,23 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
   const INITIAL_CAPITAL = 10000;
   const pnlPositive = rpnl >= 0;
   const pnlPercent = ((rpnl / INITIAL_CAPITAL) * 100).toFixed(2);
-  const activePositions = positions.length;
-  const totalUpnl = positions.reduce((s, p) => s + (p.upnl || 0), 0);
-  const totalPositionValue = positions.reduce((s, p) => s + (p.size_usd || 0), 0);
-  const portfolioValue = balance + totalUpnl;
+  const allPositions = mergePositions([...positions, ...simPositions]);
+  const activePositions = allPositions.length;
+  const totalPositionValue = positions.reduce((s, p) => s + (Number(p.current_value ?? p.size_usd) || 0), 0);
+  const portfolioValue = Number(paperSummary.total_portfolio_value) || (balance + totalPositionValue);
 
   // Merge live + DB trades (live first, then DB)
-  const allTrades = [...liveTrades, ...dbTrades];
+  const allTrades = mergeTrades([...tradeFeed, ...liveTrades, ...dbTrades]);
   const allTradeCount = allTrades.length;
-  const wins = allTrades.filter(t => parseFloat(t.pnl) > 0).length;
-  const losses = allTrades.filter(t => parseFloat(t.pnl) <= 0).length;
-  const winRate = allTradeCount > 0 ? ((wins / allTradeCount) * 100).toFixed(1) : "—";
+  const settledTrades = allTrades.filter(t => tradeSide(t) === "sell" && (t.pnl != null || t.profit_loss != null));
+  const wins = settledTrades.filter(t => parseFloat(t.pnl ?? t.profit_loss) > 0).length;
+  const losses = settledTrades.filter(t => parseFloat(t.pnl ?? t.profit_loss) <= 0).length;
+  const winRate = settledTrades.length > 0 ? ((wins / settledTrades.length) * 100).toFixed(1) : "—";
 
   // Equity sparkline
   const equityData = [10000];
   let running = 10000;
-  for (const t of [...allTrades].reverse()) { running += parseFloat(t.pnl || 0); equityData.push(running); }
+  for (const t of [...settledTrades].reverse()) { running += parseFloat(t.pnl ?? t.profit_loss ?? 0); equityData.push(running); }
 
   /* ─────────────────────────────────────────────────────────────────────────
    *  BENTO CARD ORDER (matches the CSS grid layout):
@@ -295,7 +476,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       content: (
         <>
           <div className={`dash-stat-value ${pnlPositive ? "pnl-up" : "pnl-dn"}`}>
-            {pnlPositive ? "+" : ""}<AnimatedValue value={rpnl} prefix="$" />
+            {pnlPositive ? "+" : ""}<AnimatedValue value={rpnl} prefix="S" />
           </div>
           <div className="dash-stat-sub">
             <span className={pnlPositive ? "pnl-up" : "pnl-dn"}>
@@ -328,30 +509,40 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
         <div className="bento-positions-list">
           {activePositions === 0 ? (
             <div className="bento-pos-empty">
-              <div style={{fontSize: 28, marginBottom: 8, opacity: 0.4}}>📭</div>
+              <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.4 }}>📭</div>
               <div className="dash-stat-muted">No open positions</div>
             </div>
           ) : (
-            positions.map(p => (
-              <div key={p.id} className="bento-pos-card">
-                <div className="bento-pos-row">
-                  <span className={p.side === "long" ? "pnl-up" : "pnl-dn"}>
-                    {p.side?.toUpperCase()} {p.leverage}×
-                  </span>
-                  <span className={(p.upnl || 0) >= 0 ? "pnl-up" : "pnl-dn"}>
-                    {(p.upnl || 0) >= 0 ? "+" : ""}${(p.upnl || 0).toFixed(2)}
-                  </span>
-                </div>
-                <div className="bento-pos-row bento-pos-detail">
-                  <span>Entry: {fmtPrice(p.entry_price)}</span>
-                  <span>Size: ${(p.size_usd || 0).toFixed(0)}</span>
-                </div>
-                <div className="bento-pos-row bento-pos-detail">
-                  <span>Liq: <span className="pnl-dn">{fmtPrice(p.liq_price)}</span></span>
-                  <span>Margin: ${(p.margin || 0).toFixed(2)}</span>
-                </div>
-              </div>
-            ))
+            allPositions.map(p => {
+              const positionPnl = Number(p.upnl ?? p.profit_loss) || 0;
+              const positionSource = marketLabel(p.source_market, p.asset_type);
+              return (
+                <button
+                  key={positionKey(p)}
+                  type="button"
+                  className="bento-pos-card bento-pos-clickable"
+                  onClick={() => onOpenPosition?.(p)}
+                  aria-label={`Open ${p.asset_symbol || p.symbol || "SIM"} chart`}
+                >
+                  <div className="bento-pos-row">
+                    <span className="pnl-up">
+                      {(p.order_type || "buy").toUpperCase()} {p.asset_symbol || p.symbol || "SIM"}
+                    </span>
+                    <span className={positionPnl >= 0 ? "pnl-up" : "pnl-dn"}>
+                      {positionPnl >= 0 ? "+" : ""}S{positionPnl.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="bento-pos-row bento-pos-detail">
+                    <span>Entry: {fmtPrice(p.entry_price)}</span>
+                    <span>Invested: S{(Number(p.size_usd ?? p.invested_amount) || 0).toFixed(0)}</span>
+                  </div>
+                  <div className="bento-pos-row bento-pos-detail">
+                    <span>{positionSource}</span>
+                    <span>Qty: {(Number(p.quantity ?? p.qty) || 0).toFixed(4)}</span>
+                  </div>
+                </button>
+              );
+            })
           )}
         </div>
       ),
@@ -365,13 +556,13 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
           <div className="dash-stat-value">
             <AnimatedValue value={portfolioValue} />
           </div>
-          <div className="dash-stat-sub" style={{marginTop: '6px'}}>
-            <span className="dash-stat-muted">Cash: ${balance.toFixed(2)}</span>
+          <div className="dash-stat-sub" style={{ marginTop: '6px' }}>
+            <span className="dash-stat-muted">Cash: S{balance.toFixed(2)}</span>
             {totalPositionValue > 0 && (
-              <span className="dash-stat-muted"> + Positions: ${totalPositionValue.toFixed(0)}</span>
+              <span className="dash-stat-muted"> + Positions: S{totalPositionValue.toFixed(0)}</span>
             )}
           </div>
-          <div className="dash-stat-sparkline" style={{marginTop: '8px'}}>
+          <div className="dash-stat-sparkline" style={{ marginTop: '8px' }}>
             <Sparkline data={equityData} color={pnlPositive ? "#26a69a" : "#ef5350"} width={200} height={32} />
           </div>
         </>
@@ -382,22 +573,17 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
     {
       label: 'Markets & Simulators',
       content: (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '10px 16px', gap: '12px' }}>
-          <StarBorder as="button" onClick={onLaunchSimulator} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 8px', background: 'rgba(41,98,255,0.08)', border: '1px solid rgba(41,98,255,0.2)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
-            <span style={{ fontSize: '22px' }}>⬡</span>
-            <span style={{ color: '#d1d4dc', fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' }}>Simulator</span>
-          </StarBorder>
-          <StarBorder as="button" onClick={onLaunchCrypto} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 8px', background: 'rgba(38,166,154,0.08)', border: '1px solid rgba(38,166,154,0.2)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
-            <span style={{ fontSize: '22px' }}>₿</span>
-            <span style={{ color: '#d1d4dc', fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' }}>Live Crypto</span>
-          </StarBorder>
-          <StarBorder as="button" onClick={onLaunchStocks} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 8px', background: 'rgba(243,135,32,0.08)', border: '1px solid rgba(243,135,32,0.2)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>
-            <span style={{ fontSize: '22px' }}>📈</span>
-            <span style={{ color: '#d1d4dc', fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' }}>Live Stocks</span>
-          </StarBorder>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <GooeyNav
+            items={[
+              { label: "Simulator", onClick: onLaunchSimulator },
+              { label: "Live Crypto", onClick: onLaunchCrypto },
+              { label: "Live Stocks", onClick: onLaunchStocks }
+            ]}
+          />
         </div>
       ),
-      color: 'rgba(38, 166, 154, 0.05)',
+      color: 'rgba(139, 92, 246, 0.05)',
     },
     // Card 6: Available Balance (rectangle, row 3 col 3-4)
 
@@ -413,7 +599,13 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
   ];
 
   // Recent trades: live trades first, then DB trades
-  const recentTrades = allTrades.slice(0, 50);
+  const recentTrades = allTrades;
+  const handleTradeScroll = (event) => {
+    const el = event.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 120) {
+      fetchTradeFeed({ append: true });
+    }
+  };
 
   return (
     <>
@@ -421,42 +613,87 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       <div className="orb orb-2" />
       <div className="orb orb-3" />
 
-      {/* Circular brand — top left */}
-      <div className="top-left-brand dash-brand-pos">
-        <div className="top-left-logo">⬡</div>
-        <CircularText
-          text="SYNTHCRYPTO*SIMULATOR*"
-          onHover="speedUp"
-          spinDuration={20}
-          className="brand-circular-text"
-        />
+      {/* Home Button — top left */}
+      <div style={{ position: 'absolute', top: '24px', left: '32px', zIndex: 100 }}>
+        <button
+          onClick={onGoHome}
+          style={{ 
+            padding: '8px 16px', 
+            borderRadius: '8px', 
+            cursor: 'pointer', 
+            background: 'transparent', 
+            border: '1px solid rgba(139, 92, 246, 0.5)', 
+            color: '#D8B4FE', 
+            fontWeight: 600,
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
+            e.currentTarget.style.borderColor = '#8B5CF6';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
+          }}
+        >
+          <span>←</span> Home
+        </button>
       </div>
 
-      {/* Logout + Reset — top right */}
-      <div className="dash-top-right-actions">
-        <StarBorder
-          as="button"
-          className="dash-reset-btn"
-          onClick={handleReset}
-          disabled={resetting}
-          color="#26a69a"
+      {/* Profile Menu — top right */}
+      <div className="dash-top-right-actions" ref={menuRef}>
+        <button
+          className="dash-profile-btn"
+          onClick={() => setMenuOpen(!menuOpen)}
         >
-          {resetting ? "⏳ Resetting..." : "↺ Reset"}
-        </StarBorder>
-        <StarBorder
-          as="button"
-          className="dash-logout-btn"
-          onClick={handleLogout}
-          color="#ef5350"
-        >
-          Logout
-        </StarBorder>
+          <div className="dash-avatar">
+            {user?.username ? user.username.charAt(0).toUpperCase() : (user?.email ? user.email.charAt(0).toUpperCase() : "U")}
+          </div>
+        </button>
+
+        {menuOpen && (
+          <div className="dash-dropdown-menu">
+            <div className="dash-dropdown-header">
+              <span className="dash-dropdown-name">{user?.username || "Trader"}</span>
+              <span className="dash-dropdown-email">{user?.email || ""}</span>
+            </div>
+            <div className="dash-dropdown-divider" />
+            <button className="dash-dropdown-item" onClick={() => { setMenuOpen(false); if (onBuyMore) onBuyMore(); }}>
+              Buy More S
+            </button>
+            <button
+              className="dash-dropdown-item"
+              onClick={() => { setMenuOpen(false); handleReset(); }}
+              disabled={resetting}
+            >
+              {resetting ? "⏳ Resetting..." : "Reset Portfolio"}
+            </button>
+            <button
+              className="dash-dropdown-item"
+              onClick={() => { 
+                setMenuOpen(false); 
+                if (user?.referral_code) {
+                  prompt("Copy your referral link:", `http://localhost:5173/register?ref=${user.referral_code}`);
+                }
+              }}
+            >
+              Show Referral Link
+            </button>
+            <div className="dash-dropdown-divider" />
+            <button
+              className="dash-dropdown-item text-danger"
+              onClick={() => { setMenuOpen(false); handleLogout(); }}
+            >
+              Log out
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Connection indicator */}
-      <div className={`dash-conn-dot ${connected ? "live" : ""}`}>
-        {connected ? "● live" : "○ offline"}
-      </div>
+      {/* Connection indicator removed */}
 
       {/* Main: two-column layout */}
       <div className="dash-split-wrapper">
@@ -464,16 +701,37 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
         <div className="dash-left-col">
           <div className="dash-welcome">
             <h1 className="dash-title">
-              Portfolio <span className="brand-tag">v3</span>
+              Portfolio
             </h1>
-            <div className="dash-subtitle">
-              {user?.username || user?.email || "Trader"}
+            <div className="dash-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span>{user?.username || user?.email || "Trader"}</span>
+              {user?.referral_code && (
+                <span style={{ fontSize: '0.85em', color: '#D8B4FE', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ opacity: 0.7 }}>|</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>Code: <strong style={{ color: '#fff', letterSpacing: '1px' }}>{user.referral_code}</strong></span>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`http://localhost:5173/register?ref=${user.referral_code}`);
+                        alert("Referral link copied to clipboard!");
+                      }}
+                      style={{ background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '4px', padding: '2px 8px', color: '#fff', cursor: 'pointer' }}
+                    >
+                      Copy Link
+                    </button>
+                  </span>
+                  <span style={{ opacity: 0.7 }}>|</span>
+                  <span>Share your code to earn 2000S per referral!</span>
+                  <span style={{ opacity: 0.7 }}>|</span>
+                  <span>Referrals: <strong style={{ color: '#fff' }}>{user?.referral_count || 0}</strong></span>
+                </span>
+              )}
             </div>
           </div>
 
           <MagicBento
             cards={bentoCards}
-            glowColor="38, 166, 154"
+            glowColor="139, 92, 246"
             enableStars={true}
             enableTilt={true}
             enableMagnetism={true}
@@ -513,53 +771,73 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
                 <p className="dash-trades-empty-sub">Jump into the simulator to start trading!</p>
               </div>
             ) : (
-              <div className="dash-trades-table-wrap">
+              <div className="dash-trades-table-wrap" onScroll={handleTradeScroll}>
                 <table className="dash-trades-table">
                   <thead>
                     <tr>
                       <th>Side</th>
+                      <th>Market</th>
                       <th>Symbol</th>
-                      <th>Entry</th>
-                      <th>Exit</th>
-                      <th>Size</th>
+                      <th>Price</th>
+                      <th>Value</th>
                       <th>P&L</th>
                       <th>Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentTrades.map((trade) => {
-                      const pnl = parseFloat(trade.pnl);
+                      const pnl = parseFloat(trade.pnl ?? trade.profit_loss ?? 0);
                       const isWin = pnl >= 0;
+                      const sideLabel = tradeSide(trade);
+                      const symbolLabel = trade.asset_symbol || trade.symbol || "SIM";
+                      const sizeValue = trade.trade_value ?? trade.size_usd ?? trade.invested_amount ?? 0;
+                      const sourceLabel = marketLabel(trade.source_market, trade.asset_type);
+                      const tradeTime = trade.timestamp || trade.closed_at || trade.created_at || "";
+                      const priceValue = trade.execution_price ?? trade.entry_price ?? trade.exit_price ?? 0;
                       return (
-                        <tr key={trade.id} className={`dash-trade-row ${trade.isLive ? "dash-trade-live" : ""}`}>
+                        <tr key={tradeKey(trade)} className={`dash-trade-row ${trade.isLive ? "dash-trade-live" : ""}`}>
                           <td>
-                            <span className={`dash-side-badge ${trade.side}`}>
-                              {(trade.side || "—").toUpperCase()}
+                            <span className={`dash-side-badge ${sideLabel}`}>
+                              {sideLabel.toUpperCase()}
                             </span>
                           </td>
-                          <td className="dash-trade-symbol">{trade.symbol || "SIM"}</td>
-                          <td className="dash-trade-mono">${parseFloat(trade.entry_price || 0).toFixed(2)}</td>
-                          <td className="dash-trade-mono">${parseFloat(trade.exit_price || 0).toFixed(2)}</td>
-                          <td className="dash-trade-mono">${parseFloat(trade.size_usd || 0).toFixed(0)}</td>
+                          <td><span className={`dash-source-badge ${normalizeSource(trade.source_market, trade.asset_type)}`}>{sourceLabel}</span></td>
+                          <td className="dash-trade-symbol">{symbolLabel}</td>
+                          <td className="dash-trade-mono">S{parseFloat(priceValue || 0).toFixed(2)}</td>
+                          <td className="dash-trade-mono">S{parseFloat(sizeValue || 0).toFixed(0)}</td>
                           <td className={`dash-trade-pnl ${isWin ? "pnl-up" : "pnl-dn"}`}>
-                            {isWin ? "+" : ""}${pnl.toFixed(2)}
+                            {isWin ? "+" : ""}S{pnl.toFixed(2)}
                           </td>
                           <td className="dash-trade-date">
-                            {new Date(trade.closed_at).toLocaleDateString("en-US", {
+                            {tradeTime ? new Date(tradeTime).toLocaleDateString("en-US", {
                               month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-                            })}
+                            }) : "—"}
                           </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
+
               </div>
             )}
           </div>
         </div>
       </div>
+      {showRewardPopup && (
+        <div className="reward-popup-overlay">
+          <div className="reward-popup-content">
+            <h2>🎉 Congratulations!</h2>
+            <p>You have received 10,000S</p>
+            <button
+              className="reward-popup-close-btn"
+              onClick={handleClaimReward}
+            >
+              Claim Reward
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
- 

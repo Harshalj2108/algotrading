@@ -1,39 +1,52 @@
 {
-  "issue": "Historical candle data not loading",
-  "problem_description": "The trading chart is currently displaying only a single candle instead of a full historical candle series. This makes the simulator unrealistic and unusable because users cannot analyze trends, support/resistance zones, momentum, or past price action.",
-  "expected_behavior": {
-    "chart_data": "Load and render a large set of historical OHLC candles before showing live candles.",
-    "default_range": "When a chart opens, it should automatically display enough historical candles to fill the visible chart area.",
-    "minimum_candles": "At least 100-300 historical candles should load initially.",
-    "live_updates": "After historical candles are loaded, new candles should continue updating in real time.",
-    "scroll_behavior": "Users should be able to scroll backward to view older historical candles.",
-    "zoom_behavior": "Zooming in/out should dynamically adjust visible candle density without losing history."
-  },
-  "required_fix": {
-    "data_fetching": [
-      "Fetch historical OHLC market data from the API before initializing the chart.",
-      "Ensure the API request includes a valid timeframe (1m, 5m, 15m, 1h, etc.).",
-      "Verify that the API returns an array of candles instead of a single latest candle."
+  "task": "Update Database Schema for Referrals",
+  "files_to_modify": ["auth-server/src/db.js"],
+  "instructions": {
+    "target_table": "users",
+    "actions": [
+      "Add a column 'referral_code' (VARCHAR(20), UNIQUE) to store the user's unique invite code.",
+      "Add a column 'referred_by' (INTEGER, REFERENCES users(id)) to track who invited the user.",
+      "Update the INIT_SQL string to include these ALTER TABLE statements or modify the CREATE TABLE definition."
     ],
-    "chart_rendering": [
-      "Pass the complete historical candle array into the chart component.",
-      "Render candles sequentially based on timestamp order.",
-      "Ensure candle timestamps are unique and properly formatted."
-    ],
-    "state_management": [
-      "Store historical candles separately from live streaming candle updates.",
-      "Append new candles to the existing candle array instead of replacing the entire dataset."
-    ],
-    "fallback_handling": [
-      "Show a loading state while historical data is being fetched.",
-      "Display an error message if candle data fails to load.",
-      "Prevent chart initialization with incomplete data."
+    "logic": "Generate the 'referral_code' automatically during user creation if not provided, or ensure the column exists for existing users."
+  }
+}
+{
+  "task": "Implement Referral Logic in Auth Routes",
+  "files_to_modify": ["auth-server/src/routes/auth.js"],
+  "instructions": {
+    "endpoint": "POST /api/auth/register",
+    "modifications": [
+      "Extract 'referralCode' from req.body.",
+      "Before inserting a new user, check if the provided 'referralCode' exists in the database to find the 'referrerId'.",
+      "Generate a unique 6-8 character alphanumeric 'referral_code' for the new user.",
+      "Update the INSERT query to include 'referral_code' and 'referred_by' fields.",
+      "Optional: If a valid referrer is found, increment their 'balance' in the users table as a reward."
     ]
-  },
-  "ui_expectation": {
-    "before_fix": "Chart shows only one candle floating in empty space.",
-    "after_fix": "Chart should look like a real trading platform with continuous historical market movement visible immediately on load."
-  },
-  "priority": "High",
-  "impact": "Core simulator functionality is broken because users cannot properly analyze or practice trading without historical price movement."
+  }
+}{
+  "task": "Add Referral Code Field to RegisterForm",
+  "files_to_modify": ["auth-client/src/components/RegisterForm.jsx"],
+  "instructions": {
+    "ui_changes": [
+      "Add a new state variable 'referralCode' using useState.",
+      "Add an input field for 'Referral Code' (optional) above the submit button.",
+      "Ensure the input field is styled consistently with other form-inputs."
+    ],
+    "functionality": [
+      "Update the 'handleSubmit' function to include 'referralCode' in the JSON body of the fetch request to /api/auth/register."
+    ]
+  }
+}
+{
+  "task": "Display Referral Link on Dashboard",
+  "files_to_modify": ["auth-client/src/components/Dashboard.jsx"],
+  "instructions": {
+    "ui_changes": [
+      "Locate the user profile or account section.",
+      "Display the user's 'referral_code' fetched from the backend (ensure the /me endpoint returns this field).",
+      "Add a 'Copy Referral Link' button that copies 'http://localhost:5173/register?ref={code}' to the clipboard."
+    ],
+    "enhancement": "If possible, display a count of successful referrals by querying the users table where 'referred_by' equals current user ID."
+  }
 }

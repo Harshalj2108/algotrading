@@ -68,13 +68,13 @@ export function EBBOverlay({ metrics, onClose }) {
         <h3 style={{ margin: "0 0 4px", color: "#d1d4dc", fontSize: 14 }}>EMA Bollinger Scalper v2</h3>
         <p style={{ color: "#787b86", fontSize: 10, margin: "0 0 12px" }}>EMA30/50 + BB breakout | EMA200 + ADX | 2.0 ATR SL | 1.5 R:R | 5m</p>
         {!m || !m.total_trades ? (
-          <div className="tp-empty">No completed trades yet — Capital: {m ? "$" + m.capital?.toFixed(2) : "—"}</div>
+          <div className="tp-empty">No completed trades yet — Capital: {m ? "S" + m.capital?.toFixed(2) : "—"}</div>
         ) : (
           <div style={{ fontSize: 12 }}>
             <div style={{ borderBottom: "1px solid #2a2e39", paddingBottom: 8, marginBottom: 8 }}>
               <div style={{ color: "#787b86", fontSize: 10, textTransform: "uppercase", marginBottom: 4 }}>Performance</div>
-              {row("Net P&L", `${m.net_pnl >= 0 ? "+" : ""}$${Math.abs(m.net_pnl).toFixed(2)} (${m.net_pnl_pct}%)`, vc(m.net_pnl))}
-              {row("Capital", "$" + m.capital.toFixed(2))}
+              {row("Net P&L", `${m.net_pnl >= 0 ? "+" : ""}S${Math.abs(m.net_pnl).toFixed(2)} (${m.net_pnl_pct}%)`, vc(m.net_pnl))}
+              {row("Capital", "S" + m.capital.toFixed(2))}
               {row("Total Trades", m.total_trades)}
               {row("Win Rate", m.win_rate + "%")}
               {row("Profit Factor", m.profit_factor)}
@@ -83,9 +83,9 @@ export function EBBOverlay({ metrics, onClose }) {
             <div style={{ borderBottom: "1px solid #2a2e39", paddingBottom: 8, marginBottom: 8 }}>
               <div style={{ color: "#787b86", fontSize: 10, textTransform: "uppercase", marginBottom: 4 }}>Risk</div>
               {row("Max DD", m.max_dd + "%", "#ef5350")}
-              {row("Avg Win", "+$" + Math.abs(m.avg_win).toFixed(2), "#26a69a")}
-              {row("Avg Loss", "-$" + Math.abs(m.avg_loss).toFixed(2), "#ef5350")}
-              {row("Total Fees", "$" + m.total_fees, "#787b86")}
+              {row("Avg Win", "+S" + Math.abs(m.avg_win).toFixed(2), "#26a69a")}
+              {row("Avg Loss", "-S" + Math.abs(m.avg_loss).toFixed(2), "#ef5350")}
+              {row("Total Fees", "S" + m.total_fees, "#787b86")}
             </div>
           </div>
         )}

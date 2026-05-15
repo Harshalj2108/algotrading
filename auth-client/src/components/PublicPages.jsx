@@ -1,11 +1,12 @@
 import LightRays from "./LightRays";
 import heroAsset from "../assets/hero.png";
+import DotField from "./DotField";
+import BorderGlow from "./BorderGlow";
 import "./PublicPages.css";
 
 const navItems = [
   { id: "home", label: "Home" },
   { id: "about", label: "About" },
-  { id: "learn", label: "Learn Trading" },
 ];
 
 const stats = [
@@ -171,7 +172,7 @@ function IconMark({ name }) {
   );
 }
 
-function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn }) {
+function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard }) {
   return (
     <header className="public-nav">
       <button className="public-brand" type="button" onClick={() => onNavigate("home")}>
@@ -193,22 +194,52 @@ function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn }) {
       </nav>
 
       <div className="public-nav-actions">
-        <button className="public-nav-signin" type="button" onClick={onSignIn}>
-          Sign In
-        </button>
-        <button className="public-nav-cta" type="button" onClick={onGetStarted}>
-          Start Free
-        </button>
+        {isAuthenticated ? (
+          <button className="public-nav-cta" type="button" onClick={onGoDashboard}>
+            Portfolio
+          </button>
+        ) : (
+          <>
+            <button className="public-nav-signin" type="button" onClick={onSignIn}>
+              Sign In
+            </button>
+            <button className="public-nav-cta" type="button" onClick={onGetStarted}>
+              Start Free
+            </button>
+          </>
+        )}
       </div>
     </header>
   );
 }
 
-function PublicShell({ currentPage, onNavigate, onGetStarted, onSignIn, children }) {
+function PublicShell({ currentPage, onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard, children }) {
   return (
     <div className="public-shell">
-      <PublicNav currentPage={currentPage} onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} />
-      {children}
+      <div className="public-dotfield-bg">
+        <DotField
+          dotRadius={2}
+          dotSpacing={16}
+          bulgeStrength={60}
+          glowRadius={220}
+          sparkle={true}
+          waveAmplitude={0}
+          gradientFrom="#8B5CF6"
+          gradientTo="#D8B4FE"
+          glowColor="rgba(139, 92, 246, 0.4)"
+        />
+      </div>
+      <div className="public-shell-content">
+        <PublicNav 
+          currentPage={currentPage} 
+          onNavigate={onNavigate} 
+          onGetStarted={onGetStarted} 
+          onSignIn={onSignIn} 
+          isAuthenticated={isAuthenticated}
+          onGoDashboard={onGoDashboard}
+        />
+        {children}
+      </div>
     </div>
   );
 }
@@ -230,7 +261,7 @@ function MarketVisual() {
     <div className="market-visual" aria-label="Animated crypto market preview">
       <div className="market-toolbar">
         <span>BTC/USD</span>
-        <strong>$68,423.50</strong>
+        <strong>S68,423.50</strong>
         <em>+2.34%</em>
       </div>
       <div className="market-grid">
@@ -297,10 +328,21 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
 
         <section className="public-stats" aria-label="Platform stats">
           {stats.map((stat) => (
-            <div className="public-stat" key={stat.label}>
-              <strong>{stat.value}</strong>
-              <span>{stat.label}</span>
-            </div>
+            <BorderGlow
+              key={stat.label}
+              glowColor="270 70 75"
+              backgroundColor="rgba(15, 10, 25, 0.7)"
+              borderRadius={12}
+              glowRadius={32}
+              glowIntensity={1.2}
+              coneSpread={20}
+              colors={['#c084fc', '#a78bfa', '#7c3aed']}
+            >
+              <div className="public-stat">
+                <strong>{stat.value}</strong>
+                <span>{stat.label}</span>
+              </div>
+            </BorderGlow>
           ))}
         </section>
 
@@ -315,22 +357,96 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
 
           <div className="feature-grid">
             {features.map((feature) => (
-              <article className="feature-panel" key={feature.title}>
-                <IconMark name={feature.icon} />
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-              </article>
+              <BorderGlow
+                key={feature.title}
+                glowColor="270 70 75"
+                backgroundColor="rgba(15, 10, 25, 0.7)"
+                borderRadius={12}
+                glowRadius={28}
+                glowIntensity={1.1}
+                coneSpread={22}
+                colors={['#c084fc', '#a78bfa', '#7c3aed']}
+              >
+                <article className="feature-panel">
+                  <IconMark name={feature.icon} />
+                  <h3>{feature.title}</h3>
+                  <p>{feature.description}</p>
+                </article>
+              </BorderGlow>
             ))}
           </div>
         </section>
+
+        <section className="public-section-heading" style={{ marginTop: '80px' }}>
+          <p className="public-eyebrow">About SynthCrypto</p>
+          <h2>Practical crypto education through risk-free simulation</h2>
+          <p>
+            Our platform bridges the gap between trading theory and real-world market experience with virtual trades, market movement, and learning tools.
+          </p>
+        </section>
+
+        <section className="about-grid">
+          <BorderGlow
+            glowColor="270 70 75"
+            backgroundColor="rgba(15, 10, 25, 0.7)"
+            borderRadius={12}
+            glowRadius={32}
+            glowIntensity={1.2}
+            coneSpread={20}
+            colors={['#c084fc', '#a78bfa', '#7c3aed']}
+          >
+            <article className="about-panel">
+              <span className="about-label">Mission</span>
+              <h2>Our Mission</h2>
+              <p>
+                Our mission is to make crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
+              </p>
+            </article>
+          </BorderGlow>
+
+          <BorderGlow
+            glowColor="270 70 75"
+            backgroundColor="rgba(15, 10, 25, 0.7)"
+            borderRadius={12}
+            glowRadius={32}
+            glowIntensity={1.2}
+            coneSpread={20}
+            colors={['#c084fc', '#a78bfa', '#7c3aed']}
+          >
+            <article className="about-panel">
+              <span className="about-label">Vision</span>
+              <h2>Why We Built This</h2>
+              <p>
+                We believe crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
+              </p>
+            </article>
+          </BorderGlow>
+        </section>
+
+        <BorderGlow
+          glowColor="0 70 65"
+          backgroundColor="rgba(30, 20, 20, 0.8)"
+          borderRadius={12}
+          glowRadius={28}
+          glowIntensity={1.0}
+          coneSpread={20}
+          colors={['#fca5a5', '#f87171', '#ef4444']}
+        >
+          <section className="disclaimer-section">
+            <h2>Disclaimer</h2>
+            <p>
+              This platform is designed solely for educational and simulation purposes. No real money or actual cryptocurrency trading is involved on the platform. All trades are virtual and intended to help users learn and practice trading concepts in a safe environment. The content, tools, and simulations provided do not constitute financial, investment, or trading advice.
+            </p>
+          </section>
+        </BorderGlow>
       </main>
     </PublicShell>
   );
 }
 
-export function AboutUsPage({ onNavigate, onGetStarted, onSignIn }) {
+export function AboutUsPage({ onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard }) {
   return (
-    <PublicShell currentPage="about" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn}>
+    <PublicShell currentPage="about" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} isAuthenticated={isAuthenticated} onGoDashboard={onGoDashboard}>
       <main className="public-main public-page-main">
         <section className="public-page-header">
           <p className="public-eyebrow">About SynthCrypto</p>
@@ -341,37 +457,67 @@ export function AboutUsPage({ onNavigate, onGetStarted, onSignIn }) {
         </section>
 
         <section className="about-grid">
-          <article className="about-panel">
-            <span className="about-label">Mission</span>
-            <h2>Our Mission</h2>
-            <p>
-              Our mission is to make crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
-            </p>
-          </article>
+          <BorderGlow
+            glowColor="270 70 75"
+            backgroundColor="rgba(15, 10, 25, 0.7)"
+            borderRadius={12}
+            glowRadius={32}
+            glowIntensity={1.2}
+            coneSpread={20}
+            colors={['#c084fc', '#a78bfa', '#7c3aed']}
+          >
+            <article className="about-panel">
+              <span className="about-label">Mission</span>
+              <h2>Our Mission</h2>
+              <p>
+                Our mission is to make crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
+              </p>
+            </article>
+          </BorderGlow>
 
-          <article className="about-panel">
-            <span className="about-label">Vision</span>
-            <h2>Why We Built This</h2>
-            <p>
-              We believe crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
-            </p>
-          </article>
+          <BorderGlow
+            glowColor="270 70 75"
+            backgroundColor="rgba(15, 10, 25, 0.7)"
+            borderRadius={12}
+            glowRadius={32}
+            glowIntensity={1.2}
+            coneSpread={20}
+            colors={['#c084fc', '#a78bfa', '#7c3aed']}
+          >
+            <article className="about-panel">
+              <span className="about-label">Vision</span>
+              <h2>Why We Built This</h2>
+              <p>
+                We believe crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
+              </p>
+            </article>
+          </BorderGlow>
         </section>
 
-        <section className="disclaimer-section">
-          <h2>Disclaimer</h2>
-          <p>
-            This platform is designed solely for educational and simulation purposes. No real money or actual cryptocurrency trading is involved on the platform. All trades are virtual and intended to help users learn and practice trading concepts in a safe environment. The content, tools, and simulations provided do not constitute financial, investment, or trading advice.
-          </p>
-        </section>
+        <BorderGlow
+          glowColor="0 70 65"
+          backgroundColor="rgba(30, 20, 20, 0.8)"
+          borderRadius={12}
+          glowRadius={28}
+          glowIntensity={1.0}
+          coneSpread={20}
+          colors={['#fca5a5', '#f87171', '#ef4444']}
+        >
+          <section className="disclaimer-section">
+            <h2>Disclaimer</h2>
+            <p>
+              This platform is designed solely for educational and simulation purposes. No real money or actual cryptocurrency trading is involved on the platform. All trades are virtual and intended to help users learn and practice trading concepts in a safe environment. The content, tools, and simulations provided do not constitute financial, investment, or trading advice.
+            </p>
+          </section>
+        </BorderGlow>
       </main>
     </PublicShell>
   );
 }
 
-export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn }) {
+export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard }) {
   return (
-    <PublicShell currentPage="learn" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn}>
+    <PublicShell currentPage="learn" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} isAuthenticated={isAuthenticated} onGoDashboard={onGoDashboard}>
       <main className="public-main public-page-main">
         <section className="public-page-header">
           <p className="public-eyebrow">Learn Trading</p>
@@ -383,35 +529,72 @@ export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn }) {
 
         <section className="learn-grid">
           {learningCategories.map((category) => (
-            <article className="learn-panel" key={category.id}>
-              <IconMark name={category.icon} />
-              <h2>{category.title}</h2>
-              <p>{category.description}</p>
-            </article>
+            <BorderGlow
+              key={category.id}
+              glowColor="270 70 75"
+              backgroundColor="rgba(15, 10, 25, 0.7)"
+              borderRadius={12}
+              glowRadius={28}
+              glowIntensity={1.1}
+              coneSpread={22}
+              colors={['#c084fc', '#a78bfa', '#7c3aed']}
+            >
+              <article className="learn-panel">
+                <IconMark name={category.icon} />
+                <h2>{category.title}</h2>
+                <p>{category.description}</p>
+              </article>
+            </BorderGlow>
           ))}
         </section>
 
-        <section className="learning-benefits">
-          <div>
-            <p className="public-eyebrow">What You Will Learn</p>
-            <h2>Practice-ready skills for simulated markets</h2>
-          </div>
-          <ul>
-            {learningBenefits.map((benefit) => (
-              <li key={benefit}>{benefit}</li>
-            ))}
-          </ul>
-        </section>
+        <BorderGlow
+          glowColor="270 70 75"
+          backgroundColor="rgba(15, 10, 25, 0.7)"
+          borderRadius={12}
+          glowRadius={32}
+          glowIntensity={1.2}
+          coneSpread={20}
+          colors={['#c084fc', '#a78bfa', '#7c3aed']}
+        >
+          <section className="learning-benefits">
+            <div>
+              <p className="public-eyebrow">What You Will Learn</p>
+              <h2>Practice-ready skills for simulated markets</h2>
+            </div>
+            <ul>
+              {learningBenefits.map((benefit) => (
+                <li key={benefit}>{benefit}</li>
+              ))}
+            </ul>
+          </section>
+        </BorderGlow>
 
-        <section className="learn-cta">
-          <div>
-            <h2>Start Practicing Today</h2>
-            <p>Use virtual capital to test decisions, review outcomes, and improve before taking on real market risk.</p>
-          </div>
-          <button className="public-primary-btn" type="button" onClick={onGetStarted}>
-            Start Free
-          </button>
-        </section>
+        <BorderGlow
+          glowColor="270 70 75"
+          backgroundColor="rgba(15, 10, 25, 0.7)"
+          borderRadius={12}
+          glowRadius={32}
+          glowIntensity={1.2}
+          coneSpread={20}
+          colors={['#c084fc', '#a78bfa', '#7c3aed']}
+        >
+          <section className="learn-cta">
+            <div>
+              <h2>Start Practicing Today</h2>
+              <p>Use virtual capital to test decisions, review outcomes, and improve before taking on real market risk.</p>
+            </div>
+            {isAuthenticated ? (
+              <button className="public-primary-btn" type="button" onClick={onGoDashboard}>
+                Go to Portfolio
+              </button>
+            ) : (
+              <button className="public-primary-btn" type="button" onClick={onGetStarted}>
+                Start Free
+              </button>
+            )}
+          </section>
+        </BorderGlow>
       </main>
     </PublicShell>
   );

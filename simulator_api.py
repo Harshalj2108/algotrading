@@ -174,6 +174,10 @@ class UpdateTPSLRequest(BaseModel):
     tp_price: Optional[float] = None
     sl_price: Optional[float] = None
 
+class UpdateTradeTPSLRequest(UpdateTPSLRequest):
+    id: Optional[str] = None
+    trade_id: Optional[str] = None
+
 class CancelOrderRequest(BaseModel):
     id: str
 
@@ -208,6 +212,24 @@ async def live_history(symbol: str, type: str = "crypto", tf: str = "5m"):
         return JSONResponse(
             status_code=500,
             content={"symbol": symbol, "data": [], "indicators": {}, "error": str(e)},
+        )
+
+@fastapi_app.get("/api/live/ticker")
+async def live_ticker(symbol: str, type: str = "crypto"):
+    """Fetch the latest live ticker used by paper-trade execution."""
+    try:
+        ticker = await data_engine.get_ticker(type, symbol)
+        if not ticker:
+            return JSONResponse(
+                status_code=404,
+                content={"symbol": symbol, "type": type, "error": "Ticker unavailable"},
+            )
+        return {"type": type, **ticker}
+    except Exception as e:
+        print(f"[API] /api/live/ticker ERROR: {type}/{symbol} -> {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"symbol": symbol, "type": type, "error": str(e)},
         )
 
 @fastapi_app.get("/api/tf/{tf}")
@@ -325,6 +347,32 @@ def api_update_position_tpsl(pos_id: str, req: UpdateTPSLRequest,
             raise HTTPException(400, err)
         cur = manager.p2sim.price if manager.p2sim else pos.entry_price
         return {"status": "tpsl_updated", "position": pos.to_dict(cur)}
+
+
+@fastapi_app.delete("/api/positions/{pos_id}/tpsl")
+def api_remove_position_tpsl(pos_id: str, user=Depends(require_auth)):
+    with manager.lock:
+        pos = next((p for p in manager.positions if p.id == pos_id), None)
+        if not pos:
+            raise HTTPException(404, "Position not found")
+        pos.set_tpsl(None, None)
+        cur = manager.p2sim.price if manager.p2sim else pos.entry_price
+        return {"status": "tpsl_removed", "position": pos.to_dict(cur)}
+
+
+@fastapi_app.patch("/trade/update-tpsl")
+def api_update_trade_tpsl(req: UpdateTradeTPSLRequest,
+                          user=Depends(require_auth)):
+    pos_id = req.id or req.trade_id
+    if not pos_id:
+        raise HTTPException(400, "trade_id is required")
+    return api_update_position_tpsl(pos_id, req, user)
+
+
+@fastapi_app.delete("/trade/remove-tpsl")
+def api_remove_trade_tpsl(req: ClosePositionRequest,
+                          user=Depends(require_auth)):
+    return api_remove_position_tpsl(req.id, user)
 
 
 @fastapi_app.delete("/api/orders/{ord_id}")
@@ -685,6 +733,24 @@ async def update_position_tpsl(sid, data):
 
     await sio.emit("order_result",
                    {"status": "tpsl_updated", "position": position}, to=sid)
+
+
+@sio.event
+async def remove_position_tpsl(sid, data):
+    data = data or {}
+    pos_id = data.get("id")
+    with manager.lock:
+        pos = next((p for p in manager.positions if p.id == pos_id), None)
+        if not pos:
+            await sio.emit("order_result",
+                           {"status": "error", "msg": "Position not found"}, to=sid)
+            return
+        pos.set_tpsl(None, None)
+        cur = manager.p2sim.price if manager.p2sim else pos.entry_price
+        position = pos.to_dict(cur)
+
+    await sio.emit("order_result",
+                   {"status": "tpsl_removed", "position": position}, to=sid)
 
 
 @sio.event

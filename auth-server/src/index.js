@@ -11,13 +11,17 @@
 require("dotenv").config();
 
 const express = require("express");
+const http = require("http");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { initDB } = require("./db");
 const authRoutes = require("./routes/auth");
 const portfolioRoutes = require("./routes/portfolio");
+const paymentsRoutes = require('./routes/payments');
+const { attachTradeFeedWebSocket } = require("./tradeFeed");
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
@@ -38,6 +42,7 @@ app.use(cors({
 
 app.use("/api/auth", authRoutes);
 app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -48,8 +53,9 @@ app.get("/api/health", (req, res) => {
 
 async function start() {
   await initDB();
+  attachTradeFeedWebSocket(server);
 
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log("═".repeat(60));
     console.log("  SynthCrypto Auth Server");
     console.log(`  API:     http://localhost:${PORT}/api/auth`);
