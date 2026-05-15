@@ -5,7 +5,7 @@ import StrategyEditor from "./StrategyEditor";
 import { MetricsOverlay, StressOverlay, EBBOverlay } from "./SimOverlays";
 import "./SimulatorPage.css";
 import StarBorder from "./StarBorder";
-import { AUTH_SERVER } from '../config';
+import { AUTH_SERVER, SIMULATOR_URL } from '../config';
 
 
 class ChartErrorBoundary extends Component {
