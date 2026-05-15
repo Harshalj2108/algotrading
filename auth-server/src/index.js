@@ -29,15 +29,12 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(cookieParser());
 
-app.set("trust proxy", 1);
+app.set("trust proxy", 1); // Required for 'secure' cookies behind Railway proxy
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL, // Your Frontend
-    process.env.AUTH_URL,           // Your Auth Server itself
-    process.env.SIMULATOR_URL                  // Your Simulator API
-  ],
+  origin: [process.env.CLIENT_URL, process.env.AUTH_URL, process.env.SIMULATOR_URL],
   credentials: true,
 }));
+
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 

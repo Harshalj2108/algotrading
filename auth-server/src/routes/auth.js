@@ -43,7 +43,7 @@ const {
 // Cookie options — httpOnly, SameSite None for cross-domain Railway deployment
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production" || true, // Must be true for sameSite: "none"
+  secure: true, // Must be true for sameSite: "none"
   sameSite: "none", // Must be "none" for cross-origin requests
   maxAge: 7 * 24 * 60 * 60 * 1000,   // 7 days
   path: "/",
