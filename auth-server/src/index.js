@@ -31,11 +31,11 @@ app.use(cookieParser());
 
 app.set("trust proxy", 1);
 app.use(cors({
-  origin: [
-    "https://amusing-manifestation-production-708d.up.railway.app", // Your Frontend
-    "https://algotrading-production-1554.up.railway.app",           // Your Auth Server itself
-    "https://web-production-ac5d0.up.railway.app"                   // Your Simulator API
-  ],
+  origin: function (origin, callback) {
+    // Automatically allow and reflect the origin to solve cross-domain cookie issues
+    if (!origin) return callback(null, true);
+    callback(null, origin);
+  },
   credentials: true,
 }));
 
