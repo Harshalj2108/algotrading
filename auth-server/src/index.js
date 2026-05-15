@@ -29,11 +29,12 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS — allow React dev server and Flask simulator
+app.set("trust proxy", 1);
 app.use(cors({
   origin: [
-    process.env.CLIENT_URL || "http://localhost:5173",
-    process.env.SIMULATOR_URL || "http://localhost:8000",
+    "https://amusing-manifestation-production-708d.up.railway.app", // Your Frontend
+    "https://algotrading-production-1554.up.railway.app",           // Your Auth Server itself
+    "https://web-production-ac5d0.up.railway.app"                   // Your Simulator API
   ],
   credentials: true,
 }));
