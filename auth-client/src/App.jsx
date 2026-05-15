@@ -22,8 +22,7 @@ import LiveMarketPage from "./components/LiveMarketPage";
 import DotField from "./components/DotField";
 import BuyMore from "./components/BuyMore";
 
-const AUTH_SERVER = "http://localhost:3001";
-const SIMULATOR_URL = "http://localhost:8000";
+import { AUTH_SERVER, SIMULATOR_URL } from './config';
 const PUBLIC_PATHS = {
   home: "/",
   about: "/about",

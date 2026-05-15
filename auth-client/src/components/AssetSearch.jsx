@@ -26,7 +26,7 @@ export default function AssetSearch({ assetClass, onSelect }) {
       setError(null);
       try {
         const res = await fetch(
-          `http://localhost:8000/api/live/search?q=${encodeURIComponent(query)}&type=${assetClass}`,
+          `${SIMULATOR_URL}/api/live/search?q=${encodeURIComponent(query)}&type=${assetClass}`,
           { signal: controller.signal }
         );
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
