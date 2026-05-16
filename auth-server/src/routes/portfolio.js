@@ -146,8 +146,9 @@ function calculateTrade(row, marketPrice) {
     ? Number(marketPrice)
     : asNumber(row.exit_price, entryPrice);
   const currentValue = quantity * price;
-  const profitLoss = (price - entryPrice) * quantity;
-  const profitLossPercentage = entryPrice > 0 ? ((price - entryPrice) / entryPrice) * 100 : 0;
+  const isShort = row.side === 'short';
+  const profitLoss = isShort ? (entryPrice - price) * quantity : (price - entryPrice) * quantity;
+  const profitLossPercentage = entryPrice > 0 ? (profitLoss / investedAmount) * 100 : 0;
 
   return {
     currentValue,
@@ -188,7 +189,7 @@ function normalizeTrade(row, marketPrice = null) {
     symbol: row.asset_symbol,
     asset_type: row.asset_type,
     order_type: row.order_type,
-    side: "long",
+    side: row.side || "long",
     leverage: 1,
     quantity,
     qty: quantity,
@@ -210,35 +211,40 @@ function normalizeTrade(row, marketPrice = null) {
     take_profit: takeProfit,
     sl_price: stopLoss,
     tp_price: takeProfit,
+    trigger_price: row.trigger_price == null ? null : asNumber(row.trigger_price),
+    limit_price: row.limit_price == null ? null : asNumber(row.limit_price),
     close_reason: row.close_reason || null,
     created_at: row.created_at,
     closed_at: row.closed_at,
   };
 }
 
-function tradeEventFromPaperTrade(trade, side, overrides = {}) {
-  const executionPrice = side === "sell"
+function tradeEventFromPaperTrade(trade, eventType, overrides = {}) {
+  const isClosing = eventType === "sell" || eventType === "close";
+  const executionPrice = isClosing
     ? asNumber(trade.exit_price, asNumber(trade.entry_price))
     : asNumber(trade.entry_price);
   const quantity = asNumber(trade.quantity ?? trade.qty);
-  const tradeValue = side === "sell"
+  const tradeValue = isClosing
     ? quantity * executionPrice
     : asNumber(trade.invested_amount ?? trade.size_usd);
   const sourceMarket = trade.asset_type === "stock" ? "stocks" : "crypto";
+  const tradeSide = trade.side || "long";
+  const buyOrSell = isClosing ? (tradeSide === "short" ? "buy" : "sell") : (tradeSide === "short" ? "sell" : "buy");
 
   return {
-    event_key: overrides.event_key || `${sourceMarket}:${trade.trade_id || trade.id}:${side}`,
+    event_key: overrides.event_key || `${sourceMarket}:${trade.trade_id || trade.id}:${eventType}`,
     trade_id: trade.trade_id || trade.id,
     asset_symbol: trade.asset_symbol || trade.symbol,
     asset_type: trade.asset_type,
-    buy_or_sell: side,
+    buy_or_sell: buyOrSell,
     quantity,
     entry_price: executionPrice,
-    exit_price: side === "sell" ? executionPrice : null,
+    exit_price: isClosing ? executionPrice : null,
     execution_price: executionPrice,
     trade_value: tradeValue,
-    profit_loss: side === "sell" ? asNumber(trade.profit_loss ?? trade.pnl) : 0,
-    timestamp: overrides.timestamp || (side === "sell" ? trade.closed_at : trade.created_at) || new Date().toISOString(),
+    profit_loss: isClosing ? asNumber(trade.profit_loss ?? trade.pnl) : 0,
+    timestamp: overrides.timestamp || (isClosing ? trade.closed_at : trade.created_at) || new Date().toISOString(),
     source_market: sourceMarket,
   };
 }
@@ -318,7 +324,7 @@ async function loadPaperPortfolio(userId, { fetchLive = true, priceOverrides = n
   const wallet = await getWallet(pool, userId);
   const openResult = await pool.query(
     `SELECT * FROM paper_trades
-     WHERE user_id = $1 AND position_status = 'open'
+     WHERE user_id = $1 AND position_status IN ('open', 'pending')
      ORDER BY created_at DESC`,
     [userId]
   );
@@ -333,8 +339,10 @@ async function loadPaperPortfolio(userId, { fetchLive = true, priceOverrides = n
   if (fetchLive) {
     const uniqueKeys = new Map();
     for (const row of openResult.rows) {
-      const key = tradeKey(row.asset_type, row.asset_symbol);
-      if (!priceMap.has(key)) uniqueKeys.set(key, row);
+      if (row.position_status === 'open') {
+        const key = tradeKey(row.asset_type, row.asset_symbol);
+        if (!priceMap.has(key)) uniqueKeys.set(key, row);
+      }
     }
     await Promise.all(Array.from(uniqueKeys.values()).map(async (row) => {
       const fallback = fallbackPriceForTrade(row);
@@ -410,7 +418,7 @@ async function updatePaperTradeTpsl(userId, tradeId, stopLoss, takeProfit) {
     await client.query("BEGIN");
     const result = await client.query(
       `SELECT * FROM paper_trades
-       WHERE user_id = $1 AND trade_id = $2 AND position_status = 'open'
+       WHERE user_id = $1 AND trade_id = $2 AND position_status IN ('open', 'pending')
        FOR UPDATE`,
       [userId, tradeId]
     );
@@ -468,7 +476,7 @@ router.get("/me", requireAuth, async (req, res) => {
     );
     const total_pnl = parseFloat(pnlResult.rows[0].total_pnl || 0);
 
-    const paper = await loadPaperPortfolio(userId, { fetchLive: false });
+    const paper = await loadPaperPortfolio(userId, { fetchLive: true });
     const tradeFeed = await loadTradeFeed(userId, { limit: 50 });
 
     res.json({
@@ -580,15 +588,24 @@ router.get("/paper", requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/portfolio/paper/buy - open a live paper position at latest price.
-router.post("/paper/buy", requireAuth, async (req, res) => {
+// POST /api/portfolio/paper/order - open a live paper position at latest price.
+router.post(["/paper/order", "/paper/buy"], requireAuth, async (req, res) => {
   try {
     const userId = getUserId(req);
     const assetType = normalizeAssetType(req.body.asset_type);
     const symbol = normalizeSymbol(req.body.asset_symbol);
     const fallbackPrice = req.body.market_price;
     const live = await fetchLivePrice(assetType, symbol, fallbackPrice);
-    const entryPrice = live.price;
+    const livePrice = live.price;
+
+    const side = req.body.side === 'short' ? 'short' : 'long';
+    const orderType = ['limit', 'stop_market', 'stop_limit'].includes(req.body.order_type) ? req.body.order_type : 'market';
+    const positionStatus = orderType === 'market' ? 'open' : 'pending';
+
+    const triggerPrice = parseOptionalPositiveNumber(req.body.trigger_price, "Trigger price");
+    const limitPrice = parseOptionalPositiveNumber(req.body.limit_price, "Limit price");
+
+    const entryPrice = orderType === 'market' ? livePrice : (orderType === 'limit' ? limitPrice : triggerPrice);
 
     const quantityInput = req.body.quantity;
     const amountInput = req.body.invested_amount ?? req.body.amount ?? req.body.size_usd;
@@ -606,7 +623,6 @@ router.post("/paper/buy", requireAuth, async (req, res) => {
     const finalQuantity = quantity ?? investedAmount / entryPrice;
     const stopLoss = parseOptionalPositiveNumber(req.body.stop_loss ?? req.body.sl_price, "Stop loss");
     const takeProfit = parseOptionalPositiveNumber(req.body.take_profit ?? req.body.tp_price, "Take profit");
-    validateLongTpsl(entryPrice, stopLoss, takeProfit);
 
     const client = await pool.connect();
     let trade;
@@ -621,19 +637,24 @@ router.post("/paper/buy", requireAuth, async (req, res) => {
       const currentValue = finalQuantity * entryPrice;
       const result = await client.query(
         `INSERT INTO paper_trades (
-           trade_id, user_id, asset_symbol, asset_type, order_type, quantity,
-           entry_price, position_status, invested_amount, current_value,
+           trade_id, user_id, asset_symbol, asset_type, order_type, side, quantity,
+           entry_price, trigger_price, limit_price, position_status, invested_amount, current_value,
            profit_loss, profit_loss_percentage, stop_loss, take_profit
          )
-         VALUES ($1, $2, $3, $4, 'buy', $5, $6, 'open', $7, $8, 0, 0, $9, $10)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 0, 0, $14, $15)
          RETURNING *`,
         [
           tradeId,
           userId,
           symbol,
           assetType,
+          orderType,
+          side,
           finalQuantity,
           entryPrice,
+          triggerPrice,
+          limitPrice,
+          positionStatus,
           investedAmount,
           currentValue,
           stopLoss,
@@ -660,12 +681,14 @@ router.post("/paper/buy", requireAuth, async (req, res) => {
 
     const data = await loadPaperPortfolio(userId, {
       fetchLive: false,
-      priceOverrides: new Map([[tradeKey(assetType, symbol), entryPrice]]),
+      priceOverrides: new Map([[tradeKey(assetType, symbol), livePrice]]),
     });
-    await recordAndBroadcastTradeEvent(pool, userId, tradeEventFromPaperTrade(trade, "buy"));
+    if (positionStatus === 'open') {
+      await recordAndBroadcastTradeEvent(pool, userId, tradeEventFromPaperTrade(trade, "open"));
+    }
     res.status(201).json({ success: true, trade, execution: live, ...data });
   } catch (err) {
-    handleRouteError(res, err, "POST /portfolio/paper/buy");
+    handleRouteError(res, err, "POST /portfolio/paper/order");
   }
 });
 
@@ -684,7 +707,7 @@ router.post("/paper/sell", requireAuth, async (req, res) => {
       await getWallet(client, userId, { lock: true });
       const result = await client.query(
         `SELECT * FROM paper_trades
-         WHERE user_id = $1 AND trade_id = $2 AND position_status = 'open'
+         WHERE user_id = $1 AND trade_id = $2 AND position_status IN ('open', 'pending')
          FOR UPDATE`,
         [userId, tradeId]
       );
@@ -782,23 +805,56 @@ router.post("/paper/tick", requireAuth, async (req, res) => {
          WHERE user_id = $1
            AND asset_type = $2
            AND asset_symbol = $3
-           AND position_status = 'open'
+           AND position_status IN ('open', 'pending')
          ORDER BY created_at ASC
          FOR UPDATE`,
         [userId, assetType, symbol]
       );
 
       for (const row of result.rows) {
-        const takeProfit = row.take_profit == null ? null : asNumber(row.take_profit);
-        const stopLoss = row.stop_loss == null ? null : asNumber(row.stop_loss);
-        if (takeProfit != null && price >= takeProfit) {
-          const trade = await closeTrade(client, userId, row, takeProfit, "take_profit");
-          events.push({ type: "closed", reason: "take_profit", trade });
-        } else if (stopLoss != null && price <= stopLoss) {
-          const trade = await closeTrade(client, userId, row, stopLoss, "stop_loss");
-          events.push({ type: "closed", reason: "stop_loss", trade });
+        if (row.position_status === 'pending') {
+          let execute = false;
+          let executionPrice = price;
+
+          if (row.order_type === 'limit') {
+            if (row.side === 'long' && price <= asNumber(row.limit_price)) execute = true;
+            if (row.side === 'short' && price >= asNumber(row.limit_price)) execute = true;
+          } else if (row.order_type === 'stop_market' || row.order_type === 'stop_limit') {
+            if (row.side === 'long' && price >= asNumber(row.trigger_price)) execute = true;
+            if (row.side === 'short' && price <= asNumber(row.trigger_price)) execute = true;
+          }
+
+          if (execute) {
+            const updateRes = await client.query(
+              `UPDATE paper_trades SET position_status = 'open', entry_price = $1, updated_at = NOW() WHERE trade_id = $2 RETURNING *`,
+              [executionPrice, row.trade_id]
+            );
+            events.push({ type: "opened", trade: normalizeTrade(updateRes.rows[0], price) });
+          }
         } else {
-          await updateStoredMark(client, userId, row.trade_id, price);
+          const takeProfit = row.take_profit == null ? null : asNumber(row.take_profit);
+          const stopLoss = row.stop_loss == null ? null : asNumber(row.stop_loss);
+          const isShort = row.side === 'short';
+
+          let hitTp = false;
+          let hitSl = false;
+
+          if (takeProfit != null) {
+            hitTp = isShort ? price <= takeProfit : price >= takeProfit;
+          }
+          if (stopLoss != null) {
+            hitSl = isShort ? price >= stopLoss : price <= stopLoss;
+          }
+
+          if (hitTp) {
+            const trade = await closeTrade(client, userId, row, takeProfit, "take_profit");
+            events.push({ type: "closed", reason: "take_profit", trade });
+          } else if (hitSl) {
+            const trade = await closeTrade(client, userId, row, stopLoss, "stop_loss");
+            events.push({ type: "closed", reason: "stop_loss", trade });
+          } else {
+            await updateStoredMark(client, userId, row.trade_id, price);
+          }
         }
       }
 
@@ -815,7 +871,9 @@ router.post("/paper/tick", requireAuth, async (req, res) => {
       priceOverrides: new Map([[tradeKey(assetType, symbol), price]]),
     });
     for (const event of events) {
-      if (event.trade) {
+      if (event.type === 'opened' && event.trade) {
+        await recordAndBroadcastTradeEvent(pool, userId, tradeEventFromPaperTrade(event.trade, "open"));
+      } else if (event.type === 'closed' && event.trade) {
         await recordAndBroadcastTradeEvent(
           pool,
           userId,

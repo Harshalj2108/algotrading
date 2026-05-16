@@ -256,10 +256,13 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
   const [tpslEditPosId, setTpslEditPosId] = useState(null);
   const [tpslDeletePosId, setTpslDeletePosId] = useState(null);
   const [tradeMode, setTradeMode] = useState("buy");
+  const [otype, setOtype] = useState("market");
   const [sizeUsd, setSizeUsd] = useState(100);
   const [quantity, setQuantity] = useState("");
   const [takeProfit, setTakeProfit] = useState("");
   const [stopLoss, setStopLoss] = useState("");
+  const [trigPrice, setTrigPrice] = useState("");
+  const [limitPrice, setLimitPrice] = useState("");
   const [tpslDraft, setTpslDraft] = useState({ tp: "", sl: "" });
   const [historyFilter, setHistoryFilter] = useState("symbol");
   const [historySort, setHistorySort] = useState("newest");
@@ -761,25 +764,37 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           </div>
 
           <div className="tp-row" style={{ gap: 4 }}>
-            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "buy" ? " active" : ""}`} onClick={() => setTradeMode("buy")}>Buy</StarBorder>
-            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "sell" ? " active" : ""}`} onClick={() => setTradeMode("sell")}>Sell</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "buy" ? " active" : ""}`} onClick={() => setTradeMode("buy")}>Buy / Long</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "sell" ? " active" : ""}`} onClick={() => setTradeMode("sell")}>Sell / Short</StarBorder>
           </div>
 
           <div className="tp-row">
             <span className="tp-lbl">Order</span>
             <div className="btn-group">
-              <StarBorder as="button" className="btn active">Market</StarBorder>
+              <StarBorder as="button" className={`btn${otype === "market" ? " active" : ""}`} onClick={() => setOtype("market")}>Market</StarBorder>
+              <StarBorder as="button" className={`btn${otype === "limit" ? " active" : ""}`} onClick={() => setOtype("limit")}>Limit</StarBorder>
+              <StarBorder as="button" className={`btn${otype === "stop_market" ? " active" : ""}`} onClick={() => setOtype("stop_market")}>Stop</StarBorder>
+              <StarBorder as="button" className={`btn${otype === "stop_limit" ? " active" : ""}`} onClick={() => setOtype("stop_limit")}>Stop Limit</StarBorder>
             </div>
-            <span style={{ color: "#787b86", fontSize: 11 }}>@ {fmtPrice(price)}</span>
+            <span style={{ color: "#787b86", fontSize: 11, minWidth: 45, textAlign: "right" }}>@ {fmtPrice(price)}</span>
           </div>
+
+          {otype !== "market" && <div className="tp-row">
+            <span className="tp-lbl">{otype === "limit" ? "Limit Price" : "Trigger Price"}</span>
+            <input type="number" min={0} value={trigPrice} onChange={e => setTrigPrice(e.target.value)} style={{ flex: 1 }} placeholder="Enter price" />
+          </div>}
+          {otype === "stop_limit" && <div className="tp-row">
+            <span className="tp-lbl">Limit Price</span>
+            <input type="number" min={0} value={limitPrice} onChange={e => setLimitPrice(e.target.value)} style={{ flex: 1 }} placeholder="Enter limit price" />
+          </div>}
 
           <div className="tp-row">
             <span className="tp-lbl">Amount S</span>
-            <input type="number" min={1} value={sizeUsd} onChange={e => setSizeUsd(e.target.value)} style={{ flex: 1 }} disabled={tradeMode === "sell"} />
+            <input type="number" min={1} value={sizeUsd} onChange={e => setSizeUsd(e.target.value)} style={{ flex: 1 }} />
           </div>
           <div className="tp-row">
             <span className="tp-lbl">Quantity</span>
-            <input type="number" min={0} value={quantity} onChange={e => setQuantity(e.target.value)} style={{ flex: 1 }} placeholder={estimatedQty ? estimatedQty.toFixed(8) : "optional"} disabled={tradeMode === "sell"} />
+            <input type="number" min={0} value={quantity} onChange={e => setQuantity(e.target.value)} style={{ flex: 1 }} placeholder={estimatedQty ? estimatedQty.toFixed(8) : "optional"} />
           </div>
           <div className="tp-row">
             <span className="tp-lbl">Take Profit</span>
@@ -794,11 +809,11 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
             <div><span className="tp-lbl">Cash</span><span>S{fmtMoney(wallet.virtual_balance)}</span></div>
             <div><span className="tp-lbl">Value</span><span>S{fmtMoney(portfolioSummary.total_portfolio_value)}</span></div>
             <div><span className="tp-lbl">U-PnL</span><span className={portfolioSummary.unrealized_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.unrealized_profit_loss >= 0 ? "+" : ""}S{Math.abs(portfolioSummary.unrealized_profit_loss || 0).toFixed(2)}</span></div>
-            <div><span className="tp-lbl">Est Qty</span><span>{tradeMode === "buy" ? estimatedQty.toFixed(8) : selectedPosition?.quantity?.toFixed?.(8) || "-"}</span></div>
+            <div><span className="tp-lbl">Est Qty</span><span>{estimatedQty.toFixed(8)}</span></div>
           </div>
 
-          <StarBorder as="button" className={`tp-place ${tradeMode === "buy" ? "long" : "short"}`} onClick={placeOrder} disabled={orderBusy || (tradeMode === "sell" && !selectedPosition)}>
-            {orderBusy ? "Working..." : tradeMode === "buy" ? "Buy Market" : "Sell / Close"}
+          <StarBorder as="button" className={`tp-place ${tradeMode === "buy" ? "long" : "short"}`} onClick={placeOrder} disabled={orderBusy}>
+            {orderBusy ? "Working..." : tradeMode === "buy" ? (otype === "market" ? "Buy Market" : "Place Order") : (otype === "market" ? "Sell Market" : "Place Order")}
           </StarBorder>
           {selectedPosition && (
             <StarBorder as="button" className="btn" onClick={saveSelectedTpsl} style={{ margin: "0 8px 7px", width: "calc(100% - 16px)" }}>
@@ -808,19 +823,30 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           {toast && <div className={`tp-toast toast-${toast.type}`}>{toast.msg}</div>}
           {paperLoading && <div className="tp-empty">Loading portfolio...</div>}
 
-          <div className="tp-section"><span>Open Positions</span><span className={totalUpnl >= 0 ? "up" : "dn"}>{symbolPositions.length ? `${totalUpnl >= 0 ? "+" : ""}S${totalUpnl.toFixed(2)}` : "-"}</span></div>
+          <div className="tp-section"><span>Open / Pending Positions</span><span className={totalUpnl >= 0 ? "up" : "dn"}>{symbolPositions.length ? `${totalUpnl >= 0 ? "+" : ""}S${totalUpnl.toFixed(2)}` : "-"}</span></div>
           <div>
-            {!symbolPositions.length ? <div className="tp-empty">No open positions for {decodedSymbol}</div> : symbolPositions.map(position => (
+            {!symbolPositions.length ? <div className="tp-empty">No open or pending positions for {decodedSymbol}</div> : symbolPositions.map(position => (
               <div className={`pos-card${selectedPosition?.id === position.id ? " selected" : ""}`} key={position.id} onClick={() => selectPositionForEdit(position)}>
-                <div className="pos-card-row"><span className="up">BUY {position.asset_symbol}</span><span className={position.upnl >= 0 ? "up" : "dn"}>{position.upnl >= 0 ? "+" : ""}S{position.upnl.toFixed(2)} ({position.upnl_pct >= 0 ? "+" : ""}{position.upnl_pct.toFixed(1)}%)</span></div>
-                <div className="pos-card-row" style={{ color: "#787b86" }}><span>Entry: {fmtPrice(position.entry_price)}</span><span>Qty: {position.quantity.toFixed(6)}</span></div>
+                <div className="pos-card-row">
+                  <span className={position.side === "short" ? "dn" : "up"}>
+                    {position.position_status === "pending" ? "PENDING " : ""}
+                    {position.side === "short" ? "SHORT" : "LONG"} {position.asset_symbol}
+                  </span>
+                  <span className={position.upnl >= 0 ? "up" : "dn"}>
+                    {position.upnl >= 0 ? "+" : ""}S{position.upnl.toFixed(2)} ({position.upnl_pct >= 0 ? "+" : ""}{position.upnl_pct.toFixed(1)}%)
+                  </span>
+                </div>
+                <div className="pos-card-row" style={{ color: "#787b86" }}>
+                  <span>{position.position_status === "pending" ? (position.order_type === "limit" ? "Limit" : "Trigger") : "Entry"}: {fmtPrice(position.position_status === "pending" ? (position.limit_price || position.trigger_price) : position.entry_price)}</span>
+                  <span>Qty: {position.quantity.toFixed(6)}</span>
+                </div>
                 <div className="pos-card-row tpsl-card-row"><span>TP: <span className="up">{position.take_profit ? fmtPrice(position.take_profit) : "-"}</span></span><span>SL: <span className="dn">{position.stop_loss ? fmtPrice(position.stop_loss) : "-"}</span></span></div>
                 <div className="pos-card-row" style={{ color: "#787b86" }}><span className="up">Invested: S{position.size_usd.toFixed(2)}</span><span>Value: S{position.current_value.toFixed(2)}</span></div>
                 <div className="pos-card-actions">
                   <StarBorder as="button" className="pos-card-tpsl" onClick={e => { e.stopPropagation(); openTpslEditModal(position); }}>Edit TP/SL</StarBorder>
                   <StarBorder as="button" className="pos-card-tpsl" onClick={e => { e.stopPropagation(); setDetailsPosId(position.id); }}>Details</StarBorder>
                 </div>
-                <StarBorder as="button" className="pos-card-close" onClick={e => { e.stopPropagation(); closePosition(position.id); }}>Close</StarBorder>
+                <StarBorder as="button" className="pos-card-close" onClick={e => { e.stopPropagation(); closePosition(position.id); }}>{position.position_status === "pending" ? "Cancel" : "Close"}</StarBorder>
               </div>
             ))}
           </div>

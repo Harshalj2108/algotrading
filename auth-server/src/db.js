@@ -116,6 +116,13 @@ const INIT_SQL = `
 
   CREATE INDEX IF NOT EXISTS idx_trade_events_user_timestamp
     ON trade_events (user_id, event_timestamp DESC, event_id DESC);
+
+  -- Migration for advanced orders & shorting
+  ALTER TABLE paper_trades DROP CONSTRAINT IF EXISTS paper_trades_order_type_check;
+  ALTER TABLE paper_trades DROP CONSTRAINT IF EXISTS paper_trades_position_status_check;
+  ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS trigger_price NUMERIC(24, 10);
+  ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS limit_price NUMERIC(24, 10);
+  ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS side VARCHAR(16) DEFAULT 'long';
 `;
 
 async function initDB() {
