@@ -113,22 +113,7 @@ router.post("/register", async (req, res) => {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Send email FIRST — only persist to DB if email succeeds
-    if (process.env.SMTP_HOST) {
-      try {
-        await transporter.sendMail({
-          from: '"SynthCrypto" <noreply@synthcrypto.com>',
-          to: email,
-          subject: "Your SynthCrypto Verification Code",
-          text: `Your verification code is: ${otpCode}. It expires in 10 minutes.`,
-        });
-        console.log(`[SMTP] OTP sent successfully.`);
-      } catch (err) {
-        console.error(`[SMTP] Email delivery failed: ${err.message}`);
-        console.log(`[DEV/FALLBACK] Failed to send email to ${email}. OTP is: ${otpCode}`);
-      }
-    } else {
-      console.log(`[DEV/FALLBACK] No SMTP_HOST configured. OTP for ${email} is: ${otpCode}`);
-    }
+    await sendVerificationEmail(email, otpCode);
 
     // Email delivered — store as pending registration (upsert in case of retry)
     await pool.query(
@@ -541,6 +526,5 @@ router.get("/verify", (req, res) => {
   }
   res.json({ valid: true, user: payload });
 });
-
 
 module.exports = router;
