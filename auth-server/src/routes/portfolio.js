@@ -271,53 +271,140 @@ async function updateStoredMark(db, userId, tradeId, marketPrice) {
   return normalizeTrade(row, marketPrice);
 }
 
-async function closeTrade(client, userId, row, executionPrice, reason = "manual") {
-  const computed = calculateTrade(row, executionPrice);
-  await client.query(
-    `UPDATE paper_trades
-     SET order_type = 'sell',
-         exit_price = $1,
-         position_status = 'closed',
-         current_value = $2,
-         profit_loss = $3,
-         profit_loss_percentage = $4,
-         close_reason = $5,
-         closed_at = NOW(),
-         updated_at = NOW()
-     WHERE user_id = $6 AND trade_id = $7 AND position_status = 'open'`,
-    [
-      executionPrice,
-      computed.currentValue,
-      computed.profitLoss,
-      computed.profitLossPercentage,
-      reason,
-      userId,
-      row.trade_id,
-    ]
-  );
+async function closeTrade(client, userId, row, executionPrice, reason = "manual", closeQuantity = null) {
+  const originalQuantity = asNumber(row.quantity);
+  const qtyToClose = closeQuantity != null && closeQuantity > 0 && closeQuantity < originalQuantity
+    ? asNumber(closeQuantity)
+    : originalQuantity;
+    
+  const isPartial = qtyToClose < originalQuantity;
 
-  await client.query(
-    `UPDATE paper_wallets
-     SET virtual_balance = virtual_balance + $1,
-         updated_at = NOW()
-     WHERE user_id = $2`,
-    [computed.currentValue, userId]
-  );
+  if (isPartial) {
+    // Partial close: We compute the values for the closed portion.
+    const proportion = qtyToClose / originalQuantity;
+    const closedInvestedAmount = asNumber(row.invested_amount) * proportion;
+    const remainingInvestedAmount = asNumber(row.invested_amount) - closedInvestedAmount;
+    const remainingQuantity = originalQuantity - qtyToClose;
 
-  return normalizeTrade(
-    {
-      ...row,
-      order_type: "sell",
-      exit_price: executionPrice,
-      position_status: "closed",
-      current_value: computed.currentValue,
-      profit_loss: computed.profitLoss,
-      profit_loss_percentage: computed.profitLossPercentage,
-      close_reason: reason,
-      closed_at: new Date().toISOString(),
-    },
-    executionPrice
-  );
+    // Create a temporary row-like object for the closed portion to calculate PnL
+    const tempRowForClosed = { ...row, quantity: qtyToClose, invested_amount: closedInvestedAmount };
+    const computedClosed = calculateTrade(tempRowForClosed, executionPrice);
+
+    // Insert a new closed trade record for the closed portion
+    const newTradeId = crypto.randomUUID();
+    await client.query(
+      `INSERT INTO paper_trades (
+         trade_id, user_id, asset_symbol, asset_type, order_type, side, quantity,
+         entry_price, exit_price, position_status, invested_amount, current_value,
+         profit_loss, profit_loss_percentage, close_reason, created_at, closed_at, updated_at
+       ) VALUES ($1, $2, $3, $4, 'sell', $5, $6, $7, $8, 'closed', $9, $10, $11, $12, $13, $14, NOW(), NOW())`,
+      [
+        newTradeId, userId, row.asset_symbol, row.asset_type, row.side || 'long', qtyToClose,
+        row.entry_price, executionPrice, closedInvestedAmount, computedClosed.currentValue,
+        computedClosed.profitLoss, computedClosed.profitLossPercentage, reason, row.created_at
+      ]
+    );
+
+    // Update the existing open position with the remaining quantity
+    const tempRowForOpen = { ...row, quantity: remainingQuantity, invested_amount: remainingInvestedAmount };
+    const computedOpen = calculateTrade(tempRowForOpen, executionPrice);
+    await client.query(
+      `UPDATE paper_trades
+       SET quantity = $1,
+           invested_amount = $2,
+           current_value = $3,
+           profit_loss = $4,
+           profit_loss_percentage = $5,
+           updated_at = NOW()
+       WHERE trade_id = $6`,
+      [remainingQuantity, remainingInvestedAmount, computedOpen.currentValue, computedOpen.profitLoss, computedOpen.profitLossPercentage, row.trade_id]
+    );
+
+    await client.query(
+      `UPDATE paper_wallets
+       SET virtual_balance = virtual_balance + $1,
+           updated_at = NOW()
+       WHERE user_id = $2`,
+      [computedClosed.currentValue, userId]
+    );
+
+    return normalizeTrade(
+      {
+        ...row,
+        trade_id: newTradeId,
+        order_type: "sell",
+        quantity: qtyToClose,
+        invested_amount: closedInvestedAmount,
+        exit_price: executionPrice,
+        position_status: "closed",
+        current_value: computedClosed.currentValue,
+        profit_loss: computedClosed.profitLoss,
+        profit_loss_percentage: computedClosed.profitLossPercentage,
+        close_reason: reason,
+        closed_at: new Date().toISOString(),
+      },
+      executionPrice
+    );
+  } else {
+    // Full close
+    const computed = calculateTrade(row, executionPrice);
+    await client.query(
+      `UPDATE paper_trades
+       SET order_type = 'sell',
+           exit_price = $1,
+           position_status = 'closed',
+           current_value = $2,
+           profit_loss = $3,
+           profit_loss_percentage = $4,
+           close_reason = $5,
+           closed_at = NOW(),
+           updated_at = NOW()
+       WHERE user_id = $6 AND trade_id = $7 AND position_status IN ('open', 'pending')`,
+      [
+        executionPrice,
+        computed.currentValue,
+        computed.profitLoss,
+        computed.profitLossPercentage,
+        reason,
+        userId,
+        row.trade_id,
+      ]
+    );
+
+    if (row.position_status === 'open') {
+      await client.query(
+        `UPDATE paper_wallets
+         SET virtual_balance = virtual_balance + $1,
+             updated_at = NOW()
+         WHERE user_id = $2`,
+        [computed.currentValue, userId]
+      );
+    } else {
+      // If cancelling a pending order, return the invested amount directly
+      await client.query(
+        `UPDATE paper_wallets
+         SET virtual_balance = virtual_balance + $1,
+             updated_at = NOW()
+         WHERE user_id = $2`,
+        [row.invested_amount, userId]
+      );
+    }
+
+    return normalizeTrade(
+      {
+        ...row,
+        order_type: "sell",
+        exit_price: executionPrice,
+        position_status: "closed",
+        current_value: computed.currentValue,
+        profit_loss: computed.profitLoss,
+        profit_loss_percentage: computed.profitLossPercentage,
+        close_reason: reason,
+        closed_at: new Date().toISOString(),
+      },
+      executionPrice
+    );
+  }
 }
 
 async function loadPaperPortfolio(userId, { fetchLive = true, priceOverrides = new Map() } = {}) {

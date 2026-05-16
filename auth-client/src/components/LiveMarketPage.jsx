@@ -490,34 +490,47 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
 
     setOrderBusy(true);
     try {
-      if (tradeMode === "buy") {
+      if (tradeMode === "buy" || tradeMode === "short") {
         const amount = Number(sizeUsd);
         const qty = quantity === "" ? null : Number(quantity);
         if ((!Number.isFinite(amount) || amount <= 0) && (!Number.isFinite(qty) || qty <= 0)) {
           throw new Error("Enter an amount or quantity greater than zero");
         }
-        const data = await portfolioRequest("/api/portfolio/paper/buy", {
+        const data = await portfolioRequest("/api/portfolio/paper/order", {
           method: "POST",
           body: JSON.stringify({
             asset_type: assetClass,
             asset_symbol: decodedSymbol,
+            side: tradeMode === "buy" ? "long" : "short",
+            order_type: otype,
             invested_amount: Number.isFinite(amount) && amount > 0 ? amount : undefined,
             quantity: Number.isFinite(qty) && qty > 0 ? qty : undefined,
             take_profit: takeProfit || undefined,
             stop_loss: stopLoss || undefined,
+            trigger_price: otype !== "market" ? Number(trigPrice) || undefined : undefined,
+            limit_price: otype === "limit" ? Number(trigPrice) || undefined : (otype === "stop_limit" ? Number(limitPrice) || undefined : undefined),
             market_price: markPrice,
           }),
         });
         syncPaperData(data);
         setSelectedPosId(data.trade?.id || data.trade?.trade_id || null);
-        showToastMsg(`Bought ${decodedSymbol} @ ${fmtPrice(data.trade?.entry_price)}`, "ok");
+        if (data.trade?.position_status === "pending") {
+          showToastMsg(`Order placed for ${decodedSymbol}`, "ok");
+        } else {
+          showToastMsg(`${tradeMode === "buy" ? "Bought" : "Shorted"} ${decodedSymbol} @ ${fmtPrice(data.trade?.entry_price)}`, "ok");
+        }
       } else {
         if (!selectedPosition) throw new Error("Select an open position to close");
+        if (tradeMode === "sell" && selectedPosition.side === "short") throw new Error("Use Cover to close a short position");
+        if (tradeMode === "cover" && selectedPosition.side !== "short") throw new Error("Use Sell to close a long position");
+        
+        const qty = quantity === "" ? null : Number(quantity);
         const data = await portfolioRequest("/api/portfolio/paper/sell", {
           method: "POST",
           body: JSON.stringify({
             trade_id: selectedPosition.id,
             market_price: markPrice,
+            quantity: Number.isFinite(qty) && qty > 0 ? qty : undefined,
           }),
         });
         syncPaperData(data);
@@ -764,8 +777,10 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           </div>
 
           <div className="tp-row" style={{ gap: 4 }}>
-            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "buy" ? " active" : ""}`} onClick={() => setTradeMode("buy")}>Buy / Long</StarBorder>
-            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "sell" ? " active" : ""}`} onClick={() => setTradeMode("sell")}>Sell / Short</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "buy" ? " active" : ""}`} onClick={() => setTradeMode("buy")}>Buy</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "sell" ? " active" : ""}`} onClick={() => setTradeMode("sell")}>Sell / Close</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "short" ? " active" : ""}`} onClick={() => setTradeMode("short")}>Short</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "cover" ? " active" : ""}`} onClick={() => setTradeMode("cover")}>Cover</StarBorder>
           </div>
 
           <div className="tp-row">
@@ -812,8 +827,12 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
             <div><span className="tp-lbl">Est Qty</span><span>{estimatedQty.toFixed(8)}</span></div>
           </div>
 
-          <StarBorder as="button" className={`tp-place ${tradeMode === "buy" ? "long" : "short"}`} onClick={placeOrder} disabled={orderBusy}>
-            {orderBusy ? "Working..." : tradeMode === "buy" ? (otype === "market" ? "Buy Market" : "Place Order") : (otype === "market" ? "Sell Market" : "Place Order")}
+          <StarBorder as="button" className={`tp-place ${tradeMode === "buy" || tradeMode === "cover" ? "long" : "short"}`} onClick={placeOrder} disabled={orderBusy}>
+            {orderBusy ? "Working..." : 
+              tradeMode === "buy" ? (otype === "market" ? "Buy Market" : "Place Buy Order") : 
+              tradeMode === "short" ? (otype === "market" ? "Short Market" : "Place Short Order") : 
+              tradeMode === "sell" ? "Close / Reduce Long" : "Cover / Reduce Short"
+            }
           </StarBorder>
           {selectedPosition && (
             <StarBorder as="button" className="btn" onClick={saveSelectedTpsl} style={{ margin: "0 8px 7px", width: "calc(100% - 16px)" }}>
