@@ -490,51 +490,33 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
 
     setOrderBusy(true);
     try {
-      if (tradeMode === "buy" || tradeMode === "short") {
-        const amount = Number(sizeUsd);
-        const qty = quantity === "" ? null : Number(quantity);
-        if ((!Number.isFinite(amount) || amount <= 0) && (!Number.isFinite(qty) || qty <= 0)) {
-          throw new Error("Enter an amount or quantity greater than zero");
-        }
-        const data = await portfolioRequest("/api/portfolio/paper/order", {
-          method: "POST",
-          body: JSON.stringify({
-            asset_type: assetClass,
-            asset_symbol: decodedSymbol,
-            side: tradeMode === "buy" ? "long" : "short",
-            order_type: otype,
-            invested_amount: Number.isFinite(amount) && amount > 0 ? amount : undefined,
-            quantity: Number.isFinite(qty) && qty > 0 ? qty : undefined,
-            take_profit: takeProfit || undefined,
-            stop_loss: stopLoss || undefined,
-            trigger_price: otype !== "market" ? Number(trigPrice) || undefined : undefined,
-            limit_price: otype === "limit" ? Number(trigPrice) || undefined : (otype === "stop_limit" ? Number(limitPrice) || undefined : undefined),
-            market_price: markPrice,
-          }),
-        });
-        syncPaperData(data);
-        setSelectedPosId(data.trade?.id || data.trade?.trade_id || null);
-        if (data.trade?.position_status === "pending") {
-          showToastMsg(`Order placed for ${decodedSymbol}`, "ok");
-        } else {
-          showToastMsg(`${tradeMode === "buy" ? "Bought" : "Shorted"} ${decodedSymbol} @ ${fmtPrice(data.trade?.entry_price)}`, "ok");
-        }
+      const amount = Number(sizeUsd);
+      const qty = quantity === "" ? null : Number(quantity);
+      if ((!Number.isFinite(amount) || amount <= 0) && (!Number.isFinite(qty) || qty <= 0)) {
+        throw new Error("Enter an amount or quantity greater than zero");
+      }
+      const data = await portfolioRequest("/api/portfolio/paper/order", {
+        method: "POST",
+        body: JSON.stringify({
+          asset_type: assetClass,
+          asset_symbol: decodedSymbol,
+          side: tradeMode === "buy" ? "long" : "short",
+          order_type: otype,
+          invested_amount: Number.isFinite(amount) && amount > 0 ? amount : undefined,
+          quantity: Number.isFinite(qty) && qty > 0 ? qty : undefined,
+          take_profit: takeProfit || undefined,
+          stop_loss: stopLoss || undefined,
+          trigger_price: otype !== "market" ? Number(trigPrice) || undefined : undefined,
+          limit_price: otype === "limit" ? Number(trigPrice) || undefined : (otype === "stop_limit" ? Number(limitPrice) || undefined : undefined),
+          market_price: markPrice,
+        }),
+      });
+      syncPaperData(data);
+      setSelectedPosId(data.trade?.id || data.trade?.trade_id || null);
+      if (data.trade?.position_status === "pending") {
+        showToastMsg(`Order placed for ${decodedSymbol}`, "ok");
       } else {
-        if (!selectedPosition) throw new Error("Select an open position to close");
-        if (tradeMode === "sell" && selectedPosition.side === "short") throw new Error("Use Cover to close a short position");
-        if (tradeMode === "cover" && selectedPosition.side !== "short") throw new Error("Use Sell to close a long position");
-        
-        const qty = quantity === "" ? null : Number(quantity);
-        const data = await portfolioRequest("/api/portfolio/paper/sell", {
-          method: "POST",
-          body: JSON.stringify({
-            trade_id: selectedPosition.id,
-            market_price: markPrice,
-            quantity: Number.isFinite(qty) && qty > 0 ? qty : undefined,
-          }),
-        });
-        syncPaperData(data);
-        showToastMsg(`Closed ${decodedSymbol} ${data.trade?.profit_loss >= 0 ? "+" : "-"}S${Math.abs(data.trade?.profit_loss || 0).toFixed(2)}`, data.trade?.profit_loss >= 0 ? "ok" : "err");
+        showToastMsg(`${tradeMode === "buy" ? "Bought" : "Shorted"} ${decodedSymbol} @ ${fmtPrice(data.trade?.entry_price)}`, "ok");
       }
     } catch (err) {
       showToastMsg(err.message || "Order failed", "err");
@@ -545,7 +527,6 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
 
   const closePosition = async (positionId) => {
     setSelectedPosId(positionId);
-    setTradeMode("sell");
     const markPrice = priceRef.current || price;
     setOrderBusy(true);
     try {
@@ -777,10 +758,8 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           </div>
 
           <div className="tp-row" style={{ gap: 4 }}>
-            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "buy" ? " active" : ""}`} onClick={() => setTradeMode("buy")}>Buy</StarBorder>
-            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "sell" ? " active" : ""}`} onClick={() => setTradeMode("sell")}>Sell / Close</StarBorder>
-            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "short" ? " active" : ""}`} onClick={() => setTradeMode("short")}>Short</StarBorder>
-            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "cover" ? " active" : ""}`} onClick={() => setTradeMode("cover")}>Cover</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn long${tradeMode === "buy" ? " active" : ""}`} onClick={() => setTradeMode("buy")}>Buy / Long</StarBorder>
+            <StarBorder as="button" className={`tp-side-btn short${tradeMode === "short" ? " active" : ""}`} onClick={() => setTradeMode("short")}>Sell / Short</StarBorder>
           </div>
 
           <div className="tp-row">
@@ -827,11 +806,10 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
             <div><span className="tp-lbl">Est Qty</span><span>{estimatedQty.toFixed(8)}</span></div>
           </div>
 
-          <StarBorder as="button" className={`tp-place ${tradeMode === "buy" || tradeMode === "cover" ? "long" : "short"}`} onClick={placeOrder} disabled={orderBusy}>
+          <StarBorder as="button" className={`tp-place ${tradeMode === "buy" ? "long" : "short"}`} onClick={placeOrder} disabled={orderBusy}>
             {orderBusy ? "Working..." : 
               tradeMode === "buy" ? (otype === "market" ? "Buy Market" : "Place Buy Order") : 
-              tradeMode === "short" ? (otype === "market" ? "Short Market" : "Place Short Order") : 
-              tradeMode === "sell" ? "Close / Reduce Long" : "Cover / Reduce Short"
+              (otype === "market" ? "Short Market" : "Place Short Order")
             }
           </StarBorder>
           {selectedPosition && (
@@ -870,34 +848,6 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
             ))}
           </div>
 
-          <div className="tp-section"><span>Portfolio</span><span className={portfolioSummary.total_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.total_profit_loss >= 0 ? "+" : ""}S{Math.abs(portfolioSummary.total_profit_loss || 0).toFixed(2)}</span></div>
-          <div className="tp-info">
-            <div><span className="tp-lbl">Realized</span><span className={portfolioSummary.realized_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.realized_profit_loss >= 0 ? "+" : ""}S{Math.abs(portfolioSummary.realized_profit_loss || 0).toFixed(2)}</span></div>
-            <div><span className="tp-lbl">Win Rate</span><span>{portfolioSummary.win_rate_percentage == null ? "-" : `${portfolioSummary.win_rate_percentage.toFixed(1)}%`}</span></div>
-            <div><span className="tp-lbl">Closed</span><span>{portfolioSummary.closed_trades || 0}</span></div>
-          </div>
-
-          <div className="tp-section"><span>Trade History</span><span>{visibleHistory.length}</span></div>
-          <div className="tp-row" style={{ gap: 6 }}>
-            <select value={historyFilter} onChange={e => setHistoryFilter(e.target.value)} style={{ flex: 1, background: "#131722", color: "#d1d4dc", border: "1px solid #2a2e39", borderRadius: 3, padding: "3px 5px", fontSize: 11 }}>
-              <option value="symbol">This symbol</option>
-              <option value="all">All assets</option>
-            </select>
-            <select value={historySort} onChange={e => setHistorySort(e.target.value)} style={{ flex: 1, background: "#131722", color: "#d1d4dc", border: "1px solid #2a2e39", borderRadius: 3, padding: "3px 5px", fontSize: 11 }}>
-              <option value="newest">Newest</option>
-              <option value="pnl">P/L</option>
-              <option value="duration">Duration</option>
-            </select>
-          </div>
-          <div>
-            {!visibleHistory.length ? <div className="tp-empty">No closed trades</div> : visibleHistory.map(trade => (
-              <div className="ord-card" key={trade.id}>
-                <div className="pos-card-row"><span>{trade.asset_symbol}</span><span className={trade.profit_loss >= 0 ? "up" : "dn"}>{trade.profit_loss >= 0 ? "+" : ""}S{trade.profit_loss.toFixed(2)}</span></div>
-                <div className="pos-card-row" style={{ color: "#787b86" }}><span>{fmtPrice(trade.entry_price)}{" -> "}{fmtPrice(trade.exit_price)}</span><span>{fmtDuration(tradeDurationMs(trade))}</span></div>
-                <div className="pos-card-row" style={{ color: "#787b86" }}><span>Qty {trade.quantity.toFixed(6)}</span><span>S{trade.invested_amount.toFixed(2)}</span></div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
