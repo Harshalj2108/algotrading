@@ -15,10 +15,14 @@ const bcrypt = require("bcryptjs");
 const axios = require("axios");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const dns = require("dns");
 const { pool } = require("../db");
 const { signToken, verifyToken, requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
+
+// Force Node.js to prefer IPv4 over IPv6 during DNS resolution to avoid ENETUNREACH on Railway
+dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.ethereal.email",
@@ -27,7 +31,6 @@ const transporter = nodemailer.createTransport({
   connectionTimeout: 5000,
   greetingTimeout: 5000,
   socketTimeout: 5000,
-  family: 4, // Force IPv4 to avoid ENETUNREACH on environments without full IPv6 routing
   auth: {
     user: process.env.SMTP_USER || "ethereal.user@ethereal.email",
     pass: (process.env.SMTP_PASS || "ethereal_password").replace(/\s+/g, ""),
