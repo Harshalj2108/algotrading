@@ -15,7 +15,7 @@ const {
 const router = express.Router();
 
 const INITIAL_VIRTUAL_BALANCE = 10000;
-const SIMULATOR_URL = process.env.SIMULATOR_URL || "http://localhost:8000";
+const SIMULATOR_URL = process.env.SIMULATOR_URL;
 
 function httpError(status, message) {
   const err = new Error(message);

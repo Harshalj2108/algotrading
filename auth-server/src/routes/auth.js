@@ -460,9 +460,9 @@ router.get("/google/callback", async (req, res) => {
     const token = signToken(user);
     res.cookie("token", token, COOKIE_OPTS);
     if (isNewGoogleUser) {
-      res.redirect(`${CLIENT_URL}?auth=success&isNew=true`);
+      res.redirect(`${CLIENT_URL}?auth=success&isNew=true&token=${token}`);
     } else {
-      res.redirect(`${CLIENT_URL}?auth=success`);
+      res.redirect(`${CLIENT_URL}?auth=success&token=${token}`);
     }
   } catch (err) {
     console.error("Google OAuth callback error:", err.response?.data || err.message);
@@ -483,7 +483,10 @@ router.post("/logout", (req, res) => {
 
 router.get("/me", async (req, res) => {
   try {
-    const token = req.cookies?.token;
+    let token = req.cookies?.token;
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.substring(7);
+    }
     if (!token) return res.status(200).json({ user: null });
 
     const payload = verifyToken(token);

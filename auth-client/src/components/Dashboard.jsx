@@ -353,6 +353,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
 
   const handleLogout = async () => {
     await fetch(`${AUTH_SERVER}/api/auth/logout`, { method: "POST", credentials: "include" });
+    localStorage.removeItem("synthcrypto_token");
     goToLogin();
   };
 

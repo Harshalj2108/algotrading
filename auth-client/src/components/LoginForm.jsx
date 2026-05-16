@@ -43,6 +43,7 @@ export default function LoginForm({ onSuccess, onError }) {
         return;
       }
 
+      if (data.token) localStorage.setItem("synthcrypto_token", data.token);
       onSuccess(data.user);
     } catch {
       onError("Cannot reach auth server. Is it running on port 3001?");

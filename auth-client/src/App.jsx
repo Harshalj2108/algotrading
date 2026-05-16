@@ -468,6 +468,8 @@ export default function App() {
     // If redirected back from Google OAuth with a token cookie, go to dashboard
     const oauthSuccess = params.get("auth");
     if (oauthSuccess === "success") {
+      const token = params.get("token");
+      if (token) localStorage.setItem("synthcrypto_token", token);
       if (params.get("isNew") === "true") {
         localStorage.setItem("isNewRegistration", "true");
       }

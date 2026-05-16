@@ -218,7 +218,8 @@ function attachTradeFeedWebSocket(server) {
     if (url.pathname !== "/api/portfolio/trade-feed/ws") return;
 
     const cookies = parseCookies(req.headers.cookie || "");
-    const user = verifyToken(cookies.token);
+    const token = url.searchParams.get("token") || cookies.token;
+    const user = verifyToken(token);
     const key = req.headers["sec-websocket-key"];
     if (!user || !key) {
       socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");

@@ -31,7 +31,7 @@ app.use(cookieParser());
 
 app.set("trust proxy", 1); // Required for 'secure' cookies behind Railway proxy
 app.use(cors({
-  origin: [process.env.CLIENT_URL, process.env.AUTH_URL, process.env.SIMULATOR_URL],
+  origin: true,
   credentials: true,
 }));
 

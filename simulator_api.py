@@ -40,14 +40,14 @@ from realtime_engine import data_engine
 
 # ─── configuration ────────────────────────────────────────────────────────────
 
-JWT_SECRET   = os.getenv("JWT_SECRET",   "synthcrypto-jwt-secret-change-me-in-production")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+JWT_SECRET   = os.getenv("JWT_SECRET")
+CLIENT_URL = os.getenv("CLIENT_URL")
 
 # ─── Socket.IO setup ──────────────────────────────────────────────────────────
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins=[FRONTEND_URL, "http://localhost:3000", "http://localhost:5174"],
+    cors_allowed_origins=[CLIENT_URL],
     logger=False,
     engineio_logger=False,
 )
@@ -100,7 +100,8 @@ fastapi_app = FastAPI(title="SynthCrypto Simulator API", version="4.0.0")
 
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000", "http://localhost:5174"],
+    allow_origins=cors_origins if cors_origins != ["*"] else [],
+    allow_origin_regex=".*" if cors_origins == ["*"] else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -862,6 +863,11 @@ async def startup():
 
 
 @fastapi_app.on_event("shutdown")
+async def shutdown():
+    if _live_polling_task:
+        _live_polling_task.cancel()
+    manager.stop()
+astapi_app.on_event("shutdown")
 async def shutdown():
     if _live_polling_task:
         _live_polling_task.cancel()
