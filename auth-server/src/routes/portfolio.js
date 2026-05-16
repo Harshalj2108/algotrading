@@ -685,7 +685,7 @@ router.post(["/paper/order", "/paper/buy"], requireAuth, async (req, res) => {
     const live = await fetchLivePrice(assetType, symbol, fallbackPrice);
     const livePrice = live.price;
 
-    const side = req.body.side === 'short' ? 'short' : 'long';
+    const side = (req.body.side === 'short' || req.body.side === 'sell') ? 'short' : 'long';
     const orderType = ['limit', 'stop_market', 'stop_limit'].includes(req.body.order_type) ? req.body.order_type : 'market';
     const positionStatus = orderType === 'market' ? 'open' : 'pending';
 

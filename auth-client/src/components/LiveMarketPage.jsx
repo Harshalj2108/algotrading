@@ -500,7 +500,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
         body: JSON.stringify({
           asset_type: assetClass,
           asset_symbol: decodedSymbol,
-          side: tradeMode === "buy" ? "long" : "short",
+          side: (tradeMode === "short" || tradeMode === "sell") ? "short" : "long",
           order_type: otype,
           invested_amount: Number.isFinite(amount) && amount > 0 ? amount : undefined,
           quantity: Number.isFinite(qty) && qty > 0 ? qty : undefined,
