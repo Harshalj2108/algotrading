@@ -920,7 +920,3 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
     </div>
   );
 }
-}
-    </div>
-  );
-}
