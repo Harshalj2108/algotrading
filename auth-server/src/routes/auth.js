@@ -31,6 +31,20 @@ const transporter = nodemailer.createTransport({
   connectionTimeout: 5000,
   greetingTimeout: 5000,
   socketTimeout: 5000,
+  lookup: (hostname, options, callback) => {
+    // Explicitly force IPv4 resolution
+    dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+      if (err) {
+        console.error(`[SMTP DNS] Failed to resolve ${hostname} to IPv4:`, err);
+        return callback(err);
+      }
+      callback(null, address, family);
+    });
+  },
+  tls: {
+    // Ensure TLS certificate validation checks the original hostname
+    servername: process.env.SMTP_HOST || "smtp.ethereal.email"
+  },
   auth: {
     user: process.env.SMTP_USER || "ethereal.user@ethereal.email",
     pass: (process.env.SMTP_PASS || "ethereal_password").replace(/\s+/g, ""),
