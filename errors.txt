@@ -1,372 +1,171 @@
-WARNING!
-m=_b,_tp:546 Using this console may allow attackers to impersonate you and steal your information using an attack called Self-XSS.
-Do not enter or paste code that you do not understand.
-m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:918 
- POST https://play.google.com/log?hasfast=true&auth=SAPISIDHASH+f709752bfdf41d5c5…ISID3PHASH+f709752…&authuser=0&format=json net::ERR_BLOCKED_BY_CLIENT
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:918
-gUa	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:919
-cUa	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:917
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:914
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1330
-flush	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1334
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1331
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1343
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1340
-c	@	m=_b,_tp:546
-setTimeout		
-(anonymous)	@	m=_b,_tp:548
-k9a	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1340
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1343
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1344
-Promise.then		
-n	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1344
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-c	@	m=_b,_tp:546
-setTimeout		
-(anonymous)	@	m=_b,_tp:548
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:918 
- POST https://play.google.com/log?hasfast=true&auth=SAPISIDHASH+f709752bfdf41d5c5…ISID3PHASH+f709752…&authuser=0&format=json net::ERR_BLOCKED_BY_CLIENT
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:918
-gUa	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:919
-cUa	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:917
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:914
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1330
-flush	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1334
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1331
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1343
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1340
-c	@	m=_b,_tp:546
-setTimeout		
-(anonymous)	@	m=_b,_tp:548
-k9a	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1340
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1343
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1344
-Promise.then		
-n	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:1344
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-c	@	m=_b,_tp:546
-setTimeout		
-(anonymous)	@	m=_b,_tp:548
-(anonymous)	@	accountchooser:1
-(anonymous)	@	accountchooser:1
-m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:921 
- POST https://play.google.com/log?format=json&hasfast=true&authuser=0 net::ERR_BLOCKED_BY_CLIENT
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:921
-dj	@	m=_b,_tp:311
-(anonymous)	@	m=_b,_tp:312
-(anonymous)	@	m=_b,_tp:313
-vka	@	m=_b,_tp:313
-(anonymous)	@	m=_b,_tp:313
-iUa.send	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:921
-u	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:916
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:916
-c	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:910
-fz.tick	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:901
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:900
-c	@	m=_b,_tp:546
-setTimeout		
-(anonymous)	@	m=_b,_tp:548
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:900
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:913
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:911
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:933
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…YlN,NLiXbe,LDQI:940
-(anonymous)	@	m=_b,_tp:383
-ema	@	m=_b,_tp:387
-ama	@	m=_b,_tp:386
-(anonymous)	@	m=_b,_tp:386
-mba	@	m=_b,_tp:125
-Promise.then		
-Nla	@	m=_b,_tp:379
-(anonymous)	@	m=_b,_tp:379
-bma	@	m=_b,_tp:386
-zj	@	m=_b,_tp:385
-(anonymous)	@	m=_b,_tp:379
-hma	@	m=_b,_tp:391
-gma	@	m=_b,_tp:387
-(anonymous)	@	m=_b,_tp:388
-(anonymous)	@	m=_b,_tp:361
-c	@	m=_b,_tp:546
-kla	@	m=_b,_tp:373
-(anonymous)	@	m=_b,_tp:372
-(anonymous)	@	m=_b,_tp:408
-(anonymous)	@	m=_b,_tp:124
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…wYlN,NLiXbe,LDQI:10
-(anonymous)	@	m=n73qwf,SCuOPb,IZT6…lN,NLiXbe,LDQI:2334
-PendingScript		
-(anonymous)	@	m=_b,_tp:662
-(anonymous)	@	m=_b,_tp:661
-(anonymous)	@	m=_b,_tp:658
-cwa	@	m=_b,_tp:666
-awa	@	m=_b,_tp:658
-Dma	@	m=_b,_tp:658
-(anonymous)	@	m=_b,_tp:404
-hma	@	m=_b,_tp:391
-(anonymous)	@	m=_b,_tp:388
-(anonymous)	@	m=_b,_tp:388
-Ama	@	m=_b,_tp:403
-(anonymous)	@	m=_b,_tp:409
-sqa	@	m=_b,_tp:533
-vqa	@	m=_b,_tp:532
-(anonymous)	@	m=_b,_tp:530
-fua	@	m=_b,_tp:587
-gua	@	m=_b,_tp:591
-lua	@	m=_b,_tp:591
-cua	@	m=_b,_tp:589
-(anonymous)	@	m=_b,_tp:585
-(anonymous)	@	m=_b,_tp:594
-c	@	m=_b,_tp:546
-(anonymous)	@	m=_b,_tp:378
-postMessage		
-(anonymous)	@	m=_b,_tp:378
-(anonymous)	@	m=_b,_tp:124
-(anonymous)	@	m=_b,_tp:585
-(anonymous)	@	m=_b,_tp:594
-(anonymous)	@	m=_b,_tp:379
-(anonymous)	@	m=_b,_tp:594
-(anonymous)	@	m=_b,_tp:586
-Bia	@	m=_b,_tp:268
-Jia	@	m=_b,_tp:271
-(anonymous)	@	m=_b,_tp:671
-(anonymous)	@	m=_b,_tp:372
-wma	@	m=_b,_tp:407
-(anonymous)	@	m=_b,_tp:398
-(anonymous)	@	m=_b,_tp:2303
-(anonymous)	@	m=_b,_tp:2304
-(anonymous)	@	m=_b,_tp:2318
+Access to XMLHttpRequest at 'https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=77q2ix9d' from origin 'https://auth-client-production-ae83.up.railway.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-CC_SkuZ8.js:9  GET https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=77q2ix9d net::ERR_FAILED 502 (Bad Gateway)
+_create @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+request @ index-CC_SkuZ8.js:9
+doPoll @ index-CC_SkuZ8.js:9
+_poll @ index-CC_SkuZ8.js:9
+doOpen @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+_open @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+We @ index-CC_SkuZ8.js:9
+Ge @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+reconnect @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+i @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+r.onreadystatechange @ index-CC_SkuZ8.js:9
+XMLHttpRequest.send
+_create @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+request @ index-CC_SkuZ8.js:9
+doPoll @ index-CC_SkuZ8.js:9
+_poll @ index-CC_SkuZ8.js:9
+doOpen @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+_open @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+We @ index-CC_SkuZ8.js:9
+Ge @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+reconnect @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+i @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+r.onreadystatechange @ index-CC_SkuZ8.js:9
+XMLHttpRequest.send
+_create @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+request @ index-CC_SkuZ8.js:9
+doPoll @ index-CC_SkuZ8.js:9
+_poll @ index-CC_SkuZ8.js:9
+doOpen @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+_open @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+We @ index-CC_SkuZ8.js:9
+Ge @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+/simulation/SIM:1 Access to XMLHttpRequest at 'https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=77qoa84e' from origin 'https://auth-client-production-ae83.up.railway.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-CC_SkuZ8.js:9  GET https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=77qoa84e net::ERR_FAILED 502 (Bad Gateway)
+_create @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+request @ index-CC_SkuZ8.js:9
+doPoll @ index-CC_SkuZ8.js:9
+_poll @ index-CC_SkuZ8.js:9
+doOpen @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+_open @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+We @ index-CC_SkuZ8.js:9
+Ge @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+reconnect @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+i @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+r.onreadystatechange @ index-CC_SkuZ8.js:9
+XMLHttpRequest.send
+_create @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+request @ index-CC_SkuZ8.js:9
+doPoll @ index-CC_SkuZ8.js:9
+_poll @ index-CC_SkuZ8.js:9
+doOpen @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+_open @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+We @ index-CC_SkuZ8.js:9
+Ge @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+reconnect @ index-CC_SkuZ8.js:9
+maybeReconnectOnOpen @ index-CC_SkuZ8.js:9
+i @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+R.emit @ index-CC_SkuZ8.js:9
+_onError @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:9
+setTimeout
+r.onreadystatechange @ index-CC_SkuZ8.js:9
+XMLHttpRequest.send
+_create @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+request @ index-CC_SkuZ8.js:9
+doPoll @ index-CC_SkuZ8.js:9
+_poll @ index-CC_SkuZ8.js:9
+doOpen @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+_open @ index-CC_SkuZ8.js:9
+e @ index-CC_SkuZ8.js:9
+We @ index-CC_SkuZ8.js:9
+Ge @ index-CC_SkuZ8.js:9
+open @ index-CC_SkuZ8.js:9
+connect @ index-CC_SkuZ8.js:9
+(anonymous) @ index-CC_SkuZ8.js:58
+Lc @ index-CC_SkuZ8.js:8
+Cl @ index-CC_SkuZ8.js:8
+Sl @ index-CC_SkuZ8.js:8
+Cl @ index-CC_SkuZ8.js:8
+Sl @ index-CC_SkuZ8.js:8
+Cl @ index-CC_SkuZ8.js:8
+Sl @ index-CC_SkuZ8.js:8
+Cl @ index-CC_SkuZ8.js:8
+Hu @ index-CC_SkuZ8.js:8
+Vu @ index-CC_SkuZ8.js:8
+zu @ index-CC_SkuZ8.js:8
+Iu @ index-CC_SkuZ8.js:8
+gu @ index-CC_SkuZ8.js:8
+hu @ index-CC_SkuZ8.js:8
+ld @ index-CC_SkuZ8.js:8
+id @ index-CC_SkuZ8.js:8
+od @ index-CC_SkuZ8.js:8
+(anonymous) @ index-CC_SkuZ8.js:8
+/simulation/SIM:1 Access to XMLHttpRequest at 'https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=77y0owdr' from origin 'https://auth-client-production-ae83.up.railway.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+this the console output when i try to open simulator
 
+Access to XMLHttpRequest at 'https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=791r28yv' from origin 'https://auth-client-production-ae83.up.railway.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-CC_SkuZ8.js:9  GET https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=791r28yv net::ERR_FAILED 502 (Bad Gateway)
+this is the console output when i try to open live crypto
 
-
-
-Access to XMLHttpRequest at 'https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=4glfsv61' from origin 'https://auth-client-production-ae83.up.railway.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-index-C9JzSZDS.js:9  GET https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=4glfsv61 net::ERR_FAILED 400 (Bad Request)
-_create @ index-C9JzSZDS.js:9
-e @ index-C9JzSZDS.js:9
-request @ index-C9JzSZDS.js:9
-doPoll @ index-C9JzSZDS.js:9
-_poll @ index-C9JzSZDS.js:9
-doOpen @ index-C9JzSZDS.js:9
-open @ index-C9JzSZDS.js:9
-_open @ index-C9JzSZDS.js:9
-e @ index-C9JzSZDS.js:9
-We @ index-C9JzSZDS.js:9
-Ge @ index-C9JzSZDS.js:9
-open @ index-C9JzSZDS.js:9
-connect @ index-C9JzSZDS.js:9
-(anonymous) @ index-C9JzSZDS.js:58
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-setTimeout
-(anonymous) @ index-C9JzSZDS.js:236
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-/dashboard:1 Access to XMLHttpRequest at 'https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=4glft7zg' from origin 'https://auth-client-production-ae83.up.railway.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-index-C9JzSZDS.js:9  GET https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=4glft7zg net::ERR_FAILED 400 (Bad Request)
-_create @ index-C9JzSZDS.js:9
-e @ index-C9JzSZDS.js:9
-request @ index-C9JzSZDS.js:9
-doPoll @ index-C9JzSZDS.js:9
-_poll @ index-C9JzSZDS.js:9
-doOpen @ index-C9JzSZDS.js:9
-open @ index-C9JzSZDS.js:9
-_open @ index-C9JzSZDS.js:9
-e @ index-C9JzSZDS.js:9
-We @ index-C9JzSZDS.js:9
-Ge @ index-C9JzSZDS.js:9
-open @ index-C9JzSZDS.js:9
-connect @ index-C9JzSZDS.js:9
-(anonymous) @ index-C9JzSZDS.js:236
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-setTimeout
-(anonymous) @ index-C9JzSZDS.js:236
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-index-C9JzSZDS.js:58 WebSocket connection to 'wss://auth-server-production-5dca.up.railway.app/api/portfolio/trade-feed/ws' failed: 
-r @ index-C9JzSZDS.js:58
-(anonymous) @ index-C9JzSZDS.js:58
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-index-C9JzSZDS.js:58  GET https://auth-server-production-5dca.up.railway.app/api/portfolio/trade-feed?limit=50 401 (Unauthorized)
-(anonymous) @ index-C9JzSZDS.js:58
-(anonymous) @ index-C9JzSZDS.js:58
-setTimeout
-(anonymous) @ index-C9JzSZDS.js:58
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-setTimeout
-(anonymous) @ index-C9JzSZDS.js:236
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-index-C9JzSZDS.js:58  GET https://auth-server-production-5dca.up.railway.app/api/portfolio/me 401 (Unauthorized)
-(anonymous) @ index-C9JzSZDS.js:58
-setTimeout
-(anonymous) @ index-C9JzSZDS.js:58
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-setTimeout
-(anonymous) @ index-C9JzSZDS.js:236
-Lc @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Sl @ index-C9JzSZDS.js:8
-Cl @ index-C9JzSZDS.js:8
-Hu @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-D @ index-C9JzSZDS.js:1
-postMessage
-O @ index-C9JzSZDS.js:1
-e.unstable_scheduleCallback @ index-C9JzSZDS.js:1
-sd @ index-C9JzSZDS.js:8
-od @ index-C9JzSZDS.js:8
-(anonymous) @ index-C9JzSZDS.js:8
+Access to XMLHttpRequest at 'https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=7at3x49h' from origin 'https://auth-client-production-ae83.up.railway.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-CC_SkuZ8.js:9  GET https://python-production-a042.up.railway.app/ws/socket.io/?EIO=4&transport=polling&t=7at3x49h net::ERR_FAILED 502 (Bad Gateway)
+this the console output when i try to open live stocks

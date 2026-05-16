@@ -41,13 +41,20 @@ from realtime_engine import data_engine
 # ─── configuration ────────────────────────────────────────────────────────────
 
 JWT_SECRET   = os.getenv("JWT_SECRET")
-CLIENT_URL = os.getenv("CLIENT_URL")
+CLIENT_URL = os.getenv("CLIENT_URL", "*")
+
+def parse_origins(env_str):
+    if not env_str or env_str == "*":
+        return ["*"]
+    return [u.strip().rstrip("/") for u in env_str.split(",")]
+
+cors_origins = parse_origins(CLIENT_URL)
 
 # ─── Socket.IO setup ──────────────────────────────────────────────────────────
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins=[CLIENT_URL],
+    cors_allowed_origins="*" if cors_origins == ["*"] else cors_origins,
     logger=False,
     engineio_logger=False,
 )
@@ -863,11 +870,6 @@ async def startup():
 
 
 @fastapi_app.on_event("shutdown")
-async def shutdown():
-    if _live_polling_task:
-        _live_polling_task.cancel()
-    manager.stop()
-astapi_app.on_event("shutdown")
 async def shutdown():
     if _live_polling_task:
         _live_polling_task.cancel()
