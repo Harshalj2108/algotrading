@@ -275,7 +275,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
   const [indicatorData, setIndicatorData] = useState({});
 
   const symbolPositions = useMemo(
-    () => positions.filter(p => p.asset_type === assetClass && p.asset_symbol === decodedSymbol && p.position_status === "open"),
+    () => positions.filter(p => p.asset_type === assetClass && p.asset_symbol === decodedSymbol && (p.position_status === "open" || p.position_status === "pending")),
     [assetClass, decodedSymbol, positions]
   );
   const portfolioSummary = useMemo(
@@ -917,6 +917,10 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           </div>
         </div>
       )}
+    </div>
+  );
+}
+}
     </div>
   );
 }
