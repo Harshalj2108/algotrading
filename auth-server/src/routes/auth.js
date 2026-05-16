@@ -28,9 +28,9 @@ const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.ethereal.email",
   port: parseInt(process.env.SMTP_PORT || "587"),
   secure: process.env.SMTP_PORT == "465",
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 5000,
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
   lookup: (hostname, options, callback) => {
     // Explicitly force IPv4 resolution
     dns.lookup(hostname, { family: 4 }, (err, address, family) => {
@@ -265,21 +265,7 @@ router.post("/login", async (req, res) => {
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       await pool.query("UPDATE users SET otp_code = $1, otp_expires_at = NOW() + INTERVAL '10 minutes' WHERE id = $2", [otpCode, user.id]);
 
-      if (process.env.SMTP_HOST) {
-        try {
-          await transporter.sendMail({
-            from: '"SynthCrypto" <noreply@synthcrypto.com>',
-            to: user.email,
-            subject: "Your SynthCrypto Verification Code",
-            text: `Your new verification code is: ${otpCode}. It expires in 10 minutes.`,
-          });
-          console.log(`Sent new OTP ${otpCode} to ${user.email}`);
-        } catch (err) {
-          console.log(`[SMTP] Failed to send email to ${user.email}. OTP is: ${otpCode}`);
-        }
-      } else {
-        console.log(`[DEV/FALLBACK] No SMTP_HOST configured. OTP for ${user.email} is: ${otpCode}`);
-      }
+      await sendVerificationEmail(user.email, otpCode);
 
       return res.status(403).json({ error: "verification_required", message: "Account not verified. A new code has been sent.", email: user.email });
     }
