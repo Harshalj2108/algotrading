@@ -14,42 +14,45 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const axios = require("axios");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
-const dns = require("dns");
 const { pool } = require("../db");
 const { signToken, verifyToken, requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Force Node.js to prefer IPv4 over IPv6 during DNS resolution to avoid ENETUNREACH on Railway
-dns.setDefaultResultOrder("ipv4first");
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.ethereal.email",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_PORT == "465",
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
-  lookup: (hostname, options, callback) => {
-    // Explicitly force IPv4 resolution
-    dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-      if (err) {
-        console.error(`[SMTP DNS] Failed to resolve ${hostname} to IPv4:`, err);
-        return callback(err);
+async function sendVerificationEmail(toEmail, otpCode) {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log(`[DEV/FALLBACK] No SENDGRID_API_KEY configured. OTP for ${toEmail} is: ${otpCode}`);
+    return;
+  }
+  
+  try {
+    await axios.post(
+      'https://api.sendgrid.com/v3/mail/send',
+      {
+        personalizations: [{ to: [{ email: toEmail }] }],
+        from: { 
+          email: process.env.EMAIL_FROM || 'noreply@synthcrypto.com', 
+          name: 'SynthCrypto' 
+        },
+        subject: 'Your SynthCrypto Verification Code',
+        content: [{ 
+          type: 'text/plain', 
+          value: `Your verification code is: ${otpCode}. It expires in 10 minutes.` 
+        }]
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
       }
-      callback(null, address, family);
-    });
-  },
-  tls: {
-    // Ensure TLS certificate validation checks the original hostname
-    servername: process.env.SMTP_HOST || "smtp.ethereal.email"
-  },
-  auth: {
-    user: process.env.SMTP_USER || "ethereal.user@ethereal.email",
-    pass: (process.env.SMTP_PASS || "ethereal_password").replace(/\s+/g, ""),
-  },
-});
+    );
+    console.log(`[SENDGRID] OTP sent successfully to ${toEmail}.`);
+  } catch (err) {
+    console.error(`[SENDGRID] Email delivery failed:`, err.response?.data || err.message);
+    console.log(`[DEV/FALLBACK] Failed to send email to ${toEmail}. OTP is: ${otpCode}`);
+  }
+}
 
 // ─── env vars ────────────────────────────────────────────────────────────────
 
