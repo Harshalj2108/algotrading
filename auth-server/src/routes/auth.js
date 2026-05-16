@@ -23,10 +23,11 @@ const router = express.Router();
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.ethereal.email",
   port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
+  secure: process.env.SMTP_PORT == "465",
   connectionTimeout: 5000,
   greetingTimeout: 5000,
   socketTimeout: 5000,
+  family: 4, // Force IPv4 to avoid ENETUNREACH on environments without full IPv6 routing
   auth: {
     user: process.env.SMTP_USER || "ethereal.user@ethereal.email",
     pass: (process.env.SMTP_PASS || "ethereal_password").replace(/\s+/g, ""),
