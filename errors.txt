@@ -1,32 +1,30 @@
-index-D6dTft4J.js:68 Search error ReferenceError: SIMULATOR_URL is not defined
-    at index-D6dTft4J.js:68:54463
-(anonymous)	@	index-D6dTft4J.js:68
-setTimeout		
-(anonymous)	@	index-D6dTft4J.js:68
-Rc	@	index-D6dTft4J.js:8
-wl	@	index-D6dTft4J.js:8
-Cl	@	index-D6dTft4J.js:8
-wl	@	index-D6dTft4J.js:8
-Cl	@	index-D6dTft4J.js:8
-wl	@	index-D6dTft4J.js:8
-Cl	@	index-D6dTft4J.js:8
-wl	@	index-D6dTft4J.js:8
-Cl	@	index-D6dTft4J.js:8
-wl	@	index-D6dTft4J.js:8
-Cl	@	index-D6dTft4J.js:8
-wl	@	index-D6dTft4J.js:8
-Cl	@	index-D6dTft4J.js:8
-wl	@	index-D6dTft4J.js:8
-Hu	@	index-D6dTft4J.js:8
-Vu	@	index-D6dTft4J.js:8
-zu	@	index-D6dTft4J.js:8
-Iu	@	index-D6dTft4J.js:8
-gu	@	index-D6dTft4J.js:8
-hu	@	index-D6dTft4J.js:8
-ld	@	index-D6dTft4J.js:8
-id	@	index-D6dTft4J.js:8
-yu	@	index-D6dTft4J.js:8
-tn	@	index-D6dTft4J.js:8
-wd	@	index-D6dTft4J.js:8
-up	@	index-D6dTft4J.js:9
-cp	@	index-D6dTft4J.js:9
+{
+  "title": "Fix Short Position Execution in Live Trading",
+  "module": [
+    "Live Crypto",
+    "Live Stocks"
+  ],
+  "type": "Critical Trading Logic Bug",
+  "issue": "Clicking the 'Short' button incorrectly opens a long position instead of a short position.",
+  "current_behavior": {
+    "action": "Short",
+    "result": "Creates a long/buy position"
+  },
+  "expected_behavior": {
+    "action": "Short",
+    "result": "Creates a proper short position with negative quantity/directional exposure"
+  },
+  "possible_causes": [
+    "Order side is always being sent as BUY.",
+    "Frontend short action mapped incorrectly to long order API.",
+    "Backend position direction logic ignores SHORT side.",
+    "Trade execution engine lacks short-side handling."
+  ],
+  "required_fix": [
+    "Ensure short orders send SELL/SHORT side correctly.",
+    "Store and display short positions separately from long positions.",
+    "PnL calculations must support inverse price movement for shorts.",
+    "Portfolio and dashboard should correctly reflect negative exposure."
+  ],
+  "priority": "Critical"
+}

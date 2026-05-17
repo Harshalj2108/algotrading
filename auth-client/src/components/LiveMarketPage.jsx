@@ -127,7 +127,7 @@ function normalizePosition(position) {
     ...position,
     id: position.id || position.trade_id,
     trade_id: position.trade_id || position.id,
-    side: "long",
+    side: position.side || "long",
     leverage: 1,
     entry_price: entry,
     quantity,
@@ -154,8 +154,9 @@ function markPosition(position, assetClass, symbol, markPrice) {
   const entry = Number(position.entry_price) || 0;
   const quantity = Number(position.quantity) || 0;
   const currentValue = quantity * markPrice;
-  const pnl = (markPrice - entry) * quantity;
-  const pnlPct = entry > 0 ? ((markPrice - entry) / entry) * 100 : 0;
+  const isShort = position.side === "short";
+  const pnl = isShort ? (entry - markPrice) * quantity : (markPrice - entry) * quantity;
+  const pnlPct = entry > 0 ? (pnl / (entry * quantity)) * 100 : 0;
   return {
     ...position,
     current_value: currentValue,
