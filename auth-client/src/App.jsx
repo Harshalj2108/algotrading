@@ -168,42 +168,6 @@ const SEO_BY_PAGE = {
 // Persistent socket for capturing trade events across page navigations
 const appSocket = io(SIMULATOR_URL, { autoConnect: false, path: "/ws/socket.io" });
 
-// ── Ticker data ──────────────────────────────────────────────────────────────
-const TICKERS = [
-  { sym: "BTC/USD", price: 68423.5, chg: 2.34 },
-  { sym: "ETH/USD", price: 3891.2, chg: -0.87 },
-  { sym: "SOL/USD", price: 178.45, chg: 5.12 },
-  { sym: "BNB/USD", price: 612.3, chg: 1.03 },
-  { sym: "XRP/USD", price: 0.6234, chg: -1.45 },
-  { sym: "ADA/USD", price: 0.4821, chg: 3.67 },
-  { sym: "DOGE/USD", price: 0.1534, chg: -2.11 },
-  { sym: "AVAX/USD", price: 38.92, chg: 4.28 },
-  { sym: "DOT/USD", price: 7.45, chg: 0.92 },
-  { sym: "LINK/USD", price: 16.78, chg: 1.56 },
-  { sym: "MATIC/USD", price: 0.812, chg: -0.42 },
-  { sym: "UNI/USD", price: 9.34, chg: 2.88 },
-];
-
-function TickerBar() {
-  // Duplicate for seamless scroll loop
-  const items = [...TICKERS, ...TICKERS];
-  return (
-    <div className="ticker-bar">
-      <div className="ticker-scroll">
-        {items.map((t, i) => (
-          <div className="ticker-item" key={i}>
-            <span className="sym">{t.sym}</span>
-            <span>S{t.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
-            <span className={t.chg >= 0 ? "up" : "dn"}>
-              {t.chg >= 0 ? "+" : ""}{t.chg.toFixed(2)}%
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── Particle System ──────────────────────────────────────────────────────────
 
 function useParticles(canvasRef, active) {
@@ -419,18 +383,45 @@ export default function App() {
     writePath(mode === "register" ? "/signup" : "/login");
   }, [isAuthenticated]);
 
-  // On mount: check if already logged in
+  // On mount: check if already logged in or returning from OAuth
   useEffect(() => {
-    fetch(`${AUTH_SERVER}/api/auth/me`, { credentials: "include" })
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get("error");
+    if (oauthError) {
+      setTimeout(() => setError(decodeURIComponent(oauthError.replace(/\+/g, " "))), 0);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    const oauthSuccess = params.get("auth");
+    let isOauth = false;
+    if (oauthSuccess === "success") {
+      const token = params.get("token");
+      if (token) localStorage.setItem("synthcrypto_token", token);
+      if (params.get("isNew") === "true") {
+        localStorage.setItem("isNewRegistration", "true");
+      }
+      isOauth = true;
+      window.history.replaceState({}, "", "/dashboard");
+    }
+
+    const token = localStorage.getItem("synthcrypto_token");
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    fetch(`${AUTH_SERVER}/api/auth/me`, { headers, credentials: "include" })
       .then(async (r) => {
         if (r.ok) {
           const data = await r.json();
           if (data.user) {
             setIsAuthenticated(true);
             setPage(prev => {
-              if (prev !== "auth") return prev;
-              writePath("/dashboard");
-              return "dashboard";
+              if (isOauth || prev === "auth") {
+                writePath("/dashboard");
+                return "dashboard";
+              }
+              return prev;
             });
           } else {
             setIsAuthenticated(false);
@@ -455,30 +446,6 @@ export default function App() {
         writePath("/");
         return "home";
       }));
-  }, []);
-
-  // Check URL for OAuth error param
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const oauthError = params.get("error");
-    if (oauthError) {
-      setTimeout(() => setError(decodeURIComponent(oauthError.replace(/\+/g, " "))), 0);
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-    // If redirected back from Google OAuth with a token cookie, go to dashboard
-    const oauthSuccess = params.get("auth");
-    if (oauthSuccess === "success") {
-      const token = params.get("token");
-      if (token) localStorage.setItem("synthcrypto_token", token);
-      if (params.get("isNew") === "true") {
-        localStorage.setItem("isNewRegistration", "true");
-      }
-      setTimeout(() => {
-        setIsAuthenticated(true);
-        setPage("dashboard");
-      }, 0);
-      window.history.replaceState({}, "", "/dashboard");
-    }
   }, []);
 
   const handleSuccess = useCallback((user) => {

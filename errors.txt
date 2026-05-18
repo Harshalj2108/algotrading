@@ -1,30 +1,65 @@
 {
-  "title": "Fix Short Position Execution in Live Trading",
-  "module": [
-    "Live Crypto",
-    "Live Stocks"
+  "title": "Fix Google Login Redirect Flow",
+  "module": "Authentication",
+  "type": "Login/Session Bug",
+  "issue": "After logging in with Google, the user is redirected back to the home page instead of directly accessing the dashboard.",
+  "current_behavior": [
+    "User clicks 'Login with Google'.",
+    "Authentication succeeds.",
+    "User is redirected to the home page.",
+    "User must manually log in again to access the dashboard."
   ],
-  "type": "Critical Trading Logic Bug",
-  "issue": "Clicking the 'Short' button incorrectly opens a long position instead of a short position.",
-  "current_behavior": {
-    "action": "Short",
-    "result": "Creates a long/buy position"
-  },
-  "expected_behavior": {
-    "action": "Short",
-    "result": "Creates a proper short position with negative quantity/directional exposure"
-  },
+  "expected_behavior": [
+    "User clicks 'Login with Google'.",
+    "Authentication succeeds.",
+    "User session/token is stored correctly.",
+    "User is immediately redirected to the dashboard on the first attempt."
+  ],
   "possible_causes": [
-    "Order side is always being sent as BUY.",
-    "Frontend short action mapped incorrectly to long order API.",
-    "Backend position direction logic ignores SHORT side.",
-    "Trade execution engine lacks short-side handling."
+    "Session token not persisting after OAuth callback.",
+    "Authentication state not updating before redirect.",
+    "Protected dashboard route checks auth before token initialization completes.",
+    "OAuth callback redirect URL configured incorrectly.",
+    "Frontend auth context/state resets after redirect."
   ],
   "required_fix": [
-    "Ensure short orders send SELL/SHORT side correctly.",
-    "Store and display short positions separately from long positions.",
-    "PnL calculations must support inverse price movement for shorts.",
-    "Portfolio and dashboard should correctly reflect negative exposure."
+    "Persist auth session immediately after Google OAuth success.",
+    "Redirect authenticated users directly to dashboard.",
+    "Add proper loading/auth-check state before route protection triggers.",
+    "Prevent unnecessary redirect back to home page."
+  ],
+  "priority": "High"
+}
+{
+  "title": "Fix Logout Session Persistence Bug",
+  "module": "Authentication",
+  "type": "Critical Session Management Bug",
+  "issue": "After logging out, refreshing the login page automatically logs the user back in without re-authentication.",
+  "current_behavior": [
+    "User logs out.",
+    "Logout appears successful.",
+    "User refreshes the login page.",
+    "Previous session is restored automatically."
+  ],
+  "expected_behavior": [
+    "User logs out.",
+    "All authentication/session data is fully cleared.",
+    "Refreshing the page keeps the user logged out.",
+    "User must explicitly authenticate again to access protected routes."
+  ],
+  "possible_causes": [
+    "Auth token/session not cleared from localStorage/sessionStorage/cookies.",
+    "Google OAuth session persists and auto-restores without validation.",
+    "Frontend auth state resets incorrectly on refresh.",
+    "Logout only updates UI state without invalidating backend session.",
+    "Protected route middleware incorrectly restores stale session."
+  ],
+  "required_fix": [
+    "Fully clear auth tokens and cached session data on logout.",
+    "Invalidate backend/auth provider session if applicable.",
+    "Prevent automatic re-login unless a valid active session exists.",
+    "Ensure auth state initializes correctly after page refresh.",
+    "Add proper session validation before restoring login state."
   ],
   "priority": "Critical"
 }
