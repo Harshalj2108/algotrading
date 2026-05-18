@@ -394,17 +394,29 @@ class RealTimeDataEngine:
                 results = await asyncio.to_thread(_search_crypto_coingecko_sync, query)
 
         elif asset_class == 'stock':
-            common = [
-                "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA",
-                "NFLX", "AMD", "INTC", "CRM", "ORCL", "UBER", "PYPL",
-                "RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS",
-                "WIPRO.NS", "BHARTIARTL.NS", "ITC.NS", "SBIN.NS",
-            ]
-            for sym in common:
-                if query_upper in sym.upper():
-                    results.append({"symbol": sym, "name": sym, "type": "stock"})
+            try:
+                headers = {'User-Agent': 'Mozilla/5.0'}
+                url = "https://query2.finance.yahoo.com/v1/finance/search"
+                params = {'q': query, 'quotesCount': 10, 'newsCount': 0}
+                resp = await asyncio.to_thread(requests.get, url, params=params, headers=headers, timeout=5)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    for quote in data.get('quotes', []):
+                        if quote.get('quoteType') in ('EQUITY', 'ETF', 'MUTUALFUND', 'INDEX'):
+                            sym = quote.get('symbol')
+                            name = quote.get('shortname') or quote.get('longname') or sym
+                            exch = quote.get('exchDisp') or quote.get('exchange') or ''
+                            results.append({
+                                "symbol": sym,
+                                "name": name,
+                                "exchange": exch,
+                                "type": "stock"
+                            })
+            except Exception as e:
+                print(f"Error searching stocks for {query}: {e}")
+
             if not any(r['symbol'].upper() == query_upper for r in results):
-                results.append({"symbol": query_upper, "name": query_upper, "type": "stock"})
+                results.append({"symbol": query_upper, "name": query_upper, "exchange": "", "type": "stock"})
 
         return results
 

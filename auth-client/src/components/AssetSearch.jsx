@@ -140,7 +140,14 @@ export default function AssetSearch({ assetClass, onSelect }) {
               onMouseOver={e => e.currentTarget.style.background = 'rgba(38,166,154,0.08)'}
               onMouseOut={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{ fontWeight: 600, fontSize: '15px', color: '#fff' }}>{r.symbol}</div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontWeight: 600, fontSize: '15px', color: '#fff' }}>
+                  {r.symbol} {r.exchange ? <span style={{ fontSize: '12px', color: '#787b86', marginLeft: '6px' }}>({r.exchange})</span> : null}
+                </div>
+                {r.name && r.name !== r.symbol && (
+                  <div style={{ color: '#787b86', fontSize: '12px', marginTop: '2px' }}>{r.name}</div>
+                )}
+              </div>
               <div style={{ color: '#787b86', fontSize: '12px' }}>{r.type === 'crypto' ? '🪙' : '📊'} {r.type}</div>
             </div>
           ))}

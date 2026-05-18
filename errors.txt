@@ -1,39 +1,40 @@
 {
-  "title": "Fix Non-Functional Technical Oscillators",
+  "title": "Implement Symbol Suggestion Search",
   "module": [
+    "Search",
     "Live Stocks",
-    "Live Crypto",
-    "Charting/Indicators"
+    "Trading UI"
   ],
-  "type": "Technical Indicator Bug",
-  "issue": "Technical oscillators such as RSI and MACD are not functioning.",
-  "affected_indicators": [
-    "RSI",
-    "MACD"
-  ],
-  "current_behavior": [
-    "Indicators do not render correctly.",
-    "Indicator values may stay blank, frozen, or incorrect.",
-    "Adding indicators has no visible effect on the chart."
-  ],
+  "type": "Feature Request",
+  "issue": "Search currently does not provide symbol/code suggestions for company names.",
   "expected_behavior": [
-    "Indicators should calculate and render correctly using live market data.",
-    "Indicator values should update in real time with price movement.",
-    "Users should be able to add/remove indicators dynamically."
+    "When a user types a company name, relevant stock symbols should appear as suggestions.",
+    "Example: searching 'Airtel' should suggest 'BHARTIARTL (NSE)'.",
+    "Suggestions should appear dynamically while typing.",
+    "Suggestions should support partial and fuzzy matching."
   ],
-  "possible_causes": [
-    "Indicator calculation logic broken or incomplete.",
-    "Price/candle data not being passed into indicator engine.",
-    "Incorrect timeframe synchronization.",
-    "Frontend chart overlay rendering failure.",
-    "WebSocket/live data updates not triggering indicator recalculation."
+  "required_features": [
+    "Autocomplete dropdown for stock/company search.",
+    "Support searching by company name, ticker, and exchange code.",
+    "Display exchange along with symbol (e.g. NSE, BSE).",
+    "Fast real-time search response.",
+    "Prioritize exact and highly relevant matches."
   ],
-  "required_fix": [
-    "Implement proper RSI calculation and rendering.",
-    "Implement proper MACD calculation including MACD line, signal line, and histogram.",
-    "Ensure indicators update live with incoming candle data.",
-    "Verify compatibility with all supported chart timeframes.",
-    "Add error handling for missing or delayed market data."
+  "possible_data_fields": [
+    "Company Name",
+    "Ticker Symbol",
+    "Exchange",
+    "Asset Type"
   ],
-  "priority": "High"
+  "example": {
+    "input": "Airtel",
+    "output": [
+      {
+        "symbol": "BHARTIARTL",
+        "exchange": "NSE",
+        "company_name": "Bharti Airtel Ltd"
+      }
+    ]
+  },
+  "priority": "Medium"
 }
