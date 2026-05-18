@@ -259,7 +259,6 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
   const [tpslDeletePosId, setTpslDeletePosId] = useState(null);
   const [tradeMode, setTradeMode] = useState("buy");
   const [otype, setOtype] = useState("market");
-  const [sizeUsd, setSizeUsd] = useState(100);
   const [quantity, setQuantity] = useState("");
   const [takeProfit, setTakeProfit] = useState("");
   const [stopLoss, setStopLoss] = useState("");
@@ -492,10 +491,9 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
 
     setOrderBusy(true);
     try {
-      const amount = Number(sizeUsd);
       const qty = quantity === "" ? null : Number(quantity);
-      if ((!Number.isFinite(amount) || amount <= 0) && (!Number.isFinite(qty) || qty <= 0)) {
-        throw new Error("Enter an amount or quantity greater than zero");
+      if (!Number.isFinite(qty) || qty <= 0 || !Number.isInteger(qty)) {
+        throw new Error("Enter a valid non-negative integer quantity greater than zero");
       }
       const data = await portfolioRequest("/api/portfolio/paper/order", {
         method: "POST",
@@ -504,8 +502,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           asset_symbol: decodedSymbol,
           side: (tradeMode === "short" || tradeMode === "sell") ? "short" : "long",
           order_type: otype,
-          invested_amount: Number.isFinite(amount) && amount > 0 ? amount : undefined,
-          quantity: Number.isFinite(qty) && qty > 0 ? qty : undefined,
+          quantity: qty,
           take_profit: takeProfit || undefined,
           stop_loss: stopLoss || undefined,
           trigger_price: otype !== "market" ? Number(trigPrice) || undefined : undefined,
@@ -632,7 +629,6 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
     setStopLoss(position.stop_loss == null ? "" : String(position.stop_loss));
   };
 
-  const estimatedQty = price > 0 && Number(sizeUsd) > 0 ? Number(sizeUsd) / price : 0;
   const totalUpnl = symbolPositions.reduce((sum, p) => sum + (Number(p.upnl) || 0), 0);
 
   let ohlc = { o: "-", h: "-", l: "-", c: "-" };
@@ -787,12 +783,8 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           </div>}
 
           <div className="tp-row">
-            <span className="tp-lbl">Amount S</span>
-            <input type="number" min={1} value={sizeUsd} onChange={e => setSizeUsd(e.target.value)} style={{ flex: 1 }} />
-          </div>
-          <div className="tp-row">
             <span className="tp-lbl">Quantity</span>
-            <input type="number" min={0} value={quantity} onChange={e => setQuantity(e.target.value)} style={{ flex: 1 }} placeholder={estimatedQty ? estimatedQty.toFixed(8) : "optional"} />
+            <input type="number" min={1} step={1} value={quantity} onChange={e => setQuantity(e.target.value)} style={{ flex: 1 }} placeholder="Enter quantity" />
           </div>
           <div className="tp-row">
             <span className="tp-lbl">Take Profit</span>
@@ -807,7 +799,6 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
             <div><span className="tp-lbl">Cash</span><span>S{fmtMoney(wallet.virtual_balance)}</span></div>
             <div><span className="tp-lbl">Value</span><span>S{fmtMoney(portfolioSummary.total_portfolio_value)}</span></div>
             <div><span className="tp-lbl">U-PnL</span><span className={portfolioSummary.unrealized_profit_loss >= 0 ? "up" : "dn"}>{portfolioSummary.unrealized_profit_loss >= 0 ? "+" : ""}S{Math.abs(portfolioSummary.unrealized_profit_loss || 0).toFixed(2)}</span></div>
-            <div><span className="tp-lbl">Est Qty</span><span>{estimatedQty.toFixed(8)}</span></div>
           </div>
 
           <StarBorder as="button" className={`tp-place ${tradeMode === "buy" ? "long" : "short"}`} onClick={placeOrder} disabled={orderBusy}>
