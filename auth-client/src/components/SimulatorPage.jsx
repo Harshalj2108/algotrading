@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import SimChart from "./SimChart";
 import StrategyEditor from "./StrategyEditor";
 import { MetricsOverlay, StressOverlay, EBBOverlay } from "./SimOverlays";
+import OscChart from "./OscChart";
 import "./SimulatorPage.css";
 import StarBorder from "./StarBorder";
 import { AUTH_SERVER, SIMULATOR_URL } from '../config';
@@ -491,7 +492,9 @@ export default function SimulatorPage({ onBack, focusPositionId = null }) {
           </div>
           <div className="osc-wrap">
             <div className="osc-label">{OSC_BTNS.find(o=>o.k===activeOsc)?.l||activeOsc}</div>
-            <div className="osc-chart-div" style={{background:"#131722",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"#4c5166",fontSize:11}}>Oscillator: {activeOsc}</div>
+            <div className="osc-chart-div" style={{background:"#131722",height:"100%",position:"relative"}}>
+              <OscChart indicatorData={indicatorData} activeOsc={activeOsc} />
+            </div>
           </div>
         </div>
 

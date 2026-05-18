@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, Component } from "react";
 import { io } from "socket.io-client";
 import SimChart from "./SimChart";
+import OscChart from "./OscChart";
 import StarBorder from "./StarBorder";
 import "./SimulatorPage.css";
 import { AUTH_SERVER, SIMULATOR_URL } from '../config';
@@ -748,7 +749,9 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
           </div>
           <div className="osc-wrap">
             <div className="osc-label">{OSC_BTNS.find(o => o.k === activeOsc)?.l || activeOsc}</div>
-            <div className="osc-chart-div" style={{ background: "#131722", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#4c5166", fontSize: 11 }}>Oscillator: {activeOsc}</div>
+            <div className="osc-chart-div" style={{ background: "#131722", height: "100%", position: "relative" }}>
+              <OscChart indicatorData={indicatorData} activeOsc={activeOsc} />
+            </div>
           </div>
         </div>
 

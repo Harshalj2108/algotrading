@@ -1,33 +1,39 @@
 {
-  "title": "Fix Logout Session Persistence Bug",
-  "module": "Authentication",
-  "type": "Critical Session Management Bug",
-  "issue": "After logging out, refreshing the login page automatically logs the user back in without re-authentication.",
+  "title": "Fix Non-Functional Technical Oscillators",
+  "module": [
+    "Live Stocks",
+    "Live Crypto",
+    "Charting/Indicators"
+  ],
+  "type": "Technical Indicator Bug",
+  "issue": "Technical oscillators such as RSI and MACD are not functioning.",
+  "affected_indicators": [
+    "RSI",
+    "MACD"
+  ],
   "current_behavior": [
-    "User logs out.",
-    "Logout appears successful.",
-    "User refreshes the login page.",
-    "Previous session is restored automatically."
+    "Indicators do not render correctly.",
+    "Indicator values may stay blank, frozen, or incorrect.",
+    "Adding indicators has no visible effect on the chart."
   ],
   "expected_behavior": [
-    "User logs out.",
-    "All authentication/session data is fully cleared.",
-    "Refreshing the page keeps the user logged out.",
-    "User must explicitly authenticate again to access protected routes."
+    "Indicators should calculate and render correctly using live market data.",
+    "Indicator values should update in real time with price movement.",
+    "Users should be able to add/remove indicators dynamically."
   ],
   "possible_causes": [
-    "Auth token/session not cleared from localStorage/sessionStorage/cookies.",
-    "Google OAuth session persists and auto-restores without validation.",
-    "Frontend auth state resets incorrectly on refresh.",
-    "Logout only updates UI state without invalidating backend session.",
-    "Protected route middleware incorrectly restores stale session."
+    "Indicator calculation logic broken or incomplete.",
+    "Price/candle data not being passed into indicator engine.",
+    "Incorrect timeframe synchronization.",
+    "Frontend chart overlay rendering failure.",
+    "WebSocket/live data updates not triggering indicator recalculation."
   ],
   "required_fix": [
-    "Fully clear auth tokens and cached session data on logout.",
-    "Invalidate backend/auth provider session if applicable.",
-    "Prevent automatic re-login unless a valid active session exists.",
-    "Ensure auth state initializes correctly after page refresh.",
-    "Add proper session validation before restoring login state."
+    "Implement proper RSI calculation and rendering.",
+    "Implement proper MACD calculation including MACD line, signal line, and histogram.",
+    "Ensure indicators update live with incoming candle data.",
+    "Verify compatibility with all supported chart timeframes.",
+    "Add error handling for missing or delayed market data."
   ],
-  "priority": "Critical"
+  "priority": "High"
 }
