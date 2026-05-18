@@ -477,7 +477,12 @@ router.get("/google/callback", async (req, res) => {
 // ─── POST /api/auth/logout ───────────────────────────────────────────────────
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("token", { path: "/" });
+  res.clearCookie("token", { 
+    path: "/",
+    httpOnly: true,
+    secure: true,
+    sameSite: "none"
+  });
   res.json({ message: "Logged out successfully" });
 });
 

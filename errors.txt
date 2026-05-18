@@ -1,36 +1,4 @@
 {
-  "title": "Fix Google Login Redirect Flow",
-  "module": "Authentication",
-  "type": "Login/Session Bug",
-  "issue": "After logging in with Google, the user is redirected back to the home page instead of directly accessing the dashboard.",
-  "current_behavior": [
-    "User clicks 'Login with Google'.",
-    "Authentication succeeds.",
-    "User is redirected to the home page.",
-    "User must manually log in again to access the dashboard."
-  ],
-  "expected_behavior": [
-    "User clicks 'Login with Google'.",
-    "Authentication succeeds.",
-    "User session/token is stored correctly.",
-    "User is immediately redirected to the dashboard on the first attempt."
-  ],
-  "possible_causes": [
-    "Session token not persisting after OAuth callback.",
-    "Authentication state not updating before redirect.",
-    "Protected dashboard route checks auth before token initialization completes.",
-    "OAuth callback redirect URL configured incorrectly.",
-    "Frontend auth context/state resets after redirect."
-  ],
-  "required_fix": [
-    "Persist auth session immediately after Google OAuth success.",
-    "Redirect authenticated users directly to dashboard.",
-    "Add proper loading/auth-check state before route protection triggers.",
-    "Prevent unnecessary redirect back to home page."
-  ],
-  "priority": "High"
-}
-{
   "title": "Fix Logout Session Persistence Bug",
   "module": "Authentication",
   "type": "Critical Session Management Bug",
