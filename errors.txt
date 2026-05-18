@@ -1,40 +1,75 @@
 {
-  "title": "Implement Symbol Suggestion Search",
+  "title": "Create Trading Introduction/Search Page",
   "module": [
-    "Search",
     "Live Stocks",
-    "Trading UI"
+    "Live Crypto",
+    "UI/UX"
   ],
   "type": "Feature Request",
-  "issue": "Search currently does not provide symbol/code suggestions for company names.",
-  "expected_behavior": [
-    "When a user types a company name, relevant stock symbols should appear as suggestions.",
-    "Example: searching 'Airtel' should suggest 'BHARTIARTL (NSE)'.",
-    "Suggestions should appear dynamically while typing.",
-    "Suggestions should support partial and fuzzy matching."
-  ],
-  "required_features": [
-    "Autocomplete dropdown for stock/company search.",
-    "Support searching by company name, ticker, and exchange code.",
-    "Display exchange along with symbol (e.g. NSE, BSE).",
-    "Fast real-time search response.",
-    "Prioritize exact and highly relevant matches."
-  ],
-  "possible_data_fields": [
-    "Company Name",
-    "Ticker Symbol",
-    "Exchange",
-    "Asset Type"
-  ],
-  "example": {
-    "input": "Airtel",
-    "output": [
-      {
-        "symbol": "BHARTIARTL",
-        "exchange": "NSE",
-        "company_name": "Bharti Airtel Ltd"
-      }
-    ]
+  "description": "Create a new intermediate page that opens after clicking Live Stocks or Live Crypto.",
+  "layout": {
+    "top_left": {
+      "component": "Search Bar",
+      "purpose": "Search stocks/crypto with live symbol suggestions and autocomplete."
+    },
+    "main_content": {
+      "component": "Trading Education Section",
+      "purpose": "Explain important trading concepts for beginners."
+    }
   },
+  "required_features": [
+    "Search bar with symbol/company autocomplete.",
+    "Clickable search suggestions.",
+    "Responsive layout for desktop and mobile.",
+    "Clean beginner-friendly UI.",
+    "Scrollable educational content/cards."
+  ],
+  "educational_topics": [
+    {
+      "term": "Stop Loss",
+      "description": "Automatically closes a trade to limit losses when price moves against the position."
+    },
+    {
+      "term": "Take Profit (TP)",
+      "description": "Automatically closes a trade when a target profit level is reached."
+    },
+    {
+      "term": "Market Order",
+      "description": "Executes instantly at the best available market price."
+    },
+    {
+      "term": "Limit Order",
+      "description": "Executes only at a specific price or better."
+    },
+    {
+      "term": "Stop Market Order",
+      "description": "Triggers a market order once a stop price is reached."
+    },
+    {
+      "term": "Stop Limit Order",
+      "description": "Triggers a limit order after the stop price is hit."
+    },
+    {
+      "term": "Long Position",
+      "description": "Betting that the price will go up."
+    },
+    {
+      "term": "Short Position",
+      "description": "Betting that the price will go down."
+    },
+    {
+      "term": "Leverage",
+      "description": "Using borrowed capital to increase trade exposure."
+    },
+    {
+      "term": "PnL",
+      "description": "Profit and Loss of a trade or portfolio."
+    }
+  ],
+  "navigation_flow": [
+    "User clicks Live Stocks or Live Crypto.",
+    "New trading intro/search page opens.",
+    "User can search assets or learn trading concepts before entering charts/trading dashboard."
+  ],
   "priority": "Medium"
 }
