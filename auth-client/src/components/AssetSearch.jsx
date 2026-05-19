@@ -1,10 +1,75 @@
 import { useState, useEffect, useRef } from 'react';
 import { SIMULATOR_URL } from '../config';
+import BorderGlow from './BorderGlow';
+import './AssetSearch.css';
 
 const POPULAR_CRYPTO = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'AVAX/USDT'];
 const POPULAR_STOCKS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'RELIANCE.NS'];
 
-export default function AssetSearch({ assetClass, onSelect }) {
+const EDU_TOPICS = [
+  {
+    term: "Stop Loss",
+    icon: "🛡️",
+    tag: "Risk Management",
+    desc: "Automatically closes a trade to limit losses when price moves against your position. Essential for protecting your capital in volatile markets."
+  },
+  {
+    term: "Take Profit",
+    icon: "🎯",
+    tag: "Order Type",
+    desc: "Automatically closes a trade when a target profit level is reached. Locks in gains without requiring you to monitor the market constantly."
+  },
+  {
+    term: "Market Order",
+    icon: "⚡",
+    tag: "Order Type",
+    desc: "Executes instantly at the best available market price. Fast but may experience slippage during high volatility."
+  },
+  {
+    term: "Limit Order",
+    icon: "📌",
+    tag: "Order Type",
+    desc: "Executes only at a specific price or better. Gives you precise control over your entry and exit points."
+  },
+  {
+    term: "Stop Market Order",
+    icon: "🔔",
+    tag: "Advanced Order",
+    desc: "Triggers a market order once a stop price is reached. Commonly used for breakout trading strategies."
+  },
+  {
+    term: "Stop Limit Order",
+    icon: "🔒",
+    tag: "Advanced Order",
+    desc: "Triggers a limit order after the stop price is hit. Combines the precision of limits with stop activation."
+  },
+  {
+    term: "Long Position",
+    icon: "📈",
+    tag: "Position Type",
+    desc: "Betting that the price will go up. You buy an asset expecting to sell it later at a higher price for profit."
+  },
+  {
+    term: "Short Position",
+    icon: "📉",
+    tag: "Position Type",
+    desc: "Betting that the price will go down. You sell borrowed assets expecting to buy back at a lower price."
+  },
+  {
+    term: "PnL",
+    icon: "💰",
+    tag: "Metrics",
+    desc: "Profit and Loss — the net gain or loss from your trading activity. Tracks both realized and unrealized returns."
+  },
+  {
+    term: "Leverage",
+    icon: "⚖️",
+    tag: "Advanced",
+    desc: "Using borrowed capital to increase trade exposure. Amplifies both potential profits and losses significantly."
+  }
+];
+
+export default function AssetSearch({ assetClass, onSelect, onBack }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,107 +128,93 @@ export default function AssetSearch({ assetClass, onSelect }) {
   };
 
   const popularItems = assetClass === 'crypto' ? POPULAR_CRYPTO : POPULAR_STOCKS;
-
-  const eduTopics = [
-    { term: "Stop Loss", desc: "Automatically closes a trade to limit losses when price moves against the position." },
-    { term: "Take Profit (TP)", desc: "Automatically closes a trade when a target profit level is reached." },
-    { term: "Market Order", desc: "Executes instantly at the best available market price." },
-    { term: "Limit Order", desc: "Executes only at a specific price or better." },
-    { term: "Stop Market Order", desc: "Triggers a market order once a stop price is reached." },
-    { term: "Stop Limit Order", desc: "Triggers a limit order after the stop price is hit." },
-    { term: "Long Position", desc: "Betting that the price will go up." },
-    { term: "Short Position", desc: "Betting that the price will go down." },
-    { term: "Leverage", desc: "Using borrowed capital to increase trade exposure." },
-    { term: "PnL", desc: "Profit and Loss of a trade or portfolio." }
-  ];
+  const isCrypto = assetClass === 'crypto';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '40px', padding: '0 40px 40px', maxWidth: '1200px', margin: '0 auto', color: '#d1d4dc' }}>
-      {/* Left Column: Search */}
-      <div style={{ flex: '1 1 400px', maxWidth: '600px' }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '8px', color: '#fff', fontWeight: 700 }}>
-          {assetClass === 'crypto' ? '₿ Live Crypto' : '📈 Live Stocks'}
-        </h2>
-        <p style={{ color: '#787b86', fontSize: '13px', marginBottom: '20px' }}>
-          Search for a {assetClass === 'crypto' ? 'cryptocurrency pair' : 'stock ticker'} to view live charts
-        </p>
+    <div className="asset-search-content">
+      {/* ── Top Bar ── */}
+      <div className="asset-search-topbar">
+        {onBack && (
+          <button className="asset-search-back-btn" onClick={onBack} id="asset-search-back">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+            Dashboard
+          </button>
+        )}
+        <div className="asset-search-title-badge">
+          <span className="badge-dot" />
+          {isCrypto ? 'Live Crypto' : 'Live Stocks'}
+        </div>
+      </div>
 
-        <div style={{ position: 'relative' }}>
+      {/* ── Header ── */}
+      <section className="asset-search-header">
+        <p className="search-eyebrow">
+          {isCrypto ? 'Cryptocurrency Markets' : 'Stock Markets'}
+        </p>
+        <h1>
+          Search & Trade{' '}
+          <span className="accent">{isCrypto ? 'Crypto' : 'Stocks'}</span>{' '}
+          Live
+        </h1>
+        <p className="search-subtitle">
+          {isCrypto
+            ? 'Find any cryptocurrency pair and start paper trading with real-time market data. Practice risk-free.'
+            : 'Look up any stock ticker and start paper trading with live market data. Learn by doing, risk-free.'
+          }
+        </p>
+      </section>
+
+      {/* ── Search Input ── */}
+      <div className="asset-search-input-wrapper">
+        <div className="asset-search-input-container">
+          <span className="asset-search-input-icon">🔍</span>
           <input
             ref={inputRef}
+            id="asset-search-input"
             type="text"
-            style={{
-              width: '100%',
-              fontSize: '18px',
-              padding: '16px 50px 16px 16px',
-              background: 'rgba(19, 23, 34, 0.9)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '12px',
-              color: '#d1d4dc',
-              outline: 'none',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
-              boxSizing: 'border-box',
-            }}
-            onFocus={e => {
-              e.target.style.borderColor = 'rgba(38,166,154,0.5)';
-              e.target.style.boxShadow = '0 0 0 3px rgba(38,166,154,0.1)';
-            }}
-            onBlur={e => {
-              e.target.style.borderColor = 'rgba(255,255,255,0.1)';
-              e.target.style.boxShadow = 'none';
-            }}
-            placeholder={assetClass === 'crypto' ? 'Search (e.g. BTC, ETH, SOL)...' : 'Search (e.g. AAPL, TSLA, MSFT)...'}
+            className="asset-search-input"
+            placeholder={isCrypto
+              ? 'Search crypto pairs (e.g. BTC, ETH, SOL)...'
+              : 'Search stock tickers (e.g. AAPL, TSLA, MSFT)...'
+            }
             value={query}
             onChange={handleQueryChange}
+            autoComplete="off"
           />
-          <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', color: '#787b86', fontSize: '14px' }}>
-            {loading ? '⏳' : '🔍'}
-          </div>
+          {loading && <div className="asset-search-input-spinner" />}
+          {!loading && <span className="asset-search-input-hint">⌘K</span>}
         </div>
 
-        {/* Error state */}
+        {/* Error */}
         {error && (
-          <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(239,83,80,0.1)', border: '1px solid rgba(239,83,80,0.2)', borderRadius: '8px', color: '#ef5350', fontSize: '13px' }}>
-            {error}
+          <div className="asset-search-error" id="asset-search-error">
+            ⚠ {error}
           </div>
         )}
 
-        {/* Search results */}
+        {/* Search Results Dropdown */}
         {results.length > 0 && (
-          <div style={{
-            marginTop: '10px',
-            background: 'rgba(19, 23, 34, 0.95)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            maxHeight: '400px',
-            overflowY: 'auto',
-          }}>
+          <div className="asset-search-results" id="asset-search-results">
             {results.map((r, i) => (
               <div
                 key={i}
+                className="asset-search-result-item"
                 onClick={() => handleSelect(r.symbol)}
-                style={{
-                  padding: '14px 16px',
-                  borderBottom: i < results.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-                onMouseOver={e => e.currentTarget.style.background = 'rgba(38,166,154,0.08)'}
-                onMouseOut={e => e.currentTarget.style.background = 'transparent'}
               >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '15px', color: '#fff' }}>
-                    {r.symbol} {r.exchange ? <span style={{ fontSize: '12px', color: '#787b86', marginLeft: '6px' }}>({r.exchange})</span> : null}
+                <div className="asset-search-result-info">
+                  <div className="asset-search-result-symbol">
+                    {r.symbol}
+                    {r.exchange && (
+                      <span className="asset-search-result-exchange">({r.exchange})</span>
+                    )}
                   </div>
                   {r.name && r.name !== r.symbol && (
-                    <div style={{ color: '#787b86', fontSize: '12px', marginTop: '2px' }}>{r.name}</div>
+                    <div className="asset-search-result-name">{r.name}</div>
                   )}
                 </div>
-                <div style={{ color: '#787b86', fontSize: '12px' }}>{r.type === 'crypto' ? '🪙' : '📊'} {r.type}</div>
+                <div className="asset-search-result-type">
+                  {r.type === 'crypto' ? '🪙' : '📊'} {r.type}
+                </div>
               </div>
             ))}
           </div>
@@ -171,66 +222,65 @@ export default function AssetSearch({ assetClass, onSelect }) {
 
         {/* No results */}
         {!loading && query.length >= 2 && results.length === 0 && !error && (
-          <div style={{ marginTop: '20px', color: '#787b86', textAlign: 'center', padding: '20px' }}>
-            No results found for "{query}"
-          </div>
-        )}
-
-        {/* Popular picks (shown when no query) */}
-        {query.length < 2 && (
-          <div style={{ marginTop: '24px' }}>
-            <div style={{ color: '#787b86', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
-              Popular {assetClass === 'crypto' ? 'Pairs' : 'Tickers'}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '8px' }}>
-              {popularItems.map(sym => (
-                <div
-                  key={sym}
-                  onClick={() => handleSelect(sym)}
-                  style={{
-                    padding: '12px',
-                    background: 'rgba(19, 23, 34, 0.8)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: '#d1d4dc',
-                    transition: 'all 0.15s',
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.background = 'rgba(38,166,154,0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(38,166,154,0.3)';
-                    e.currentTarget.style.color = '#26a69a';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.background = 'rgba(19, 23, 34, 0.8)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
-                    e.currentTarget.style.color = '#d1d4dc';
-                  }}
-                >
-                  {sym}
-                </div>
-              ))}
+          <div className="asset-search-results">
+            <div className="asset-search-no-results">
+              No results found for "{query}"
             </div>
           </div>
         )}
       </div>
 
-      {/* Right Column: Educational */}
-      <div style={{ flex: '1 1 400px' }}>
-        <h2 style={{ fontSize: '20px', marginBottom: '16px', color: '#fff', fontWeight: 600 }}>Trading Basics</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
-          {eduTopics.map(topic => (
-            <div key={topic.term} style={{ background: 'rgba(19, 23, 34, 0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px' }}>
-              <h3 style={{ fontSize: '15px', color: '#26a69a', marginBottom: '8px', fontWeight: 600 }}>{topic.term}</h3>
-              <p style={{ fontSize: '13px', color: '#787b86', lineHeight: 1.5, margin: 0 }}>{topic.desc}</p>
-            </div>
+      {/* ── Popular Picks ── */}
+      {query.length < 2 && (
+        <section className="asset-search-popular-section" id="asset-search-popular">
+          <div className="asset-search-section-label">
+            🔥 Popular {isCrypto ? 'Pairs' : 'Tickers'}
+          </div>
+          <div className="asset-search-popular-grid">
+            {popularItems.map(sym => (
+              <button
+                key={sym}
+                className="asset-search-popular-chip"
+                onClick={() => handleSelect(sym)}
+              >
+                {sym}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Educational Cards ── */}
+      <section className="asset-search-edu-section" id="asset-search-edu">
+        <div className="asset-search-edu-heading">
+          <h2>Trading Concepts</h2>
+          <p>Master these essential concepts before you start trading. Understanding the basics is the foundation of every successful trader.</p>
+        </div>
+
+        <div className="asset-search-edu-grid">
+          {EDU_TOPICS.map(topic => (
+            <BorderGlow
+              key={topic.term}
+              glowColor="270 70 75"
+              backgroundColor="rgba(15, 10, 25, 0.7)"
+              borderRadius={12}
+              glowRadius={28}
+              glowIntensity={1.1}
+              coneSpread={22}
+              colors={['#c084fc', '#a78bfa', '#7c3aed']}
+            >
+              <article className="asset-search-edu-card">
+                <div className="asset-search-edu-card-icon">
+                  {topic.icon}
+                </div>
+                <h3>{topic.term}</h3>
+                <p>{topic.desc}</p>
+                <span className="asset-search-edu-card-tag">{topic.tag}</span>
+              </article>
+            </BorderGlow>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
-

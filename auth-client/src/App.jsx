@@ -250,20 +250,21 @@ function useParticles(canvasRef, active) {
 // ── Search Wrapper ───────────────────────────────────────────────────────────
 function SearchPageWrapper({ assetClass, onBack, onSelect }) {
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0e17', position: 'relative' }}>
-      <button
-        onClick={onBack}
-        style={{
-          position: 'absolute', top: '20px', left: '20px', background: 'transparent',
-          color: '#787b86', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 16px',
-          borderRadius: '4px', cursor: 'pointer'
-        }}
-      >
-        ← Dashboard
-      </button>
-      <div style={{ paddingTop: '80px' }}>
-        <AssetSearch assetClass={assetClass} onSelect={onSelect} />
+    <div className="asset-search-shell">
+      <div className="asset-search-dotfield-bg">
+        <DotField
+          dotRadius={2}
+          dotSpacing={16}
+          bulgeStrength={60}
+          glowRadius={220}
+          sparkle={true}
+          waveAmplitude={0}
+          gradientFrom="#8B5CF6"
+          gradientTo="#D8B4FE"
+          glowColor="rgba(139, 92, 246, 0.4)"
+        />
       </div>
+      <AssetSearch assetClass={assetClass} onSelect={onSelect} onBack={onBack} />
     </div>
   );
 }

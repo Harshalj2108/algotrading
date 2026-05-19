@@ -1,75 +1,61 @@
 {
-  "title": "Create Trading Introduction/Search Page",
+  "title": "Redesign Live Trading Intro Page UI",
   "module": [
     "Live Stocks",
     "Live Crypto",
     "UI/UX"
   ],
-  "type": "Feature Request",
-  "description": "Create a new intermediate page that opens after clicking Live Stocks or Live Crypto.",
-  "layout": {
-    "top_left": {
-      "component": "Search Bar",
-      "purpose": "Search stocks/crypto with live symbol suggestions and autocomplete."
+  "type": "UI Enhancement",
+  "description": "Redesign the page opened after clicking Live Stocks or Live Crypto with a modern full-screen trading-style interface.",
+  "design_requirements": {
+    "layout": {
+      "mode": "Full Screen",
+      "scroll_behavior": "Single page scroll only",
+      "restriction": "Do not use nested/half-page scrollbars"
     },
-    "main_content": {
-      "component": "Trading Education Section",
-      "purpose": "Explain important trading concepts for beginners."
+    "theme": {
+      "primary_color": "Purple",
+      "replace_existing_color": "Green",
+      "background_style": "Dot field/grid background"
+    },
+    "content_style": {
+      "format": "Card/Box Layout",
+      "reference": "Similar to Learn Trading page",
+      "behavior": "Trading concepts displayed in separate modern boxes/cards"
     }
   },
-  "required_features": [
-    "Search bar with symbol/company autocomplete.",
-    "Clickable search suggestions.",
-    "Responsive layout for desktop and mobile.",
-    "Clean beginner-friendly UI.",
-    "Scrollable educational content/cards."
-  ],
-  "educational_topics": [
-    {
-      "term": "Stop Loss",
-      "description": "Automatically closes a trade to limit losses when price moves against the position."
+  "page_structure": {
+    "top_section": {
+      "component": "Search Bar",
+      "position": "Top Left",
+      "features": [
+        "Autocomplete",
+        "Symbol Suggestions",
+        "Company/Ticker Search"
+      ]
     },
-    {
-      "term": "Take Profit (TP)",
-      "description": "Automatically closes a trade when a target profit level is reached."
-    },
-    {
-      "term": "Market Order",
-      "description": "Executes instantly at the best available market price."
-    },
-    {
-      "term": "Limit Order",
-      "description": "Executes only at a specific price or better."
-    },
-    {
-      "term": "Stop Market Order",
-      "description": "Triggers a market order once a stop price is reached."
-    },
-    {
-      "term": "Stop Limit Order",
-      "description": "Triggers a limit order after the stop price is hit."
-    },
-    {
-      "term": "Long Position",
-      "description": "Betting that the price will go up."
-    },
-    {
-      "term": "Short Position",
-      "description": "Betting that the price will go down."
-    },
-    {
-      "term": "Leverage",
-      "description": "Using borrowed capital to increase trade exposure."
-    },
-    {
-      "term": "PnL",
-      "description": "Profit and Loss of a trade or portfolio."
+    "main_section": {
+      "component": "Educational Trading Cards",
+      "content": [
+        "Stop Loss",
+        "Take Profit",
+        "Market Order",
+        "Limit Order",
+        "Stop Market Order",
+        "Stop Limit Order",
+        "Long Position",
+        "Short Position",
+        "PnL",
+        "Leverage"
+      ]
     }
-  ],
-  "navigation_flow": [
-    "User clicks Live Stocks or Live Crypto.",
-    "New trading intro/search page opens.",
-    "User can search assets or learn trading concepts before entering charts/trading dashboard."
+  },
+  "ui_notes": [
+    "Use glassmorphism or modern trading-dashboard aesthetics.",
+    "Cards should have hover animations/transitions.",
+    "Maintain responsive behavior for mobile and desktop.",
+    "Keep spacing clean and uncluttered.",
+    "Avoid cramped layouts or split scrolling containers."
   ],
   "priority": "Medium"
 }
