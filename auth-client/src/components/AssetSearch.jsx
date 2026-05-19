@@ -6,64 +6,107 @@ import './AssetSearch.css';
 const POPULAR_CRYPTO = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'AVAX/USDT'];
 const POPULAR_STOCKS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'RELIANCE.NS'];
 
+function EduIcon({ name }) {
+  const paths = {
+    shield: <><path d="M12 2.8 20 6v5.8c0 5-3.1 8.4-8 9.8-4.9-1.4-8-4.8-8-9.8V6z" /><path d="m8.5 12.2 2.2 2.2 4.8-5" /></>,
+    target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" /></>,
+    bolt: <><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></>,
+    pin: <><path d="M12 17v5" /><path d="M9 2h6l-1 7h3l-5 5-5-5h3z" /></>,
+    bell: <><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></>,
+    lock: <><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>,
+    trendUp: <><path d="m4 17 5.2-5.2 3.5 3.5L20 8" /><path d="M15 8h5v5" /></>,
+    trendDown: <><path d="m4 7 5.2 5.2 3.5-3.5L20 16" /><path d="M15 16h5v-5" /></>,
+    coins: <><ellipse cx="9" cy="7" rx="5" ry="2.7" /><path d="M4 7v4c0 1.5 2.2 2.7 5 2.7s5-1.2 5-2.7V7" /><path d="M10 17.3c.9.4 2 .7 3.2.7 2.8 0 5-1.2 5-2.7v-4" /><path d="M13.2 8.6c2.8 0 5 1.2 5 2.7s-2.2 2.7-5 2.7" /></>,
+    scale: <><path d="M12 3v18" /><path d="M16 7 8 7" /><path d="m5 11 3-4 3 4" /><path d="m13 11 3-4 3 4" /><path d="M3 17h6" /><path d="M15 17h6" /></>,
+  };
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {paths[name] || paths.bolt}
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+    </svg>
+  );
+}
+
+function ResultTypeIcon({ type }) {
+  if (type === 'crypto') {
+    return (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" /><path d="M10 8h3a2 2 0 0 1 0 4h-3" /><path d="M10 12h4a2 2 0 0 1 0 4h-4" /><path d="M11 6v2" /><path d="M13 6v2" /><path d="M11 16v2" /><path d="M13 16v2" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3v18h18" /><path d="m7 14 4-4 4 4 5-5" />
+    </svg>
+  );
+}
+
 const EDU_TOPICS = [
   {
     term: "Stop Loss",
-    icon: "🛡️",
+    iconName: "shield",
     tag: "Risk Management",
     desc: "Automatically closes a trade to limit losses when price moves against your position. Essential for protecting your capital in volatile markets."
   },
   {
     term: "Take Profit",
-    icon: "🎯",
+    iconName: "target",
     tag: "Order Type",
     desc: "Automatically closes a trade when a target profit level is reached. Locks in gains without requiring you to monitor the market constantly."
   },
   {
     term: "Market Order",
-    icon: "⚡",
+    iconName: "bolt",
     tag: "Order Type",
     desc: "Executes instantly at the best available market price. Fast but may experience slippage during high volatility."
   },
   {
     term: "Limit Order",
-    icon: "📌",
+    iconName: "pin",
     tag: "Order Type",
     desc: "Executes only at a specific price or better. Gives you precise control over your entry and exit points."
   },
   {
     term: "Stop Market Order",
-    icon: "🔔",
+    iconName: "bell",
     tag: "Advanced Order",
     desc: "Triggers a market order once a stop price is reached. Commonly used for breakout trading strategies."
   },
   {
     term: "Stop Limit Order",
-    icon: "🔒",
+    iconName: "lock",
     tag: "Advanced Order",
     desc: "Triggers a limit order after the stop price is hit. Combines the precision of limits with stop activation."
   },
   {
     term: "Long Position",
-    icon: "📈",
+    iconName: "trendUp",
     tag: "Position Type",
     desc: "Betting that the price will go up. You buy an asset expecting to sell it later at a higher price for profit."
   },
   {
     term: "Short Position",
-    icon: "📉",
+    iconName: "trendDown",
     tag: "Position Type",
     desc: "Betting that the price will go down. You sell borrowed assets expecting to buy back at a lower price."
   },
   {
     term: "PnL",
-    icon: "💰",
+    iconName: "coins",
     tag: "Metrics",
     desc: "Profit and Loss — the net gain or loss from your trading activity. Tracks both realized and unrealized returns."
   },
   {
     term: "Leverage",
-    icon: "⚖️",
+    iconName: "scale",
     tag: "Advanced",
     desc: "Using borrowed capital to increase trade exposure. Amplifies both potential profits and losses significantly."
   }
@@ -167,7 +210,7 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
       {/* ── Search Input ── */}
       <div className="asset-search-input-wrapper">
         <div className="asset-search-input-container">
-          <span className="asset-search-input-icon">🔍</span>
+          <span className="asset-search-input-icon"><SearchIcon /></span>
           <input
             ref={inputRef}
             id="asset-search-input"
@@ -182,13 +225,13 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
             autoComplete="off"
           />
           {loading && <div className="asset-search-input-spinner" />}
-          {!loading && <span className="asset-search-input-hint">⌘K</span>}
+          {!loading && <span className="asset-search-input-hint">Ctrl+K</span>}
         </div>
 
         {/* Error */}
         {error && (
           <div className="asset-search-error" id="asset-search-error">
-            ⚠ {error}
+            {error}
           </div>
         )}
 
@@ -213,7 +256,7 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
                   )}
                 </div>
                 <div className="asset-search-result-type">
-                  {r.type === 'crypto' ? '🪙' : '📊'} {r.type}
+                  <ResultTypeIcon type={r.type} /> {r.type}
                 </div>
               </div>
             ))}
@@ -234,7 +277,7 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
       {query.length < 2 && (
         <section className="asset-search-popular-section" id="asset-search-popular">
           <div className="asset-search-section-label">
-            🔥 Popular {isCrypto ? 'Pairs' : 'Tickers'}
+            Popular {isCrypto ? 'Pairs' : 'Tickers'}
           </div>
           <div className="asset-search-popular-grid">
             {popularItems.map(sym => (
@@ -271,7 +314,7 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
             >
               <article className="asset-search-edu-card">
                 <div className="asset-search-edu-card-icon">
-                  {topic.icon}
+                  <EduIcon name={topic.iconName} />
                 </div>
                 <h3>{topic.term}</h3>
                 <p>{topic.desc}</p>
