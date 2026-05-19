@@ -1,9 +1,12 @@
 import React from "react";
 import DotField from "./DotField";
 import BorderGlow from "./BorderGlow";
+import LanguageSelector from "./LanguageSelector";
+import { useI18n } from "../i18n/I18nContext";
 import "./LandingPage.css";
 
 export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard }) {
+  const { t } = useI18n();
   return (
     <div className="landing-page">
       {/* Full Screen Background */}
@@ -28,12 +31,13 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
           <span className="logo-text">SynthCrypto</span>
         </div>
         <div className="nav-actions">
+          <LanguageSelector />
           <button 
             className="btn-secondary purple-outline nav-btn" 
             onClick={() => onNavigate("about")}
             style={{ border: 'none', background: 'transparent' }}
           >
-            About
+            {t('nav_about')}
           </button>
           {isAuthenticated ? (
             <>
@@ -73,9 +77,9 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
       {/* Hero Section */}
       <main className="landing-main">
         <div className="landing-hero-content">
-          <h1>Learn Crypto Trading Without Risking Real Money</h1>
+          <h1>{t('hero_title')}</h1>
           <p>
-            Practice crypto trading with live market simulations, virtual currency, and real-time charts in a safe learning environment.
+            {t('hero_sub')}
           </p>
           <div className="hero-buttons">
             {isAuthenticated ? (
@@ -83,7 +87,7 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
                 className="btn-primary purple-btn hero-btn" 
                 onClick={onGoDashboard}
               >
-                Go to Portfolio
+                {t('btn_go_portfolio')}
               </button>
             ) : (
               <>
@@ -91,13 +95,13 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
                   className="btn-primary purple-btn hero-btn" 
                   onClick={() => onNavigate("auth")}
                 >
-                  Start Free
+                  {t('btn_start_free')}
                 </button>
                 <button 
                   className="btn-secondary purple-outline hero-btn" 
                   onClick={() => onNavigate("learn")}
                 >
-                  Learn Trading
+                  {t('btn_learn')}
                 </button>
               </>
             )}

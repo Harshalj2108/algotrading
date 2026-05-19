@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { SIMULATOR_URL } from '../config';
 import BorderGlow from './BorderGlow';
+import LanguageSelector from './LanguageSelector';
+import { useI18n } from '../i18n/I18nContext';
 import './AssetSearch.css';
 
 const POPULAR_CRYPTO = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'AVAX/USDT'];
@@ -50,69 +52,20 @@ function ResultTypeIcon({ type }) {
 }
 
 const EDU_TOPICS = [
-  {
-    term: "Stop Loss",
-    iconName: "shield",
-    tag: "Risk Management",
-    desc: "Automatically closes a trade to limit losses when price moves against your position. Essential for protecting your capital in volatile markets."
-  },
-  {
-    term: "Take Profit",
-    iconName: "target",
-    tag: "Order Type",
-    desc: "Automatically closes a trade when a target profit level is reached. Locks in gains without requiring you to monitor the market constantly."
-  },
-  {
-    term: "Market Order",
-    iconName: "bolt",
-    tag: "Order Type",
-    desc: "Executes instantly at the best available market price. Fast but may experience slippage during high volatility."
-  },
-  {
-    term: "Limit Order",
-    iconName: "pin",
-    tag: "Order Type",
-    desc: "Executes only at a specific price or better. Gives you precise control over your entry and exit points."
-  },
-  {
-    term: "Stop Market Order",
-    iconName: "bell",
-    tag: "Advanced Order",
-    desc: "Triggers a market order once a stop price is reached. Commonly used for breakout trading strategies."
-  },
-  {
-    term: "Stop Limit Order",
-    iconName: "lock",
-    tag: "Advanced Order",
-    desc: "Triggers a limit order after the stop price is hit. Combines the precision of limits with stop activation."
-  },
-  {
-    term: "Long Position",
-    iconName: "trendUp",
-    tag: "Position Type",
-    desc: "Betting that the price will go up. You buy an asset expecting to sell it later at a higher price for profit."
-  },
-  {
-    term: "Short Position",
-    iconName: "trendDown",
-    tag: "Position Type",
-    desc: "Betting that the price will go down. You sell borrowed assets expecting to buy back at a lower price."
-  },
-  {
-    term: "PnL",
-    iconName: "coins",
-    tag: "Metrics",
-    desc: "Profit and Loss — the net gain or loss from your trading activity. Tracks both realized and unrealized returns."
-  },
-  {
-    term: "Leverage",
-    iconName: "scale",
-    tag: "Advanced",
-    desc: "Using borrowed capital to increase trade exposure. Amplifies both potential profits and losses significantly."
-  }
+  { term: "Stop Loss", termKey: "edu_stop_loss", iconName: "shield", tagKey: "tag_risk", descKey: "edu_stop_loss_desc" },
+  { term: "Take Profit", termKey: "edu_take_profit", iconName: "target", tagKey: "tag_order", descKey: "edu_take_profit_desc" },
+  { term: "Market Order", termKey: "edu_market_order", iconName: "bolt", tagKey: "tag_order", descKey: "edu_market_order_desc" },
+  { term: "Limit Order", termKey: "edu_limit_order", iconName: "pin", tagKey: "tag_order", descKey: "edu_limit_order_desc" },
+  { term: "Stop Market Order", termKey: "edu_stop_market", iconName: "bell", tagKey: "tag_advanced_order", descKey: "edu_stop_market_desc" },
+  { term: "Stop Limit Order", termKey: "edu_stop_limit", iconName: "lock", tagKey: "tag_advanced_order", descKey: "edu_stop_limit_desc" },
+  { term: "Long Position", termKey: "edu_long", iconName: "trendUp", tagKey: "tag_position", descKey: "edu_long_desc" },
+  { term: "Short Position", termKey: "edu_short", iconName: "trendDown", tagKey: "tag_position", descKey: "edu_short_desc" },
+  { term: "PnL", termKey: "edu_pnl", iconName: "coins", tagKey: "tag_metrics", descKey: "edu_pnl_desc" },
+  { term: "Leverage", termKey: "edu_leverage", iconName: "scale", tagKey: "tag_advanced", descKey: "edu_leverage_desc" }
 ];
 
 export default function AssetSearch({ assetClass, onSelect, onBack }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -180,30 +133,26 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
         {onBack && (
           <button className="asset-search-back-btn" onClick={onBack} id="asset-search-back">
             <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-            Dashboard
+            {t('dash_back')}
           </button>
         )}
-        <div className="asset-search-title-badge">
-          <span className="badge-dot" />
-          {isCrypto ? 'Live Crypto' : 'Live Stocks'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <LanguageSelector />
+          <div className="asset-search-title-badge">
+            <span className="badge-dot" />
+            {isCrypto ? t('live_crypto') : t('live_stocks')}
+          </div>
         </div>
       </div>
 
       {/* ── Header ── */}
       <section className="asset-search-header">
         <p className="search-eyebrow">
-          {isCrypto ? 'Cryptocurrency Markets' : 'Stock Markets'}
+          {isCrypto ? t('search_crypto_eyebrow') : t('search_stocks_eyebrow')}
         </p>
-        <h1>
-          Search & Trade{' '}
-          <span className="accent">{isCrypto ? 'Crypto' : 'Stocks'}</span>{' '}
-          Live
-        </h1>
+        <h1>{isCrypto ? t('search_title_crypto') : t('search_title_stocks')}</h1>
         <p className="search-subtitle">
-          {isCrypto
-            ? 'Find any cryptocurrency pair and start paper trading with real-time market data. Practice risk-free.'
-            : 'Look up any stock ticker and start paper trading with live market data. Learn by doing, risk-free.'
-          }
+          {isCrypto ? t('search_sub_crypto') : t('search_sub_stocks')}
         </p>
       </section>
 
@@ -217,8 +166,8 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
             type="text"
             className="asset-search-input"
             placeholder={isCrypto
-              ? 'Search crypto pairs (e.g. BTC, ETH, SOL)...'
-              : 'Search stock tickers (e.g. AAPL, TSLA, MSFT)...'
+              ? t('search_placeholder_crypto')
+              : t('search_placeholder_stocks')
             }
             value={query}
             onChange={handleQueryChange}
@@ -277,7 +226,7 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
       {query.length < 2 && (
         <section className="asset-search-popular-section" id="asset-search-popular">
           <div className="asset-search-section-label">
-            Popular {isCrypto ? 'Pairs' : 'Tickers'}
+            {isCrypto ? t('popular_pairs') : t('popular_tickers')}
           </div>
           <div className="asset-search-popular-grid">
             {popularItems.map(sym => (
@@ -296,8 +245,8 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
       {/* ── Educational Cards ── */}
       <section className="asset-search-edu-section" id="asset-search-edu">
         <div className="asset-search-edu-heading">
-          <h2>Trading Concepts</h2>
-          <p>Master these essential concepts before you start trading. Understanding the basics is the foundation of every successful trader.</p>
+          <h2>{t('trading_concepts')}</h2>
+          <p>{t('trading_concepts_sub')}</p>
         </div>
 
         <div className="asset-search-edu-grid">
@@ -316,9 +265,9 @@ export default function AssetSearch({ assetClass, onSelect, onBack }) {
                 <div className="asset-search-edu-card-icon">
                   <EduIcon name={topic.iconName} />
                 </div>
-                <h3>{topic.term}</h3>
-                <p>{topic.desc}</p>
-                <span className="asset-search-edu-card-tag">{topic.tag}</span>
+                <h3>{t(topic.termKey)}</h3>
+                <p>{t(topic.descKey)}</p>
+                <span className="asset-search-edu-card-tag">{t(topic.tagKey)}</span>
               </article>
             </BorderGlow>
           ))}

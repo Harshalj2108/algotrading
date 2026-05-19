@@ -1,61 +1,46 @@
 {
-  "title": "Redesign Live Trading Intro Page UI",
+  "title": "Add Multi-Language Translation Support for Explanatory Text",
   "module": [
+    "UI/UX",
+    "Learn Trading",
     "Live Stocks",
-    "Live Crypto",
-    "UI/UX"
+    "Live Crypto"
   ],
-  "type": "UI Enhancement",
-  "description": "Redesign the page opened after clicking Live Stocks or Live Crypto with a modern full-screen trading-style interface.",
-  "design_requirements": {
-    "layout": {
-      "mode": "Full Screen",
-      "scroll_behavior": "Single page scroll only",
-      "restriction": "Do not use nested/half-page scrollbars"
-    },
-    "theme": {
-      "primary_color": "Purple",
-      "replace_existing_color": "Green",
-      "background_style": "Dot field/grid background"
-    },
-    "content_style": {
-      "format": "Card/Box Layout",
-      "reference": "Similar to Learn Trading page",
-      "behavior": "Trading concepts displayed in separate modern boxes/cards"
-    }
+  "type": "Feature Request",
+  "description": "Add a translation feature that allows users to translate explanatory and educational text content on the website into different languages.",
+  "required_features": [
+    "Language selection button/dropdown.",
+    "Dynamic translation of explanatory text without page reload.",
+    "Support for multiple major languages.",
+    "Persist selected language across pages/sessions.",
+    "Smooth UI transition when switching languages."
+  ],
+  "suggested_languages": [
+    "English",
+    "Hindi",
+    "Spanish",
+    "French",
+    "German",
+    "Chinese",
+    "Japanese",
+    "Arabic"
+  ],
+  "ui_requirements": {
+    "placement": "Top-right corner of the page/navbar",
+    "style": "Modern minimal button or globe icon dropdown",
+    "behavior": "Instantly updates visible educational/trading content"
   },
-  "page_structure": {
-    "top_section": {
-      "component": "Search Bar",
-      "position": "Top Left",
-      "features": [
-        "Autocomplete",
-        "Symbol Suggestions",
-        "Company/Ticker Search"
-      ]
-    },
-    "main_section": {
-      "component": "Educational Trading Cards",
-      "content": [
-        "Stop Loss",
-        "Take Profit",
-        "Market Order",
-        "Limit Order",
-        "Stop Market Order",
-        "Stop Limit Order",
-        "Long Position",
-        "Short Position",
-        "PnL",
-        "Leverage"
-      ]
-    }
-  },
-  "ui_notes": [
-    "Use glassmorphism or modern trading-dashboard aesthetics.",
-    "Cards should have hover animations/transitions.",
-    "Maintain responsive behavior for mobile and desktop.",
-    "Keep spacing clean and uncluttered.",
-    "Avoid cramped layouts or split scrolling containers."
+  "translation_scope": [
+    "Trading concept cards",
+    "Explanatory text",
+    "Tooltips",
+    "Educational sections",
+    "Basic UI labels/buttons"
+  ],
+  "technical_notes": [
+    "Use i18n/localization framework.",
+    "Fallback to English if translation unavailable.",
+    "Ensure responsive behavior on mobile and desktop."
   ],
   "priority": "Medium"
 }
