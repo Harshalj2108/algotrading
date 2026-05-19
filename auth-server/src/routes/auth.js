@@ -96,10 +96,11 @@ const {
 } = process.env;
 
 // Cookie options — httpOnly, SameSite None for cross-domain Railway deployment
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: true, // Must be true for sameSite: "none"
-  sameSite: "none", // Must be "none" for cross-origin requests
+  secure: IS_PRODUCTION,
+  sameSite: IS_PRODUCTION ? "none" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,   // 7 days
   path: "/",
 };
@@ -330,7 +331,7 @@ router.get("/google", (req, res) => {
   // Store state in a short-lived cookie for verification
   res.cookie("oauth_state", state, {
     httpOnly: true,
-    secure: true,
+    secure: IS_PRODUCTION,
     sameSite: "lax",
     maxAge: 5 * 60 * 1000,   // 5 min
   });
@@ -496,7 +497,10 @@ router.get("/google/callback", async (req, res) => {
     }
 
     // Issue JWT & redirect to client
-    // Token is set via httpOnly cookie only — never exposed in URL
+    // Token is passed in URL for cross-origin setups (auth-server and frontend
+    // on different ports/domains). The frontend immediately stores it and
+    // removes it from the URL via history.replaceState.
+    // The httpOnly cookie is also set as a secondary auth mechanism.
     const token = signToken(user);
     res.cookie("token", token, COOKIE_OPTS);
 
@@ -506,9 +510,9 @@ router.get("/google/callback", async (req, res) => {
       return res.status(500).json({ error: "CLIENT_URL not configured" });
     }
     if (isNewGoogleUser) {
-      res.redirect(`${redirectBase}?auth=success&isNew=true`);
+      res.redirect(`${redirectBase}?auth=success&isNew=true&token=${token}`);
     } else {
-      res.redirect(`${redirectBase}?auth=success`);
+      res.redirect(`${redirectBase}?auth=success&token=${token}`);
     }
   } catch (err) {
     console.error("Google OAuth callback error:", err.response?.data || err.message);
@@ -523,8 +527,8 @@ router.post("/logout", (req, res) => {
   res.clearCookie("token", { 
     path: "/",
     httpOnly: true,
-    secure: true,
-    sameSite: "none"
+    secure: IS_PRODUCTION,
+    sameSite: IS_PRODUCTION ? "none" : "lax"
   });
   res.json({ message: "Logged out successfully" });
 });

@@ -396,7 +396,10 @@ export default function App() {
     const oauthSuccess = params.get("auth");
     let isOauth = false;
     if (oauthSuccess === "success") {
-      // Token is now set via httpOnly cookie by the server — no longer in URL
+      // Token is passed in URL for cross-origin OAuth redirect.
+      // Immediately store it and clean the URL.
+      const token = params.get("token");
+      if (token) localStorage.setItem("synthcrypto_token", token);
       if (params.get("isNew") === "true") {
         localStorage.setItem("isNewRegistration", "true");
       }
