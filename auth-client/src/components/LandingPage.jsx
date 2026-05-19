@@ -1,12 +1,9 @@
 import React from "react";
 import DotField from "./DotField";
 import BorderGlow from "./BorderGlow";
-import LanguageSelector from "./LanguageSelector";
-import { useI18n } from "../i18n/I18nContext";
 import "./LandingPage.css";
 
 export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard }) {
-  const { t } = useI18n();
   return (
     <div className="landing-page">
       {/* Full Screen Background */}
@@ -31,25 +28,24 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
           <span className="logo-text">SynthCrypto</span>
         </div>
         <div className="nav-actions">
-          <LanguageSelector />
-          <button 
-            className="btn-secondary purple-outline nav-btn" 
+          <button
+            className="btn-secondary purple-outline nav-btn"
             onClick={() => onNavigate("about")}
             style={{ border: 'none', background: 'transparent' }}
           >
-            {t('nav_about')}
+            About
           </button>
           {isAuthenticated ? (
             <>
-              <button 
-                className="btn-secondary purple-outline nav-btn" 
+              <button
+                className="btn-secondary purple-outline nav-btn"
                 onClick={() => onNavigate("learn")}
                 style={{ border: 'none', background: 'transparent' }}
               >
                 Learn Trading
               </button>
-              <button 
-                className="btn-primary purple-btn nav-btn" 
+              <button
+                className="btn-primary purple-btn nav-btn"
                 onClick={onGoDashboard}
               >
                 Portfolio
@@ -57,14 +53,14 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
             </>
           ) : (
             <>
-              <button 
-                className="btn-secondary purple-outline nav-btn" 
+              <button
+                className="btn-secondary purple-outline nav-btn"
                 onClick={() => onNavigate("auth")}
               >
                 Log In
               </button>
-              <button 
-                className="btn-primary purple-btn nav-btn" 
+              <button
+                className="btn-primary purple-btn nav-btn"
                 onClick={() => onNavigate("auth")}
               >
                 Sign Up
@@ -77,31 +73,31 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
       {/* Hero Section */}
       <main className="landing-main">
         <div className="landing-hero-content">
-          <h1>{t('hero_title')}</h1>
+          <h1>Learn Crypto Trading Without Risking Real Money</h1>
           <p>
-            {t('hero_sub')}
+            Practice crypto trading with live market simulations, virtual currency, and real-time charts in a safe learning environment.
           </p>
           <div className="hero-buttons">
             {isAuthenticated ? (
-              <button 
-                className="btn-primary purple-btn hero-btn" 
+              <button
+                className="btn-primary purple-btn hero-btn"
                 onClick={onGoDashboard}
               >
-                {t('btn_go_portfolio')}
+                Go to Portfolio
               </button>
             ) : (
               <>
-                <button 
-                  className="btn-primary purple-btn hero-btn" 
+                <button
+                  className="btn-primary purple-btn hero-btn"
                   onClick={() => onNavigate("auth")}
                 >
-                  {t('btn_start_free')}
+                  Start Free
                 </button>
-                <button 
-                  className="btn-secondary purple-outline hero-btn" 
+                <button
+                  className="btn-secondary purple-outline hero-btn"
                   onClick={() => onNavigate("learn")}
                 >
-                  {t('btn_learn')}
+                  Learn Trading
                 </button>
               </>
             )}

@@ -2,8 +2,6 @@ import LightRays from "./LightRays";
 import heroAsset from "../assets/hero.png";
 import DotField from "./DotField";
 import BorderGlow from "./BorderGlow";
-import LanguageSelector from "./LanguageSelector";
-import { useI18n } from "../i18n/I18nContext";
 import "./PublicPages.css";
 
 const navItems = [
@@ -196,7 +194,6 @@ function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn, isAuthenti
       </nav>
 
       <div className="public-nav-actions">
-        <LanguageSelector />
         {isAuthenticated ? (
           <button className="public-nav-cta" type="button" onClick={onGoDashboard}>
             Portfolio
@@ -233,11 +230,11 @@ function PublicShell({ currentPage, onNavigate, onGetStarted, onSignIn, isAuthen
         />
       </div>
       <div className="public-shell-content">
-        <PublicNav 
-          currentPage={currentPage} 
-          onNavigate={onNavigate} 
-          onGetStarted={onGetStarted} 
-          onSignIn={onSignIn} 
+        <PublicNav
+          currentPage={currentPage}
+          onNavigate={onNavigate}
+          onGetStarted={onGetStarted}
+          onSignIn={onSignIn}
           isAuthenticated={isAuthenticated}
           onGoDashboard={onGoDashboard}
         />
@@ -293,7 +290,6 @@ function MarketVisual() {
 }
 
 export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
-  const { t } = useI18n();
   return (
     <PublicShell currentPage="home" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn}>
       <main className="public-main">
@@ -313,16 +309,16 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
 
           <div className="public-hero-copy">
             <p className="public-eyebrow">EdTech meets FinTech simulation</p>
-            <h1>{t('hero_title')}</h1>
+            <h1>Learn Crypto Trading Without Risking Real Money</h1>
             <p className="public-hero-subtitle">
-              {t('hero_sub')}
+              Practice crypto trading with live market simulations, virtual currency, and real-time charts in a safe learning environment.
             </p>
             <div className="public-hero-actions">
               <button className="public-primary-btn" type="button" onClick={onGetStarted}>
-                {t('btn_start_free')}
+                Start Free
               </button>
               <button className="public-secondary-btn" type="button" onClick={() => onNavigate("learn")}>
-                {t('btn_learn')}
+                Learn Trading
               </button>
             </div>
           </div>
@@ -352,10 +348,10 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
 
         <section className="public-section">
           <div className="public-section-heading">
-            <p className="public-eyebrow">{t('section_eyebrow')}</p>
-            <h2>{t('section_title')}</h2>
+            <p className="public-eyebrow">Trading practice system</p>
+            <h2>Trade. Learn. Improve.</h2>
             <p>
-              {t('section_desc')}
+              Step into a next-generation crypto learning platform where users can experience trading decisions without real money exposure.
             </p>
           </div>
 
@@ -382,10 +378,10 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
         </section>
 
         <section className="public-section-heading" style={{ marginTop: '80px' }}>
-          <p className="public-eyebrow">{t('about_eyebrow')}</p>
-          <h2>{t('about_title')}</h2>
+          <p className="public-eyebrow">About SynthCrypto</p>
+          <h2>Practical crypto education through risk-free simulation</h2>
           <p>
-            {t('about_desc')}
+            Our platform bridges the gap between trading theory and real-world market experience with virtual trades, market movement, and learning tools.
           </p>
         </section>
 
@@ -400,10 +396,10 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
             colors={['#c084fc', '#a78bfa', '#7c3aed']}
           >
             <article className="about-panel">
-              <span className="about-label">{t('mission_label')}</span>
-              <h2>{t('mission_title')}</h2>
+              <span className="about-label">Mission</span>
+              <h2>Our Mission</h2>
               <p>
-                {t('mission_desc')}
+                Our mission is to make crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
               </p>
             </article>
           </BorderGlow>
@@ -418,10 +414,10 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
             colors={['#c084fc', '#a78bfa', '#7c3aed']}
           >
             <article className="about-panel">
-              <span className="about-label">{t('vision_label')}</span>
-              <h2>{t('vision_title')}</h2>
+              <span className="about-label">Vision</span>
+              <h2>Why We Built This</h2>
               <p>
-                {t('vision_desc')}
+                We believe crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
               </p>
             </article>
           </BorderGlow>
@@ -437,9 +433,9 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
           colors={['#fca5a5', '#f87171', '#ef4444']}
         >
           <section className="disclaimer-section">
-            <h2>{t('disclaimer_title')}</h2>
+            <h2>Disclaimer</h2>
             <p>
-              {t('disclaimer_text')}
+              This platform is designed solely for educational and simulation purposes. No real money or actual cryptocurrency trading is involved on the platform. All trades are virtual and intended to help users learn and practice trading concepts in a safe environment. The content, tools, and simulations provided do not constitute financial, investment, or trading advice.
             </p>
           </section>
         </BorderGlow>
@@ -520,15 +516,14 @@ export function AboutUsPage({ onNavigate, onGetStarted, onSignIn, isAuthenticate
 }
 
 export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn, isAuthenticated, onGoDashboard }) {
-  const { t } = useI18n();
   return (
     <PublicShell currentPage="learn" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} isAuthenticated={isAuthenticated} onGoDashboard={onGoDashboard}>
       <main className="public-main public-page-main">
         <section className="public-page-header">
-          <p className="public-eyebrow">{t('learn_eyebrow')}</p>
-          <h1>{t('learn_title')}</h1>
+          <p className="public-eyebrow">Learn Trading</p>
+          <h1>Explore crypto concepts, trading strategies, and market analysis tools.</h1>
           <p>
-            {t('learn_sub')}
+            Build trading literacy across market basics, chart reading, futures, spot trading, risk management, and technical indicators.
           </p>
         </section>
 
@@ -564,8 +559,8 @@ export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn, isAuthent
         >
           <section className="learning-benefits">
             <div>
-              <p className="public-eyebrow">{t('learn_benefits_eyebrow')}</p>
-              <h2>{t('learn_benefits_title')}</h2>
+              <p className="public-eyebrow">What You Will Learn</p>
+              <h2>Practice-ready skills for simulated markets</h2>
             </div>
             <ul>
               {learningBenefits.map((benefit) => (
@@ -586,16 +581,16 @@ export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn, isAuthent
         >
           <section className="learn-cta">
             <div>
-              <h2>{t('learn_cta_title')}</h2>
-              <p>{t('learn_cta_desc')}</p>
+              <h2>Start Practicing Today</h2>
+              <p>Use virtual capital to test decisions, review outcomes, and improve before taking on real market risk.</p>
             </div>
             {isAuthenticated ? (
               <button className="public-primary-btn" type="button" onClick={onGoDashboard}>
-                {t('btn_go_portfolio')}
+                Go to Portfolio
               </button>
             ) : (
               <button className="public-primary-btn" type="button" onClick={onGetStarted}>
-                {t('btn_start_free')}
+                Start Free
               </button>
             )}
           </section>

@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import { I18nProvider } from './i18n/I18nContext'
 
 const originalFetch = window.fetch;
 window.fetch = async function () {
@@ -21,7 +20,7 @@ window.fetch = async function () {
 };
 
 const originalWebSocket = window.WebSocket;
-window.WebSocket = function(url, protocols) {
+window.WebSocket = function (url, protocols) {
   const token = localStorage.getItem("synthcrypto_token");
   if (token && typeof url === 'string' && url.includes('/api/')) {
     try {
@@ -37,8 +36,6 @@ window.WebSocket = function(url, protocols) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <I18nProvider>
-      <App />
-    </I18nProvider>
+    <App />
   </StrictMode>,
 )
