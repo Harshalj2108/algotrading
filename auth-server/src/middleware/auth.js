@@ -7,7 +7,16 @@
 
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET environment variable is not set.");
+  console.error("       Set JWT_SECRET to a strong, random string (at least 32 characters).");
+  process.exit(1);
+}
+
+// Pin the algorithm to prevent "none" algorithm attacks
+const JWT_ALGORITHM = "HS256";
+const JWT_EXPIRY = "7d";
 
 /**
  * Generate a JWT for a user.
@@ -21,7 +30,7 @@ function signToken(user) {
       avatar_url: user.avatar_url || null,
     },
     JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: JWT_EXPIRY, algorithm: JWT_ALGORITHM }
   );
 }
 
@@ -30,7 +39,8 @@ function signToken(user) {
  */
 function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    // Explicitly specify allowed algorithms to prevent algorithm substitution
+    return jwt.verify(token, JWT_SECRET, { algorithms: [JWT_ALGORITHM] });
   } catch {
     return null;
   }

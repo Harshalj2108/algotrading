@@ -54,7 +54,7 @@ cors_origins = parse_origins(CLIENT_URL)
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins="*" if cors_origins == ["*"] else cors_origins,
+    cors_allowed_origins=cors_origins if cors_origins != ["*"] else [],
     logger=False,
     engineio_logger=False,
 )
@@ -219,7 +219,7 @@ async def live_history(symbol: str, type: str = "crypto", tf: str = "5m"):
         print(f"[API] /api/live/history ERROR: {type}/{symbol}/{tf} -> {e} ({elapsed:.1f}s)")
         return JSONResponse(
             status_code=500,
-            content={"symbol": symbol, "data": [], "indicators": {}, "error": str(e)},
+            content={"symbol": symbol, "data": [], "indicators": {}, "error": "Failed to fetch historical data"},
         )
 
 @fastapi_app.get("/api/live/ticker")
@@ -237,7 +237,7 @@ async def live_ticker(symbol: str, type: str = "crypto"):
         print(f"[API] /api/live/ticker ERROR: {type}/{symbol} -> {e}")
         return JSONResponse(
             status_code=500,
-            content={"symbol": symbol, "type": type, "error": str(e)},
+            content={"symbol": symbol, "type": type, "error": "Failed to fetch ticker"},
         )
 
 @fastapi_app.get("/api/tf/{tf}")

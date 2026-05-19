@@ -14,14 +14,45 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const axios = require("axios");
 const crypto = require("crypto");
+const rateLimit = require("express-rate-limit");
 const { pool } = require("../db");
 const { signToken, verifyToken, requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
+// ─── Auth-specific Rate Limiters ─────────────────────────────────────────────
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,   // 15 minutes
+  max: 10,                     // 10 attempts per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many login attempts. Please try again in 15 minutes." },
+  keyGenerator: (req) => req.ip + ":" + (req.body?.email || "").toLowerCase(),
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many registration attempts. Please try again later." },
+});
+
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many verification attempts. Please try again later." },
+});
+
 async function sendVerificationEmail(toEmail, otpCode) {
+  const isProduction = process.env.NODE_ENV === "production";
+  const maskedOtp = isProduction ? "******" : otpCode;
+
   if (!process.env.SENDGRID_API_KEY) {
-    console.log(`[DEV/FALLBACK] No SENDGRID_API_KEY configured. OTP for ${toEmail} is: ${otpCode}`);
+    console.log(`[DEV/FALLBACK] No SENDGRID_API_KEY configured. OTP for ${toEmail} is: ${maskedOtp}`);
     return;
   }
   
@@ -50,7 +81,7 @@ async function sendVerificationEmail(toEmail, otpCode) {
     console.log(`[SENDGRID] OTP sent successfully to ${toEmail}.`);
   } catch (err) {
     console.error(`[SENDGRID] Email delivery failed:`, err.response?.data || err.message);
-    console.log(`[DEV/FALLBACK] Failed to send email to ${toEmail}. OTP is: ${otpCode}`);
+    console.log(`[DEV/FALLBACK] Failed to send email to ${toEmail}. OTP is: ${maskedOtp}`);
   }
 }
 
@@ -76,7 +107,7 @@ const COOKIE_OPTS = {
 
 // ─── POST /api/auth/register ─────────────────────────────────────────────────
 
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
   try {
     const { email, username, password, referralCode } = req.body;
 
@@ -110,10 +141,10 @@ router.post("/register", async (req, res) => {
       if (referrer.rows.length > 0) referrerId = referrer.rows[0].id;
     }
 
-    const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const myReferralCode = crypto.randomBytes(4).toString("hex").toUpperCase();
     const salt = await bcrypt.genSalt(12);
     const password_hash = await bcrypt.hash(password, salt);
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpCode = crypto.randomInt(100000, 1000000).toString();
 
     // Send email FIRST — only persist to DB if email succeeds
     await sendVerificationEmail(email, otpCode);
@@ -142,7 +173,7 @@ router.post("/register", async (req, res) => {
 
 // ─── POST /api/auth/verify-otp ───────────────────────────────────────────────
 
-router.post("/verify-otp", async (req, res) => {
+router.post("/verify-otp", otpLimiter, async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!email || !otp) return res.status(400).json({ error: "Email and OTP are required" });
@@ -158,7 +189,12 @@ router.post("/verify-otp", async (req, res) => {
     }
     const p = pending.rows[0];
 
-    if (p.otp_code !== otp) return res.status(400).json({ error: "Invalid verification code" });
+    // Timing-safe comparison to prevent timing attacks on OTP
+    const otpBuffer = Buffer.from(String(otp).padEnd(6, '0'));
+    const storedBuffer = Buffer.from(String(p.otp_code).padEnd(6, '0'));
+    if (!crypto.timingSafeEqual(otpBuffer, storedBuffer)) {
+      return res.status(400).json({ error: "Invalid verification code" });
+    }
     if (new Date() > new Date(p.otp_expires_at)) {
       await pool.query("DELETE FROM pending_registrations WHERE email = $1", [email.toLowerCase()]);
       return res.status(400).json({ error: "Verification code expired. Please sign up again." });
@@ -218,7 +254,7 @@ router.post("/verify-otp", async (req, res) => {
 
 // ─── POST /api/auth/login ────────────────────────────────────────────────────
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -250,7 +286,7 @@ router.post("/login", async (req, res) => {
 
     // Check OTP Verification
     if (!user.is_verified) {
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpCode = crypto.randomInt(100000, 1000000).toString();
       await pool.query("UPDATE users SET otp_code = $1, otp_expires_at = NOW() + INTERVAL '10 minutes' WHERE id = $2", [otpCode, user.id]);
 
       await sendVerificationEmail(user.email, otpCode);
@@ -294,7 +330,7 @@ router.get("/google", (req, res) => {
   // Store state in a short-lived cookie for verification
   res.cookie("oauth_state", state, {
     httpOnly: true,
-    secure: false,
+    secure: true,
     sameSite: "lax",
     maxAge: 5 * 60 * 1000,   // 5 min
   });
@@ -415,7 +451,7 @@ router.get("/google/callback", async (req, res) => {
         }
 
         console.log("Final referrerId for new user:", referrerId);
-        const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const myReferralCode = crypto.randomBytes(4).toString("hex").toUpperCase();
 
         let startingBalance = 10000;
         if (referrerId) {
@@ -459,13 +495,20 @@ router.get("/google/callback", async (req, res) => {
       }
     }
 
-    // Issue JWT & redirect to simulator
+    // Issue JWT & redirect to client
+    // Token is set via httpOnly cookie only — never exposed in URL
     const token = signToken(user);
     res.cookie("token", token, COOKIE_OPTS);
+
+    // Validate redirect target to prevent open redirect
+    const redirectBase = CLIENT_URL || "";
+    if (!redirectBase) {
+      return res.status(500).json({ error: "CLIENT_URL not configured" });
+    }
     if (isNewGoogleUser) {
-      res.redirect(`${CLIENT_URL}?auth=success&isNew=true&token=${token}`);
+      res.redirect(`${redirectBase}?auth=success&isNew=true`);
     } else {
-      res.redirect(`${CLIENT_URL}?auth=success&token=${token}`);
+      res.redirect(`${redirectBase}?auth=success`);
     }
   } catch (err) {
     console.error("Google OAuth callback error:", err.response?.data || err.message);
@@ -506,7 +549,7 @@ router.get("/me", async (req, res) => {
 
     // Auto-generate referral code for existing users who don't have one
     if (!user.referral_code) {
-      const newRefCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const newRefCode = crypto.randomBytes(4).toString("hex").toUpperCase();
       await pool.query("UPDATE users SET referral_code = $1 WHERE id = $2", [newRefCode, payload.id]);
       user.referral_code = newRefCode;
     }

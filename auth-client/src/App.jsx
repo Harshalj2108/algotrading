@@ -396,8 +396,7 @@ export default function App() {
     const oauthSuccess = params.get("auth");
     let isOauth = false;
     if (oauthSuccess === "success") {
-      const token = params.get("token");
-      if (token) localStorage.setItem("synthcrypto_token", token);
+      // Token is now set via httpOnly cookie by the server — no longer in URL
       if (params.get("isNew") === "true") {
         localStorage.setItem("isNewRegistration", "true");
       }

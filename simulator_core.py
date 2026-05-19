@@ -1007,11 +1007,24 @@ class StrategyValidationError(Exception):
     pass
 
 
+_BANNED_DUNDER_ATTRS = frozenset({
+    "__class__", "__subclasses__", "__bases__", "__mro__",
+    "__globals__", "__builtins__", "__code__", "__func__",
+    "__self__", "__module__", "__import__", "__loader__",
+    "__spec__", "__dict__", "__weakref__", "__init_subclass__",
+    "__reduce__", "__reduce_ex__", "__getattribute__",
+})
+
+
 def _validate_ast(source: str) -> None:
     """
     Light static-analysis pass.  Raises StrategyValidationError for obvious
     security violations before we exec() anything.
     """
+    if len(source) > 50_000:
+        raise StrategyValidationError(
+            "Strategy source code exceeds maximum length (50,000 characters).")
+
     try:
         tree = ast.parse(source)
     except SyntaxError as e:
@@ -1023,9 +1036,24 @@ def _validate_ast(source: str) -> None:
             "__import__", "eval", "exec", "compile",
             "open", "breakpoint", "globals", "locals",
             "vars", "getattr", "setattr", "delattr",
+            "dir", "help", "exit", "quit", "input",
+            "memoryview", "bytearray", "classmethod",
+            "staticmethod", "property", "super",
         ):
             raise StrategyValidationError(
                 f"Forbidden name: '{node.id}' is not allowed in strategy code.")
+
+        # Block dunder attribute access (common sandbox escape vector)
+        if isinstance(node, ast.Attribute) and node.attr in _BANNED_DUNDER_ATTRS:
+            raise StrategyValidationError(
+                f"Forbidden attribute access: '{node.attr}' is not allowed.")
+
+        # Block string literals containing dunder patterns (for getattr-like workarounds)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            if node.value.startswith("__") and node.value.endswith("__"):
+                if node.value in _BANNED_DUNDER_ATTRS:
+                    raise StrategyValidationError(
+                        f"Forbidden string literal: '{node.value}' is not allowed.")
 
         # Allow only numpy / math / random / typing imports
         if isinstance(node, (ast.Import, ast.ImportFrom)):

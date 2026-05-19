@@ -1,46 +1,376 @@
 {
-  "title": "Add Multi-Language Translation Support for Explanatory Text",
-  "module": [
-    "UI/UX",
-    "Learn Trading",
-    "Live Stocks",
-    "Live Crypto"
-  ],
-  "type": "Feature Request",
-  "description": "Add a translation feature that allows users to translate explanatory and educational text content on the website into different languages.",
-  "required_features": [
-    "Language selection button/dropdown.",
-    "Dynamic translation of explanatory text without page reload.",
-    "Support for multiple major languages.",
-    "Persist selected language across pages/sessions.",
-    "Smooth UI transition when switching languages."
-  ],
-  "suggested_languages": [
-    "English",
-    "Hindi",
-    "Spanish",
-    "French",
-    "German",
-    "Chinese",
-    "Japanese",
-    "Arabic"
-  ],
-  "ui_requirements": {
-    "placement": "Top-right corner of the page/navbar",
-    "style": "Modern minimal button or globe icon dropdown",
-    "behavior": "Instantly updates visible educational/trading content"
-  },
-  "translation_scope": [
-    "Trading concept cards",
-    "Explanatory text",
-    "Tooltips",
-    "Educational sections",
-    "Basic UI labels/buttons"
-  ],
-  "technical_notes": [
-    "Use i18n/localization framework.",
-    "Fallback to English if translation unavailable.",
-    "Ensure responsive behavior on mobile and desktop."
-  ],
-  "priority": "Medium"
+  "web_security_bugs": [
+    {
+      "name": "SQL Injection",
+      "category": "Injection",
+      "severity": "Critical",
+      "description": "Occurs when user input is directly inserted into SQL queries, allowing attackers to manipulate the database.",
+      "example": "SELECT * FROM users WHERE email = '" ,
+      "risks": [
+        "Database theft",
+        "Authentication bypass",
+        "Database deletion"
+      ],
+      "solution": [
+        "Use prepared statements",
+        "Use ORM libraries",
+        "Validate and sanitize input"
+      ]
+    },
+    {
+      "name": "Cross Site Scripting (XSS)",
+      "category": "Frontend",
+      "severity": "High",
+      "description": "Attackers inject malicious JavaScript into webpages viewed by other users.",
+      "types": [
+        "Stored XSS",
+        "Reflected XSS",
+        "DOM XSS"
+      ],
+      "example": "element.innerHTML = userInput",
+      "risks": [
+        "Cookie theft",
+        "Session hijacking",
+        "Account takeover"
+      ],
+      "solution": [
+        "Use textContent instead of innerHTML",
+        "Sanitize input",
+        "Enable Content Security Policy"
+      ]
+    },
+    {
+      "name": "Cross Site Request Forgery (CSRF)",
+      "category": "Authentication",
+      "severity": "High",
+      "description": "Forces authenticated users to perform unintended actions.",
+      "example": "<img src='bank.com/transfer?amount=1000'>",
+      "risks": [
+        "Unauthorized transfers",
+        "Unauthorized account actions"
+      ],
+      "solution": [
+        "Use CSRF tokens",
+        "Use SameSite cookies",
+        "Verify origin headers"
+      ]
+    },
+    {
+      "name": "Insecure Direct Object Reference (IDOR)",
+      "category": "Authorization",
+      "severity": "Critical",
+      "description": "Attackers access resources belonging to other users by modifying identifiers.",
+      "example": "/api/orders/123",
+      "risks": [
+        "Data leakage",
+        "Unauthorized access"
+      ],
+      "solution": [
+        "Validate ownership server-side",
+        "Use indirect identifiers",
+        "Enforce authorization checks"
+      ]
+    },
+    {
+      "name": "Broken Authentication",
+      "category": "Authentication",
+      "severity": "Critical",
+      "description": "Weak authentication mechanisms allow attackers to compromise accounts.",
+      "risks": [
+        "Credential stuffing",
+        "Session hijacking",
+        "Password brute force"
+      ],
+      "solution": [
+        "Use MFA",
+        "Rate limit login attempts",
+        "Use secure password hashing"
+      ]
+    },
+    {
+      "name": "Session Fixation",
+      "category": "Authentication",
+      "severity": "High",
+      "description": "Attackers force users to use a known session ID.",
+      "risks": [
+        "Session hijacking"
+      ],
+      "solution": [
+        "Regenerate session IDs after login",
+        "Use secure cookies"
+      ]
+    },
+    {
+      "name": "Server Side Request Forgery (SSRF)",
+      "category": "Backend",
+      "severity": "Critical",
+      "description": "Attackers force the server to make requests to internal systems.",
+      "example": "fetch(userProvidedURL)",
+      "risks": [
+        "Cloud metadata theft",
+        "Internal service access"
+      ],
+      "solution": [
+        "Whitelist domains",
+        "Block internal IP ranges",
+        "Validate URLs"
+      ]
+    },
+    {
+      "name": "Command Injection",
+      "category": "Injection",
+      "severity": "Critical",
+      "description": "User input executes operating system commands.",
+      "example": "exec('ping ' + ip)",
+      "risks": [
+        "Remote code execution",
+        "Server takeover"
+      ],
+      "solution": [
+        "Avoid shell execution",
+        "Use safe APIs",
+        "Sanitize input"
+      ]
+    },
+    {
+      "name": "Path Traversal",
+      "category": "File System",
+      "severity": "High",
+      "description": "Attackers access unauthorized files using ../ sequences.",
+      "example": "../../../etc/passwd",
+      "risks": [
+        "Sensitive file disclosure"
+      ],
+      "solution": [
+        "Normalize paths",
+        "Restrict directories",
+        "Validate filenames"
+      ]
+    },
+    {
+      "name": "File Upload Vulnerability",
+      "category": "File Handling",
+      "severity": "Critical",
+      "description": "Attackers upload malicious files to the server.",
+      "risks": [
+        "Remote code execution",
+        "Malware hosting"
+      ],
+      "solution": [
+        "Restrict file types",
+        "Rename uploaded files",
+        "Scan uploads for malware",
+        "Store outside web root"
+      ]
+    },
+    {
+      "name": "CORS Misconfiguration",
+      "category": "API Security",
+      "severity": "High",
+      "description": "Improper CORS settings expose APIs to malicious websites.",
+      "example": "Access-Control-Allow-Origin: *",
+      "risks": [
+        "Credential theft",
+        "Unauthorized API access"
+      ],
+      "solution": [
+        "Allow only trusted origins",
+        "Avoid wildcard origins with credentials"
+      ]
+    },
+    {
+      "name": "Sensitive Data Exposure",
+      "category": "Data Security",
+      "severity": "Critical",
+      "description": "Sensitive information is exposed publicly or insecurely stored.",
+      "risks": [
+        "API key theft",
+        "Database leaks",
+        "Credential compromise"
+      ],
+      "solution": [
+        "Use environment variables",
+        "Encrypt sensitive data",
+        "Disable debug mode in production"
+      ]
+    },
+    {
+      "name": "Race Condition",
+      "category": "Business Logic",
+      "severity": "High",
+      "description": "Multiple simultaneous requests exploit timing issues.",
+      "risks": [
+        "Double spending",
+        "Duplicate withdrawals"
+      ],
+      "solution": [
+        "Use database transactions",
+        "Implement locking",
+        "Use atomic operations"
+      ]
+    },
+    {
+      "name": "WebSocket Authentication Bypass",
+      "category": "Realtime Security",
+      "severity": "High",
+      "description": "Unauthenticated users connect to sensitive socket channels.",
+      "risks": [
+        "Unauthorized data access",
+        "Market manipulation"
+      ],
+      "solution": [
+        "Authenticate socket connections",
+        "Validate tokens server-side",
+        "Rate limit events"
+      ]
+    },
+    {
+      "name": "Prototype Pollution",
+      "category": "JavaScript",
+      "severity": "High",
+      "description": "Attackers modify JavaScript object prototypes.",
+      "example": "{\"__proto__\":{\"admin\":true}}",
+      "risks": [
+        "Privilege escalation",
+        "Application crashes"
+      ],
+      "solution": [
+        "Validate input objects",
+        "Avoid unsafe merge operations",
+        "Use updated libraries"
+      ]
+    },
+    {
+      "name": "NoSQL Injection",
+      "category": "Injection",
+      "severity": "High",
+      "description": "Attackers manipulate NoSQL queries using crafted input.",
+      "example": "{\"email\":{\"$ne\":null}}",
+      "risks": [
+        "Authentication bypass",
+        "Database access"
+      ],
+      "solution": [
+        "Validate schema",
+        "Use parameterized queries",
+        "Sanitize user input"
+      ]
+    },
+    {
+      "name": "Weak Password Storage",
+      "category": "Authentication",
+      "severity": "Critical",
+      "description": "Passwords stored insecurely or without hashing.",
+      "risks": [
+        "Credential theft"
+      ],
+      "solution": [
+        "Use bcrypt or Argon2",
+        "Salt passwords",
+        "Never store plaintext passwords"
+      ]
+    },
+    {
+      "name": "JWT Vulnerabilities",
+      "category": "Authentication",
+      "severity": "High",
+      "description": "Improper JWT handling allows token forgery.",
+      "risks": [
+        "Authentication bypass"
+      ],
+      "solution": [
+        "Use strong secrets",
+        "Validate algorithms",
+        "Set token expiry"
+      ]
+    },
+    {
+      "name": "Missing Rate Limiting",
+      "category": "API Security",
+      "severity": "Medium",
+      "description": "Attackers abuse APIs with excessive requests.",
+      "risks": [
+        "Brute force attacks",
+        "Denial of service"
+      ],
+      "solution": [
+        "Implement request throttling",
+        "Use CAPTCHA",
+        "Monitor abuse patterns"
+      ]
+    },
+    {
+      "name": "Security Misconfiguration",
+      "category": "Deployment",
+      "severity": "High",
+      "description": "Default or insecure configurations expose the application.",
+      "risks": [
+        "Admin panel exposure",
+        "Debug information leaks"
+      ],
+      "solution": [
+        "Disable debug mode",
+        "Harden server configs",
+        "Regularly audit settings"
+      ]
+    },
+    {
+      "name": "Clickjacking",
+      "category": "Frontend",
+      "severity": "Medium",
+      "description": "Users are tricked into clicking hidden UI elements.",
+      "risks": [
+        "Unauthorized actions"
+      ],
+      "solution": [
+        "Use X-Frame-Options",
+        "Use frame-ancestors CSP rule"
+      ]
+    },
+    {
+      "name": "Open Redirect",
+      "category": "Navigation",
+      "severity": "Medium",
+      "description": "Attackers redirect users to malicious websites.",
+      "example": "/redirect?url=evil.com",
+      "risks": [
+        "Phishing"
+      ],
+      "solution": [
+        "Whitelist redirect URLs",
+        "Validate destinations"
+      ]
+    },
+    {
+      "name": "Dependency Vulnerabilities",
+      "category": "Supply Chain",
+      "severity": "High",
+      "description": "Outdated or malicious packages compromise the application.",
+      "risks": [
+        "Remote code execution",
+        "Data theft"
+      ],
+      "solution": [
+        "Run npm audit",
+        "Update dependencies",
+        "Use trusted packages"
+      ]
+    },
+    {
+      "name": "Business Logic Vulnerability",
+      "category": "Application Logic",
+      "severity": "Critical",
+      "description": "Application rules are abused in unintended ways.",
+      "risks": [
+        "Price manipulation",
+        "Free purchases",
+        "Fake balance updates"
+      ],
+      "solution": [
+        "Validate all server-side logic",
+        "Perform security testing",
+        "Use transaction verification"
+      ]
+    }
+  ]
 }
