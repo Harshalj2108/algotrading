@@ -707,25 +707,37 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
             <div className="dash-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <span>{user?.username || user?.email || "Trader"}</span>
               {user?.referral_code && (
-                <span style={{ fontSize: '0.85em', color: '#D8B4FE', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ opacity: 0.7 }}>|</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>Code: <strong style={{ color: '#fff', letterSpacing: '1px' }}>{user.referral_code}</strong></span>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${APP_URL}/register?ref=${user.referral_code}`);
-                        alert("Referral link copied to clipboard!");
-                      }}
-                      style={{ background: 'rgba(139, 92, 246, 0.2)', border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '4px', padding: '2px 8px', color: '#fff', cursor: 'pointer' }}
-                    >
-                      Copy Link
-                    </button>
-                  </span>
-                  <span style={{ opacity: 0.7 }}>|</span>
-                  <span>Share your code to earn 2000S per referral!</span>
-                  <span style={{ opacity: 0.7 }}>|</span>
-                  <span>Referrals: <strong style={{ color: '#fff' }}>{user?.referral_count || 0}</strong></span>
-                </span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${APP_URL}/register?ref=${user.referral_code}`);
+                    alert("Referral link copied to clipboard!");
+                  }}
+                  style={{
+                    marginLeft: '8px',
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(216, 180, 254, 0.15))',
+                    border: '1px solid rgba(139, 92, 246, 0.5)',
+                    borderRadius: '8px',
+                    padding: '6px 16px',
+                    color: '#D8B4FE',
+                    fontWeight: 700,
+                    fontSize: '0.85em',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    fontFamily: 'inherit',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(216, 180, 254, 0.25))';
+                    e.currentTarget.style.borderColor = '#8B5CF6';
+                    e.currentTarget.style.color = '#fff';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(216, 180, 254, 0.15))';
+                    e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
+                    e.currentTarget.style.color = '#D8B4FE';
+                  }}
+                >
+                  Share & Earn
+                </button>
               )}
             </div>
           </div>
