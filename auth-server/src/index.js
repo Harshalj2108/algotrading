@@ -67,6 +67,10 @@ function securityHeaders(req, res, next) {
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   // Restrict browser features
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  // Prevent browser from caching authenticated API responses (back-button protection)
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   // Remove server fingerprint
   res.removeHeader("X-Powered-By");
   next();

@@ -40,6 +40,22 @@ const VALID_PAGES = new Set([
   "buy_more",
 ]);
 
+// Pages that require authentication — if the user is logged out,
+// navigating here (including via browser back button) should redirect.
+const PROTECTED_PAGES = new Set([
+  "dashboard",
+  "simulator",
+  "crypto_search",
+  "stocks_search",
+  "buy_more",
+]);
+
+function isProtectedPage(page) {
+  if (PROTECTED_PAGES.has(page)) return true;
+  if (page && page.startsWith("live_market:")) return true;
+  return false;
+}
+
 function normalizeStoredPage(page) {
   if (page === "landing") return "home";
   if (page && page.startsWith("live_market:")) return page;
@@ -356,6 +372,15 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const routedPage = pageFromPathname(window.location.pathname) || "home";
+
+      // Auth guard: if user navigates back to a protected page after logout,
+      // redirect them to home instead of showing stale content.
+      if (isProtectedPage(routedPage) && !isAuthenticated) {
+        setPage("home");
+        window.history.replaceState({}, "", "/");
+        return;
+      }
+
       setPage(routedPage);
       if (window.location.pathname === "/signup" || window.location.pathname === "/register") setTab("register");
       if (window.location.pathname === "/login") setTab("login");
@@ -363,7 +388,7 @@ export default function App() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  }, [isAuthenticated]);
 
   const navigatePublic = useCallback((nextPage) => {
     setPage(nextPage);
@@ -505,6 +530,8 @@ export default function App() {
     openLiveMarket(source === "stock" || source === "stocks" ? "stock" : "crypto", symbol, position);
   }, [openLiveMarket, openSimulator]);
 
+  // ── Public pages (no auth required) ──
+
   if (page === "home") {
     return <LandingPage onNavigate={navigatePublic} isAuthenticated={isAuthenticated} onGoDashboard={openDashboard} />;
   }
@@ -516,6 +543,20 @@ export default function App() {
   if (page === "learn") {
     return <LearnTradingPage onNavigate={navigatePublic} onGetStarted={() => openAuth("register")} onSignIn={() => openAuth("login")} isAuthenticated={isAuthenticated} onGoDashboard={openDashboard} />;
   }
+
+  // ── Auth guard: redirect unauthenticated users away from protected pages ──
+  // This catches direct URL access, browser back button, and stale localStorage.
+  if (isProtectedPage(page) && !isAuthenticated) {
+    // Use a microtask so we don't setState during render
+    Promise.resolve().then(() => {
+      setPage("auth");
+      writePath("/login");
+    });
+    // Show nothing while redirecting (prevents flash of protected content)
+    return null;
+  }
+
+  // ── Protected pages (auth verified above) ──
 
   if (page === "simulator") {
     return <SimulatorPage onBack={openDashboard} focusPositionId={focusedChartPosition?.id || focusedChartPosition?.trade_id || null} />;
@@ -552,7 +593,12 @@ export default function App() {
       <Dashboard
         onLogout={() => {
           setIsAuthenticated(false);
-          navigatePublic("home");
+          setLiveTrades([]);
+          localStorage.removeItem("synthcrypto_page");
+          localStorage.removeItem("synthcrypto_token");
+          // Replace current history entry so back button can't return here
+          window.history.replaceState({}, "", "/");
+          setPage("home");
         }}
         onLaunchSimulator={() => openSimulator()}
         onLaunchCrypto={() => setPage("crypto_search")}
