@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { translations } from './translations';
 
-const I18nContext = createContext();
+const I18nContext = createContext(null);
 
 const STORAGE_KEY = 'synthcrypto_lang';
 
@@ -26,14 +26,17 @@ export function I18nProvider({ children }) {
     try { localStorage.setItem(STORAGE_KEY, code); } catch {}
   }, []);
 
-  const t = useCallback((key) => {
-    const val = translations[lang]?.[key];
-    if (val !== undefined) return val;
-    return translations['en']?.[key] ?? key;
-  }, [lang]);
+  const value = useMemo(() => {
+    const t = (key) => {
+      const val = translations[lang]?.[key];
+      if (val !== undefined) return val;
+      return translations['en']?.[key] ?? key;
+    };
+    return { lang, setLang, t };
+  }, [lang, setLang]);
 
   return (
-    <I18nContext.Provider value={{ lang, setLang, t }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   );
