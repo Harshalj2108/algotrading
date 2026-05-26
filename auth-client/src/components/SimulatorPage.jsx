@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, Component } from "react";
+﻿import { useState, useEffect, useRef, useCallback, Component } from "react";
 import { io } from "socket.io-client";
 import SimChart from "./SimChart";
 import StrategyEditor from "./StrategyEditor";
@@ -388,7 +388,7 @@ export default function SimulatorPage({ onBack, focusPositionId = null }) {
     <div className="sim-page">
       <div className="toolbar">
         {onBack&&<StarBorder as="button" className="btn" onClick={onBack} style={{marginRight:4}}>← Back</StarBorder>}
-        <span className="logo">⬡ SynthCrypto</span>
+        <span className="logo">⬡ TradeSeekho</span>
         <div className="sep"/>
         <StarBorder as="button" className="btn active" onClick={()=>setTab("chart")}>Dashboard</StarBorder>
         <StarBorder as="button" className="btn ctrl-purple" onClick={()=>setTab("lab")}>Strategy Lab</StarBorder>
@@ -405,7 +405,7 @@ export default function SimulatorPage({ onBack, focusPositionId = null }) {
       {/* ── Toolbar ── */}
       <div className="toolbar">
         {onBack&&<StarBorder as="button" className="btn" onClick={onBack} style={{marginRight:4}}>← Back</StarBorder>}
-        <span className="logo">⬡ SynthCrypto</span>
+        <span className="logo">⬡ TradeSeekho</span>
         <span className="label-sm">TF</span>
         <div className="btn-group">
           {TFS.map(t=><StarBorder as="button" key={t} className={`btn${tf===t?" active":""}`} onClick={()=>switchTf(t)}>{t}</StarBorder>)}

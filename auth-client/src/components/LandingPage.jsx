@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import DotField from "./DotField";
 import BorderGlow from "./BorderGlow";
 import "./LandingPage.css";
@@ -25,7 +25,7 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
       <nav className="landing-nav">
         <div className="nav-logo">
           <span className="logo-icon">⬡</span>
-          <span className="logo-text">SynthCrypto</span>
+          <span className="logo-text">TradeSeekho</span>
         </div>
         <div className="nav-actions">
           <button
@@ -106,7 +106,7 @@ export default function LandingPage({ onNavigate, isAuthenticated, onGoDashboard
 
         <section className="about-section" style={{ marginTop: '120px', maxWidth: '1000px', margin: '120px auto 40px auto', textAlign: 'left' }}>
           <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-            <p style={{ color: '#D8B4FE', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '14px', marginBottom: '16px' }}>About SynthCrypto</p>
+            <p style={{ color: '#D8B4FE', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '14px', marginBottom: '16px' }}>About TradeSeekho</p>
             <h2 style={{ color: '#f8fafc', fontSize: '36px', fontWeight: 900, marginBottom: '20px' }}>Practical crypto education through risk-free simulation</h2>
             <p style={{ color: '#94a3b8', fontSize: '18px', maxWidth: '800px', margin: '0 auto', lineHeight: 1.6 }}>
               Our platform bridges the gap between trading theory and real-world market experience with virtual trades, market movement, and learning tools.

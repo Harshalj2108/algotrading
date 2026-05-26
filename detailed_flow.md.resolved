@@ -1,10 +1,10 @@
-# SynthCrypto — Detailed Step-by-Step Execution Flow
+﻿# TradeSeekho — Detailed Step-by-Step Execution Flow
 
 ## System Startup Sequence
 
 ### Step 1: PostgreSQL Database
-- Must be running on `localhost:5432` with database `synthcrypto`
-- Connection string: `postgresql://postgres:Saifu@607post@localhost:5432/synthcrypto`
+- Must be running on `localhost:5432` with database `tradeseekho`
+- Connection string: `postgresql://postgres:Saifu@607post@localhost:5432/tradeseekho`
 
 ### Step 2: Auth Server (Node.js — port 3001)
 ```

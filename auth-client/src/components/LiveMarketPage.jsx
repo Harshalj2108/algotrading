@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo, Component } from "react";
+﻿import { useState, useEffect, useRef, useCallback, useMemo, Component } from "react";
 import { io } from "socket.io-client";
 import SimChart from "./SimChart";
 import OscChart from "./OscChart";
@@ -226,7 +226,7 @@ function riskReward(position, tp = position?.take_profit, sl = position?.stop_lo
 export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositionId = null }) {
   const decodedSymbol = decodeURIComponent(symbol).toUpperCase();
 
-  const [tf, setTf] = useState(() => localStorage.getItem("synthcrypto_live_timeframe") || "5m");
+  const [tf, setTf] = useState(() => localStorage.getItem("tradeseekho_live_timeframe") || "5m");
   const tfRef = useRef(tf);
   const priceRef = useRef(0);
 
@@ -323,7 +323,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
   }, [fetchPaperPortfolio]);
 
   useEffect(() => {
-    localStorage.setItem("synthcrypto_live_timeframe", tf);
+    localStorage.setItem("tradeseekho_live_timeframe", tf);
   }, [tf]);
 
   const fetchHistory = useCallback(async (currentTf) => {
@@ -652,7 +652,7 @@ export default function LiveMarketPage({ assetClass, symbol, onBack, focusPositi
     <div className="sim-page">
       <div className="toolbar">
         {onBack && <StarBorder as="button" className="btn" onClick={onBack} style={{ marginRight: 4 }}>Back</StarBorder>}
-        <span className="logo">SynthCrypto</span>
+        <span className="logo">TradeSeekho</span>
         <div className="sep" />
         <span className="label-sm">TF</span>
         <div className="btn-group">

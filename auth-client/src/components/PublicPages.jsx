@@ -1,4 +1,4 @@
-import LightRays from "./LightRays";
+﻿import LightRays from "./LightRays";
 import heroAsset from "../assets/hero.png";
 import DotField from "./DotField";
 import BorderGlow from "./BorderGlow";
@@ -177,7 +177,7 @@ function PublicNav({ currentPage, onNavigate, onGetStarted, onSignIn, isAuthenti
     <header className="public-nav">
       <button className="public-brand" type="button" onClick={() => onNavigate("home")}>
         <span className="public-brand-mark">SC</span>
-        <span>SynthCrypto</span>
+        <span>TradeSeekho</span>
       </button>
 
       <nav className="public-nav-links" aria-label="Public pages">
@@ -378,7 +378,7 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
         </section>
 
         <section className="public-section-heading" style={{ marginTop: '80px' }}>
-          <p className="public-eyebrow">About SynthCrypto</p>
+          <p className="public-eyebrow">About TradeSeekho</p>
           <h2>Practical crypto education through risk-free simulation</h2>
           <p>
             Our platform bridges the gap between trading theory and real-world market experience with virtual trades, market movement, and learning tools.
@@ -449,7 +449,7 @@ export function AboutUsPage({ onNavigate, onGetStarted, onSignIn, isAuthenticate
     <PublicShell currentPage="about" onNavigate={onNavigate} onGetStarted={onGetStarted} onSignIn={onSignIn} isAuthenticated={isAuthenticated} onGoDashboard={onGoDashboard}>
       <main className="public-main public-page-main">
         <section className="public-page-header">
-          <p className="public-eyebrow">About SynthCrypto</p>
+          <p className="public-eyebrow">About TradeSeekho</p>
           <h1>Practical crypto education through risk-free simulation</h1>
           <p>
             Our platform bridges the gap between trading theory and real-world market experience with virtual trades, market movement, and learning tools.

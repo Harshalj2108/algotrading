@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RegisterForm — Email + username + password registration form
  */
 
@@ -93,7 +93,7 @@ export default function RegisterForm({ onSuccess, onError }) {
       }
 
       localStorage.setItem("isNewRegistration", "true");
-      if (data.token) localStorage.setItem("synthcrypto_token", data.token);
+      if (data.token) localStorage.setItem("tradeseekho_token", data.token);
       onSuccess(data.user);
     } catch {
       onError("Cannot reach auth server.");

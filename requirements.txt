@@ -1,4 +1,4 @@
-# ─── SynthCrypto v3 — Python Backend Requirements ────────────────────────────
+﻿# ─── TradeSeekho v3 — Python Backend Requirements ────────────────────────────
 # Install with: pip install -r requirements.txt
 
 # ── Web Framework & API ───────────────────────────────────────────────────────

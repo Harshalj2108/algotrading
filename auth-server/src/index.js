@@ -1,5 +1,5 @@
-/**
- * index.js — SynthCrypto Auth Server
+﻿/**
+ * index.js — TradeSeekho Auth Server
  * 
  * Express server providing:
  *   • Email/password registration & login
@@ -136,7 +136,7 @@ app.use("/api/payments", paymentsRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", service: "synthcrypto-auth" });
+  res.json({ status: "ok", service: "tradeseekho-auth" });
 });
 
 // ─── Start ───────────────────────────────────────────────────────────────────
@@ -147,7 +147,7 @@ async function start() {
 
   server.listen(PORT, () => {
     console.log("═".repeat(60));
-    console.log("  SynthCrypto Auth Server");
+    console.log("  TradeSeekho Auth Server");
     console.log(`  API:     http://localhost:${PORT}/api/auth`);
     console.log(`  Health:  http://localhost:${PORT}/api/health`);
     console.log("  Routes:");

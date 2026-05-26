@@ -1,4 +1,4 @@
-"""
+﻿"""
 simulator_api.py
 ================
 FastAPI + python-socketio web layer.
@@ -103,7 +103,7 @@ manager = SimulationManager(emit_fn=_sync_emit)
 
 # ─── FastAPI app ──────────────────────────────────────────────────────────────
 
-fastapi_app = FastAPI(title="SynthCrypto Simulator API", version="4.0.0")
+fastapi_app = FastAPI(title="TradeSeekho Simulator API", version="4.0.0")
 
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -476,7 +476,7 @@ def strategy_template():
     in the code editor so the user knows the required interface.
     """
     template = '''"""
-Strategy template for SynthCrypto simulator.
+Strategy template for TradeSeekho simulator.
 ============================================
 Rules:
   • Class must be named exactly  Strategy
@@ -863,7 +863,7 @@ async def startup():
     manager.start()
     _live_polling_task = asyncio.create_task(_poll_live_markets())
     print("=" * 60)
-    print("  SynthCrypto v4 — FastAPI + Socket.IO")
+    print("  TradeSeekho v4 — FastAPI + Socket.IO")
     print("  REST:      http://localhost:8000/docs")
     print("  Socket.IO: ws://localhost:8000/ws/socket.io")
     print("=" * 60)

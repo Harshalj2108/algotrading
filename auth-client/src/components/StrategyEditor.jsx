@@ -1,7 +1,7 @@
-/**
+﻿/**
  * StrategyEditor.jsx
  * ──────────────────
- * Paste-and-run strategy panel for the SynthCrypto simulator.
+ * Paste-and-run strategy panel for the TradeSeekho simulator.
  *
  * Props:
  *   apiBase   – e.g. "${SIMULATOR_URL}"

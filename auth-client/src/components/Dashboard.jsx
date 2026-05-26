@@ -1,5 +1,5 @@
-/**
- * Dashboard.jsx — SynthCrypto v3 Portfolio Dashboard
+﻿/**
+ * Dashboard.jsx — TradeSeekho v3 Portfolio Dashboard
  *
  * Live portfolio with MagicBento cards + trade history table.
  * Connects to the simulator via Socket.IO for real-time updates.
@@ -353,7 +353,7 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
 
   const handleLogout = async () => {
     await fetch(`${AUTH_SERVER}/api/auth/logout`, { method: "POST", credentials: "include" });
-    localStorage.removeItem("synthcrypto_token");
+    localStorage.removeItem("tradeseekho_token");
     goToLogin();
   };
 

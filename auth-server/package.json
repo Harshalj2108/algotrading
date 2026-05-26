@@ -1,7 +1,7 @@
-{
-  "name": "synthcrypto-auth-server",
+﻿{
+  "name": "tradeseekho-auth-server",
   "version": "1.0.0",
-  "description": "Authentication server for SynthCrypto v3 simulator",
+  "description": "Authentication server for TradeSeekho v3 simulator",
   "main": "src/index.js",
   "scripts": {
     "dev": "node src/index.js",

@@ -1,7 +1,7 @@
-# SynthCrypto Market Simulator
+﻿# TradeSeekho Market Simulator
 
 ## Overview
-SynthCrypto is an advanced synthetic cryptocurrency market simulator designed to replicate realistic market behaviors, order flow dynamics, and financial asset movements. Developed using Python, it offers a robust environment for evaluating algorithmic trading strategies under typical and extreme simulated conditions. The project uniquely combines sophisticated statistical models with a live, TradingView-style frontend dashboard built on React, powered by a robust Python/FastAPI trading engine and a secure Node/Express authentication server.
+TradeSeekho is an advanced synthetic cryptocurrency market simulator designed to replicate realistic market behaviors, order flow dynamics, and financial asset movements. Developed using Python, it offers a robust environment for evaluating algorithmic trading strategies under typical and extreme simulated conditions. The project uniquely combines sophisticated statistical models with a live, TradingView-style frontend dashboard built on React, powered by a robust Python/FastAPI trading engine and a secure Node/Express authentication server.
 
 ## Key Engine Capabilities
 - **GARCH(1,1) Volatility Engine**: Accurately simulates volatility clustering, mimicking real financial markets where periods of high or low volatility tend to group together.
@@ -73,7 +73,7 @@ An adaptive, high-frequency mean-reversion and trend-following strategy heavily 
 1. Create a `.env` file in the `auth-server` directory:
    ```env
    PORT=3001
-   DATABASE_URL=postgresql://username:password@localhost:5432/synthcrypto
+   DATABASE_URL=postgresql://username:password@localhost:5432/tradeseekho
    JWT_SECRET=your_secret_key
    GOOGLE_CLIENT_ID=your_google_id
    GOOGLE_CLIENT_SECRET=your_google_secret

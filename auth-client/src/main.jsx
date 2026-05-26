@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+﻿import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
@@ -7,7 +7,7 @@ const originalFetch = window.fetch;
 window.fetch = async function () {
   let [resource, config] = arguments;
   if (typeof resource === 'string' && resource.includes('/api/')) {
-    const token = localStorage.getItem("synthcrypto_token");
+    const token = localStorage.getItem("tradeseekho_token");
     if (token) {
       config = config || {};
       config.headers = {
@@ -21,7 +21,7 @@ window.fetch = async function () {
 
 const originalWebSocket = window.WebSocket;
 window.WebSocket = function (url, protocols) {
-  const token = localStorage.getItem("synthcrypto_token");
+  const token = localStorage.getItem("tradeseekho_token");
   if (token && typeof url === 'string' && url.includes('/api/')) {
     try {
       const wsUrl = new URL(url);

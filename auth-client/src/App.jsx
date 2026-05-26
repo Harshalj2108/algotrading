@@ -1,5 +1,5 @@
-/**
- * App.jsx — SynthCrypto v3 Auth + Navigation
+﻿/**
+ * App.jsx — TradeSeekho v3 Auth + Navigation
  * 
  * Single-page app with state-based routing:
  *   • "auth"      → Glassmorphism login/register page
@@ -172,11 +172,11 @@ const SEO_BY_PAGE = {
     description: "Explore crypto basics, candlestick patterns, futures trading, spot trading, and technical indicators.",
   },
   auth: {
-    title: "Sign In | SynthCrypto",
-    description: "Sign in or create an account to use the SynthCrypto trading simulator.",
+    title: "Sign In | TradeSeekho",
+    description: "Sign in or create an account to use the TradeSeekho trading simulator.",
   },
   dashboard: {
-    title: "Portfolio | SynthCrypto",
+    title: "Portfolio | TradeSeekho",
     description: "View your virtual crypto trading portfolio and simulation performance.",
   },
 };
@@ -291,7 +291,7 @@ export default function App() {
   const [page, setPage] = useState(() => {
     const routedPage = pageFromPathname(window.location.pathname);
     if (routedPage) return routedPage;
-    const saved = localStorage.getItem("synthcrypto_page");
+    const saved = localStorage.getItem("tradeseekho_page");
     return normalizeStoredPage(saved);
   });
   const [tab, setTab] = useState(() => (window.location.pathname === "/signup" || window.location.pathname === "/register") ? "register" : "login");        // "login" | "register"
@@ -352,7 +352,7 @@ export default function App() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    localStorage.setItem("synthcrypto_page", page);
+    localStorage.setItem("tradeseekho_page", page);
   }, [page]);
 
   useEffect(() => {
@@ -424,7 +424,7 @@ export default function App() {
       // Token is passed in URL for cross-origin OAuth redirect.
       // Immediately store it and clean the URL.
       const token = params.get("token");
-      if (token) localStorage.setItem("synthcrypto_token", token);
+      if (token) localStorage.setItem("tradeseekho_token", token);
       if (params.get("isNew") === "true") {
         localStorage.setItem("isNewRegistration", "true");
       }
@@ -432,7 +432,7 @@ export default function App() {
       window.history.replaceState({}, "", "/dashboard");
     }
 
-    const token = localStorage.getItem("synthcrypto_token");
+    const token = localStorage.getItem("tradeseekho_token");
     const headers = {};
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
@@ -594,8 +594,8 @@ export default function App() {
         onLogout={() => {
           setIsAuthenticated(false);
           setLiveTrades([]);
-          localStorage.removeItem("synthcrypto_page");
-          localStorage.removeItem("synthcrypto_token");
+          localStorage.removeItem("tradeseekho_page");
+          localStorage.removeItem("tradeseekho_token");
           // Replace current history entry so back button can't return here
           window.history.replaceState({}, "", "/");
           setPage("home");
@@ -631,7 +631,7 @@ export default function App() {
       <div className="auth-right">
         <div className="ds-auth-container">
           <div className="ds-brand">
-            <h1>SynthCrypto</h1>
+            <h1>TradeSeekho</h1>
           </div>
 
           <div className="gooey-tabs">

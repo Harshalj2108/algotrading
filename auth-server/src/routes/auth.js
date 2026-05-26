@@ -1,4 +1,4 @@
-/**
+﻿/**
  * routes/auth.js — Authentication endpoints
  * 
  * POST   /api/auth/register          — Create account (email + password)
@@ -62,10 +62,10 @@ async function sendVerificationEmail(toEmail, otpCode) {
       {
         personalizations: [{ to: [{ email: toEmail }] }],
         from: { 
-          email: process.env.EMAIL_FROM || 'noreply@synthcrypto.com', 
-          name: 'SynthCrypto' 
+          email: process.env.EMAIL_FROM || 'noreply@tradeseekho.com', 
+          name: 'TradeSeekho' 
         },
-        subject: 'Your SynthCrypto Verification Code',
+        subject: 'Your TradeSeekho Verification Code',
         content: [{ 
           type: 'text/plain', 
           value: `Your verification code is: ${otpCode}. It expires in 10 minutes.` 

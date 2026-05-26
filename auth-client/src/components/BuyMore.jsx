@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import Orb from './Orb';
 import './BuyMore.css';
 import { AUTH_SERVER } from '../config';
@@ -53,7 +53,7 @@ export default function BuyMore({ onBack }) {
         key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "SynthCrypto",
+        name: "TradeSeekho",
         description: `${sAmount.toLocaleString()} S Virtual Currency`,
         order_id: orderData.order_id,
         handler: async function (response) {
@@ -78,7 +78,7 @@ export default function BuyMore({ onBack }) {
           }
         },
         prefill: {
-          name: "SynthCrypto User",
+          name: "TradeSeekho User",
           email: "user@example.com",
           contact: "9999999999"
         },
@@ -151,7 +151,7 @@ export default function BuyMore({ onBack }) {
           {message && <div className="buy-more-msg">{message}</div>}
 
           <p className="buy-more-disclaimer">
-            * S is a virtual simulation currency intended solely for use within the SynthCrypto platform. It holds no real-world value.
+            * S is a virtual simulation currency intended solely for use within the TradeSeekho platform. It holds no real-world value.
           </p>
         </div>
       </div>
