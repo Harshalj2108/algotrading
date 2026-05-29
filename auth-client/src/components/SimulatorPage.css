@@ -659,5 +659,35 @@
 /* ── responsive ── */
 @media (max-width: 900px) {
   .charts-wrap { flex-direction: column; }
-  .trade-panel { width: 100%; border-left: none; border-top: 1px solid #2a2e39; max-height: 260px; }
+  .trade-panel { width: 100%; border-left: none; border-top: 1px solid #2a2e39; max-height: 420px; }
+}
+
+@media (max-width: 480px) {
+  /* Let the page scroll instead of being trapped in a fixed viewport */
+  .sim-page {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  /* Remove height cap so the trade panel expands to show all content */
+  .trade-panel {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* Ensure the Buy Market button is always visible and tappable */
+  .tp-place {
+    min-height: 44px;
+    font-size: 14px;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+
+  /* Add bottom padding so positions can scroll past mobile browser bars */
+  .tp-section ~ div {
+    padding-bottom: 80px;
+  }
 }
