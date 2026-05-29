@@ -81,6 +81,17 @@
   .magic-bento-card {
     min-height: 140px;
   }
+
+  /* Push positions card down so content above (buy button) stays visible */
+  .magic-bento-card:nth-child(3) {
+    margin-top: 12px;
+  }
+
+  /* Ensure positions list doesn't overflow the card — cap and scroll */
+  .magic-bento-card:nth-child(3) .bento-positions-list {
+    max-height: 260px;
+    overflow-y: auto;
+  }
 }
 
 /* ── Tablet: 2 columns ── */
