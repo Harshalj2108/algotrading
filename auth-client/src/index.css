@@ -706,6 +706,25 @@ body {
     margin: auto 0;
     padding: 40px 20px;
   }
+
+  /* Force dashboard containers to expand to full content height (fixes Buy button cutoff) */
+  .dash-left-col,
+  .dash-right-col,
+  .dash-trades-panel,
+  .dash-card,
+  .buy-more-card,
+  .trade-card {
+    height: auto !important;
+    min-height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+
+  /* Extra bottom padding so content clears mobile browser toolbars */
+  .dash-split-wrapper,
+  .buy-more-layout {
+    padding-bottom: 120px !important;
+  }
 }
 
 /* ─── Modern Dark Auth Design System ───────────────────────────────────────── */
