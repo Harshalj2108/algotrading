@@ -655,7 +655,8 @@ body {
 /* ─── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .auth-card {
-    padding: 32px 22px 28px;
+    padding: 32px 20px 28px;
+    margin: 16px;
     border-radius: 16px;
   }
 
@@ -667,6 +668,22 @@ body {
     width: 48px;
     height: 48px;
     font-size: 24px;
+  }
+
+  /* Prevent iOS input zoom (requires font-size >= 16px) */
+  .form-input,
+  .search-input,
+  .ds-auth-container .form-input {
+    font-size: 16px !important;
+    padding: 14px 14px 14px 42px;
+  }
+
+  /* Increase touch targets for mobile accessibility */
+  .btn-primary,
+  .btn-google,
+  .ds-auth-container .btn-primary {
+    min-height: 48px;
+    font-size: 15px;
   }
 }
 

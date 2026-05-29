@@ -543,6 +543,61 @@
   }
 }
 
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .dash-split-wrapper {
+    padding: 100px 16px 24px 16px;
+    gap: 16px;
+  }
+
+  /* Fix overlapping fixed UI elements */
+  .dash-brand-pos {
+    top: 16px;
+    left: 16px;
+  }
+
+  .dash-top-right-actions {
+    top: 16px;
+    right: 16px;
+    gap: 6px;
+  }
+
+  .dash-conn-dot {
+    right: 110px;
+    top: 24px;
+  }
+
+  .dash-title {
+    font-size: 22px;
+  }
+
+  /* Make trades table horizontally scrollable via touch */
+  .dash-trades-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .dash-trades-table {
+    min-width: 500px;
+  }
+
+  /* Re-show columns hidden at 768px — let horizontal scroll handle it */
+  .dash-trades-table th:nth-child(3),
+  .dash-trades-table td:nth-child(3),
+  .dash-trades-table th:nth-child(4),
+  .dash-trades-table td:nth-child(4) {
+    display: table-cell;
+  }
+
+  /* Stack summary items vertically */
+  .trades-summary-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
 /* ── Reward Popup ────────────────────────────────────────────────────────── */
 .reward-popup-overlay {
   position: fixed;
