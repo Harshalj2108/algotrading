@@ -685,6 +685,27 @@ body {
     min-height: 48px;
     font-size: 15px;
   }
+
+  /* Unlock vertical scrolling on mobile (overrides global overflow: hidden) */
+  html, body, #root {
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fix flexbox clipping — start from top so tall content isn't trapped */
+  body {
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Re-center app-wrapper dynamically within the top-aligned body */
+  .app-wrapper {
+    margin: auto 0;
+    padding: 40px 20px;
+  }
 }
 
 /* ─── Modern Dark Auth Design System ───────────────────────────────────────── */

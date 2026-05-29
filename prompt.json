@@ -1,43 +1,12 @@
 {
-  "title": "Fix Live Trading Order Types and Position PnL Display",
-  "description": "Several core trading features are missing or not functioning correctly in both live crypto and live stocks modules.",
-  "issues": [
-    {
-      "module": "Live Crypto",
-      "type": "Missing Feature",
-      "issue": "No support for advanced order types.",
-      "required_features": [
-        "Limit Order",
-        "Stop Market Order",
-        "Stop Limit Order"
-      ]
-    },
-    {
-      "module": "Live Stocks",
-      "type": "Missing Feature",
-      "issue": "No support for advanced order types.",
-      "required_features": [
-        "Limit Order",
-        "Stop Market Order",
-        "Stop Limit Order"
-      ]
-    },
-    {
-      "module": "Live Crypto",
-      "type": "Bug",
-      "issue": "Short/Sell functionality does not work."
-    },
-    {
-      "module": "Live Stocks",
-      "type": "Bug",
-      "issue": "Short/Sell functionality does not work."
-    },
-    {
-      "module": "Dashboard",
-      "type": "UI/Data Issue",
-      "issue": "Current Positions section displays only the amount spent on the position instead of real-time PnL.",
-      "expected_behavior": "Display current unrealized PnL for each open position based on live market price."
-    }
+  "task": "Fix mobile scroll lock and flexbox layout clipping",
+  "target_file": "auth-client/src/index.css",
+  "context": "The application currently has a global 'overflow: hidden' on the body and html tags, which completely disables vertical scrolling on mobile devices. Additionally, the centered flexbox layout causes the top of tall elements to be clipped off-screen when they overflow the viewport.",
+  "instructions": [
+    "Locate the existing `@media (max-width: 480px)` block inside `auth-client/src/index.css`.",
+    "Inside this media query, add a rule for `html, body, #root` to forcefully unlock scrolling. Apply `height: auto !important`, `min-height: 100vh`, `overflow-y: auto !important`, `overflow-x: hidden !important`, and `-webkit-overflow-scrolling: touch`.",
+    "Inside the same media query, add a rule for `body` to fix the flexbox clipping issue. Set `align-items: center !important` and `justify-content: flex-start !important` so the layout starts from the top edge rather than getting trapped above the screen.",
+    "Inside the same media query, add a rule for `.app-wrapper` to restore vertical centering dynamically now that the body is top-aligned. Apply `margin: auto 0;` and `padding: 40px 20px;`."
   ],
-  "priority": "High"
+  "expected_outcome": "The user should be able to smoothly scroll up and down on mobile devices without any content getting permanently trapped or clipped off the top or bottom of the screen."
 }
