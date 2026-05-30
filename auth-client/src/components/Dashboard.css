@@ -8,6 +8,36 @@
   z-index: 50;
 }
 
+/* ── Home button — top left ── */
+.dash-home-btn-pos {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+  z-index: 100;
+}
+
+.dash-home-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: #D8B4FE;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dash-home-btn:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8B5CF6;
+}
+
 /* ── Top-right action buttons ── */
 .dash-top-right-actions {
   position: fixed;
@@ -595,6 +625,24 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  /* Shrink the dropdown so it doesn't clip off-screen */
+  .dash-dropdown-menu {
+    width: 190px;
+    right: 0;
+  }
+
+  /* Home button: shrink and reposition for mobile */
+  .dash-home-btn-pos {
+    top: 16px;
+    left: 16px;
+  }
+
+  .dash-home-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    gap: 4px;
   }
 }
 

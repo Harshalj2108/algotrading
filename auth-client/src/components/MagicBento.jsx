@@ -273,7 +273,7 @@ const ParticleCard = ({
     <div
       ref={cardRef}
       className={`${className} particle-container`}
-      style={{ ...style, position: 'relative', overflow: 'hidden' }}
+      style={{ ...style, position: 'relative', overflow: disableAnimations ? 'visible' : 'hidden' }}
     >
       {children}
     </div>

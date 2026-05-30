@@ -671,6 +671,25 @@
     overflow: visible;
   }
 
+  /* Toolbar: allow wrapping so buttons don't clip */
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 8px;
+  }
+
+  .toolbar .btn {
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  /* Indicator bar: also allow wrapping */
+  .indbar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+
   /* Remove height cap so the trade panel expands to show all content */
   .trade-panel {
     max-height: none;
@@ -679,11 +698,44 @@
 
   /* Ensure the Buy Market button is always visible and tappable */
   .tp-place {
-    min-height: 44px;
+    min-height: 48px;
     font-size: 14px;
     position: sticky;
     bottom: 0;
     z-index: 10;
+  }
+
+  /* Ensure side buttons have good touch targets */
+  .tp-side-btn {
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  /* Position card action buttons — proper touch targets */
+  .pos-card-actions {
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .pos-card-tpsl,
+  .pos-card-close {
+    min-height: 32px;
+    font-size: 11px;
+  }
+
+  /* Overlay modals shouldn't exceed viewport */
+  .overlay-panel {
+    min-width: auto;
+    max-width: calc(100vw - 32px);
+    padding: 16px;
+  }
+
+  .position-detail-panel {
+    min-width: auto;
+  }
+
+  .tpsl-modal {
+    min-width: auto;
   }
 
   /* Add bottom padding so positions can scroll past mobile browser bars */

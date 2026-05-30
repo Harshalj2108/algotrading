@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Dashboard.jsx — TradeSeekho v3 Portfolio Dashboard
  *
  * Live portfolio with MagicBento cards + trade history table.
@@ -615,30 +615,10 @@ export default function Dashboard({ onLogout, onLaunchSimulator, onLaunchCrypto,
       <div className="orb orb-3" />
 
       {/* Home Button — top left */}
-      <div style={{ position: 'absolute', top: '24px', left: '32px', zIndex: 100 }}>
+      <div className="dash-home-btn-pos">
         <button
           onClick={onGoHome}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            background: 'transparent',
-            border: '1px solid rgba(139, 92, 246, 0.5)',
-            color: '#D8B4FE',
-            fontWeight: 600,
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
-            e.currentTarget.style.borderColor = '#8B5CF6';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-          }}
+          className="dash-home-btn"
         >
           <span>←</span> Home
         </button>

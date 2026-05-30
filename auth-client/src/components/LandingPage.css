@@ -43,7 +43,9 @@
 
 .nav-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .landing-main {
@@ -147,9 +149,11 @@
   .landing-page {
     height: auto;
     min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
   .landing-nav, .landing-main {
-    padding: 1.5rem;
+    padding: 1rem;
   }
   .landing-hero-content h1 {
     font-size: 2.5rem;
@@ -160,5 +164,41 @@
   }
   .hero-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-nav {
+    padding: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .nav-actions {
+    gap: 0.35rem;
+  }
+
+  .nav-btn {
+    height: 36px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .hero-btn {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  .landing-hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .landing-hero-content p {
+    font-size: 1rem;
+  }
+
+  .landing-hero-content {
+    min-height: auto;
+    padding-top: 1rem;
   }
 }

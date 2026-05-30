@@ -198,3 +198,43 @@
   color: #fff;
   box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
 }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .buy-more-layout {
+    position: relative;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+    align-items: flex-start;
+    padding-top: 20px;
+    padding-bottom: 40px;
+  }
+
+  .buy-more-content {
+    padding: 16px;
+  }
+
+  .buy-more-card {
+    padding: 24px 16px;
+  }
+
+  .buy-more-btn {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  .buy-more-back {
+    min-height: 40px;
+  }
+
+  .slider-presets {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .preset-btn {
+    min-height: 40px;
+    font-size: 12px;
+  }
+}

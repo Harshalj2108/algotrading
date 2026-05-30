@@ -239,3 +239,20 @@
     opacity: 0;
   }
 }
+
+/* ── Mobile: fit GooeyNav inside bento card ── */
+@media (max-width: 480px) {
+  .gooey-nav-container nav ul {
+    gap: 0.4em;
+    padding: 0 0.4em;
+  }
+
+  .gooey-nav-container nav ul li a {
+    padding: 0.5em 0.6em;
+    font-size: 11px;
+  }
+
+  .gooey-nav-container .effect.text {
+    font-size: 11px;
+  }
+}
