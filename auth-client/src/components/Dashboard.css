@@ -563,7 +563,8 @@
 
   .dash-trades-panel {
     flex: none;
-    height: 400px;
+    min-height: 350px;
+    height: auto;
   }
 }
 
@@ -608,28 +609,48 @@
     font-size: 22px;
   }
 
-  /* Make trades table horizontally scrollable via touch */
-  .dash-trades-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
+  /* ── Mobile trades: fit table on screen without horizontal scroll ── */
+  .dash-trades-panel {
+    display: block;
+    overflow: visible;
+    min-width: 0;
+    padding: 14px;
   }
 
-  .dash-trades-panel {
-    overflow: hidden;
-    min-width: 0;
+  .dash-trades-table-wrap {
+    display: block;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .dash-trades-table {
-    min-width: 500px;
+    min-width: 0;
+    width: 100%;
+    font-size: 12px;
   }
 
-  /* Re-show columns hidden at 768px — let horizontal scroll handle it */
+  /* On mobile, hide Symbol, Price, Value, Date — show only Side, Market, P&L */
   .dash-trades-table th:nth-child(3),
   .dash-trades-table td:nth-child(3),
   .dash-trades-table th:nth-child(4),
-  .dash-trades-table td:nth-child(4) {
-    display: table-cell;
+  .dash-trades-table td:nth-child(4),
+  .dash-trades-table th:nth-child(5),
+  .dash-trades-table td:nth-child(5),
+  .dash-trades-table th:nth-child(7),
+  .dash-trades-table td:nth-child(7) {
+    display: none;
+  }
+
+  .dash-trades-table thead th {
+    font-size: 10px;
+    padding: 8px 6px;
+  }
+
+  .dash-trades-table td {
+    padding: 9px 6px;
+    font-size: 12px;
   }
 
   /* Stack summary items vertically */
