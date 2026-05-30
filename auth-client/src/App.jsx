@@ -1,4 +1,4 @@
-﻿/**
+/**
  * App.jsx — TradeSeekho v3 Auth + Navigation
  * 
  * Single-page app with state-based routing:
@@ -160,7 +160,7 @@ function persistTradeFeedEvent(trade) {
 
 const SEO_BY_PAGE = {
   home: {
-    title: "Crypto Trading Simulator | Learn Trading Risk-Free",
+    title: "Trade Seekho - Trading Simulator & Educator",
     description: "Practice crypto trading with virtual money using live market simulations and interactive learning tools.",
   },
   about: {
