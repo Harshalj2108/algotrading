@@ -161,7 +161,7 @@ function persistTradeFeedEvent(trade) {
 const SEO_BY_PAGE = {
   home: {
     title: "Trade Seekho - Trading Simulator & Educator",
-    description: "Practice crypto trading with virtual money using live market simulations and interactive learning tools.",
+    description: "Trade Seekho is a trading simulator and trading education platform that helps beginners learn and practice trading with live market simulations.",
   },
   about: {
     title: "About Us | Crypto Learning Platform",
