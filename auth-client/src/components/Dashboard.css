@@ -562,7 +562,8 @@
   }
 
   .dash-trades-panel {
-    min-height: 400px;
+    flex: none;
+    height: 400px;
   }
 }
 
