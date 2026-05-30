@@ -1,12 +1,13 @@
 {
-  "task": "Fix mobile scroll lock and flexbox layout clipping",
+  "task": "Fix mobile layout clipping at the bottom of the screen (Buy button cutoff)",
   "target_file": "auth-client/src/index.css",
-  "context": "The application currently has a global 'overflow: hidden' on the body and html tags, which completely disables vertical scrolling on mobile devices. Additionally, the centered flexbox layout causes the top of tall elements to be clipped off-screen when they overflow the viewport.",
+  "context": "On mobile devices, flexbox containers are artificially restricting their height to the viewport, which cuts off overflow content like the Buy button at the bottom of the dashboard cards. Mobile browser navigation bars also overlap the bottom edge.",
   "instructions": [
-    "Locate the existing `@media (max-width: 480px)` block inside `auth-client/src/index.css`.",
-    "Inside this media query, add a rule for `html, body, #root` to forcefully unlock scrolling. Apply `height: auto !important`, `min-height: 100vh`, `overflow-y: auto !important`, `overflow-x: hidden !important`, and `-webkit-overflow-scrolling: touch`.",
-    "Inside the same media query, add a rule for `body` to fix the flexbox clipping issue. Set `align-items: center !important` and `justify-content: flex-start !important` so the layout starts from the top edge rather than getting trapped above the screen.",
-    "Inside the same media query, add a rule for `.app-wrapper` to restore vertical centering dynamically now that the body is top-aligned. Apply `margin: auto 0;` and `padding: 40px 20px;`."
+    "Locate the existing `@media (max-width: 480px)` block.",
+    "Add a new CSS rule inside the media query targeting `.dash-left-col, .dash-right-col, .dash-trades-panel, .dash-card, .buy-more-card, .trade-card`.",
+    "Inside that rule, apply `height: auto !important;`, `min-height: auto !important;`, `flex: none !important;`, and `overflow: visible !important;` to force the containers to expand to their full content height.",
+    "Add another CSS rule inside the media query targeting `.dash-split-wrapper, .buy-more-layout`.",
+    "Inside that rule, apply `padding-bottom: 120px !important;` to ensure the bottom-most content can be scrolled comfortably above any floating browser toolbars."
   ],
-  "expected_outcome": "The user should be able to smoothly scroll up and down on mobile devices without any content getting permanently trapped or clipped off the top or bottom of the screen."
+  "expected_outcome": "The dashboard cards will expand vertically to reveal all inner content, including the Buy button, and the user will be able to scroll all the way down without the browser's bottom UI obstructing the view."
 }

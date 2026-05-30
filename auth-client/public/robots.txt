@@ -1,0 +1,18 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /$
+Allow: /about$
+Allow: /learn-trading$
+Allow: /login$
+Allow: /signup$
+
+# Disallow authenticated/protected routes and API endpoints
+Disallow: /dashboard
+Disallow: /simulation
+Disallow: /markets
+Disallow: /buy-s
+Disallow: /crypto_search
+Disallow: /stocks_search
+
+# Sitemap URL
+Sitemap: https://tradeseekho.com/sitemap.xml
