@@ -560,6 +560,10 @@
     min-width: 0;
     overflow: hidden;
   }
+
+  .dash-trades-panel {
+    min-height: 400px;
+  }
 }
 
 @media (max-width: 768px) {
