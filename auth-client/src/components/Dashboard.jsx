@@ -49,7 +49,7 @@ function marketLabel(value, assetType = "") {
   const source = normalizeSource(value, assetType);
   if (source === "stocks") return "Stocks";
   if (source === "simulator") return "Simulator";
-  return "Crypto";
+  return "Stock/Crypto";
 }
 
 function tradeSide(trade) {

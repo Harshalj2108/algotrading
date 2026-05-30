@@ -1,4 +1,4 @@
-﻿import LightRays from "./LightRays";
+import LightRays from "./LightRays";
 import heroAsset from "../assets/hero.png";
 import DotField from "./DotField";
 import BorderGlow from "./BorderGlow";
@@ -24,7 +24,7 @@ const features = [
   {
     icon: "candles",
     title: "Live Market Simulation",
-    description: "Experience realistic crypto price movement using real-time market data.",
+    description: "Experience realistic stock/crypto price movement using real-time market data.",
   },
   {
     icon: "graduation",
@@ -46,10 +46,10 @@ const features = [
 const learningCategories = [
   {
     id: "crypto-basics",
-    title: "Crypto Basics",
+    title: "Stock/Crypto Basics",
     icon: "bitcoin",
     description:
-      "Cryptocurrency is a digital form of currency that operates on blockchain technology, a secure and transparent system that records transactions across a decentralized network. Unlike traditional currencies controlled by governments or banks, cryptocurrencies such as Bitcoin and Ethereum are powered by technology and market demand. Crypto trading involves buying and selling these digital assets based on price movements, making it important for users to understand market trends, risk management, and trading strategies before participating.",
+      "Cryptocurrency is a digital form of currency that operates on blockchain technology, a secure and transparent system that records transactions across a decentralized network. Unlike traditional currencies controlled by governments or banks, cryptocurrencies such as Bitcoin and Ethereum are powered by technology and market demand. Stock/crypto trading involves buying and selling these digital assets based on price movements, making it important for users to understand market trends, risk management, and trading strategies before participating.",
   },
   {
     id: "candlestick-patterns",
@@ -63,14 +63,14 @@ const learningCategories = [
     title: "Futures Trading",
     icon: "trend",
     description:
-      "Futures trading is a type of trading where participants agree to buy or sell an asset at a predetermined price on a future date. In the crypto market, futures allow traders to speculate on whether the price of a cryptocurrency will rise or fall without actually owning the asset. Futures trading can amplify both profits and losses due to leverage, making risk management and market understanding extremely important for every trader.",
+      "Futures trading is a type of trading where participants agree to buy or sell an asset at a predetermined price on a future date. In the stock/crypto market, futures allow traders to speculate on whether the price of a cryptocurrency will rise or fall without actually owning the asset. Futures trading can amplify both profits and losses due to leverage, making risk management and market understanding extremely important for every trader.",
   },
   {
     id: "spot-trading",
     title: "Spot Trading",
     icon: "coins",
     description:
-      "Spot trading is the simplest form of crypto trading where users buy or sell cryptocurrencies at the current market price for immediate settlement. In spot trading, traders directly own the digital asset they purchase, such as Bitcoin or Ethereum, and profits or losses depend on market price movements. It is widely considered a beginner-friendly trading method and helps users understand market behavior, timing, and investment strategies.",
+      "Spot trading is the simplest form of stock/crypto trading where users buy or sell cryptocurrencies at the current market price for immediate settlement. In spot trading, traders directly own the digital asset they purchase, such as Bitcoin or Ethereum, and profits or losses depend on market price movements. It is widely considered a beginner-friendly trading method and helps users understand market behavior, timing, and investment strategies.",
   },
   {
     id: "risk-management",
@@ -89,7 +89,7 @@ const learningCategories = [
 ];
 
 const learningBenefits = [
-  "Understanding crypto markets",
+  "Understanding stock/crypto markets",
   "Reading trading charts",
   "Using technical indicators",
   "Managing trading risks",
@@ -258,7 +258,7 @@ function MarketVisual() {
   ];
 
   return (
-    <div className="market-visual" aria-label="Animated crypto market preview">
+    <div className="market-visual" aria-label="Animated stock/crypto market preview">
       <div className="market-toolbar">
         <span>BTC/USD</span>
         <strong>S68,423.50</strong>
@@ -309,9 +309,9 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
 
           <div className="public-hero-copy">
             <p className="public-eyebrow">EdTech meets FinTech simulation</p>
-            <h1>Learn Crypto Trading Without Risking Real Money</h1>
+            <h1>Learn Stock/Crypto Trading Without Risking Real Money</h1>
             <p className="public-hero-subtitle">
-              Practice crypto trading with live market simulations, virtual currency, and real-time charts in a safe learning environment.
+              Practice stock/crypto trading with live market simulations, virtual currency, and real-time charts in a safe learning environment.
             </p>
             <div className="public-hero-actions">
               <button className="public-primary-btn" type="button" onClick={onGetStarted}>
@@ -351,7 +351,7 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
             <p className="public-eyebrow">Trading practice system</p>
             <h2>Trade. Learn. Improve.</h2>
             <p>
-              Step into a next-generation crypto learning platform where users can experience trading decisions without real money exposure.
+              Step into a next-generation stock/crypto learning platform where users can experience trading decisions without real money exposure.
             </p>
           </div>
 
@@ -379,7 +379,7 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
 
         <section className="public-section-heading" style={{ marginTop: '80px' }}>
           <p className="public-eyebrow">About TradeSeekho</p>
-          <h2>Practical crypto education through risk-free simulation</h2>
+          <h2>Practical stock/crypto education through risk-free simulation</h2>
           <p>
             Our platform bridges the gap between trading theory and real-world market experience with virtual trades, market movement, and learning tools.
           </p>
@@ -399,7 +399,7 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
               <span className="about-label">Mission</span>
               <h2>Our Mission</h2>
               <p>
-                Our mission is to make crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
+                Our mission is to make stock/crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
               </p>
             </article>
           </BorderGlow>
@@ -417,7 +417,7 @@ export function HomePage({ onNavigate, onGetStarted, onSignIn }) {
               <span className="about-label">Vision</span>
               <h2>Why We Built This</h2>
               <p>
-                We believe crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
+                We believe stock/crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
               </p>
             </article>
           </BorderGlow>
@@ -450,7 +450,7 @@ export function AboutUsPage({ onNavigate, onGetStarted, onSignIn, isAuthenticate
       <main className="public-main public-page-main">
         <section className="public-page-header">
           <p className="public-eyebrow">About TradeSeekho</p>
-          <h1>Practical crypto education through risk-free simulation</h1>
+          <h1>Practical stock/crypto education through risk-free simulation</h1>
           <p>
             Our platform bridges the gap between trading theory and real-world market experience with virtual trades, market movement, and learning tools.
           </p>
@@ -470,7 +470,7 @@ export function AboutUsPage({ onNavigate, onGetStarted, onSignIn, isAuthenticate
               <span className="about-label">Mission</span>
               <h2>Our Mission</h2>
               <p>
-                Our mission is to make crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
+                Our mission is to make stock/crypto trading education simple, practical, and risk-free through real-time simulation and interactive learning. We aim to empower users with the knowledge, confidence, and experience needed to understand trading in a safe and engaging environment.
               </p>
             </article>
           </BorderGlow>
@@ -488,7 +488,7 @@ export function AboutUsPage({ onNavigate, onGetStarted, onSignIn, isAuthenticate
               <span className="about-label">Vision</span>
               <h2>Why We Built This</h2>
               <p>
-                We believe crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
+                We believe stock/crypto education should be accessible to everyone. Our platform bridges the gap between theory and real-world market experience by allowing users to practice trading strategies in a fully simulated environment.
               </p>
             </article>
           </BorderGlow>
@@ -521,7 +521,7 @@ export function LearnTradingPage({ onNavigate, onGetStarted, onSignIn, isAuthent
       <main className="public-main public-page-main">
         <section className="public-page-header">
           <p className="public-eyebrow">Learn Trading</p>
-          <h1>Explore crypto concepts, trading strategies, and market analysis tools.</h1>
+          <h1>Explore stock/crypto concepts, trading strategies, and market analysis tools.</h1>
           <p>
             Build trading literacy across market basics, chart reading, futures, spot trading, risk management, and technical indicators.
           </p>

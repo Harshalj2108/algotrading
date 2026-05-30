@@ -164,12 +164,12 @@ const SEO_BY_PAGE = {
     description: "Trade Seekho is a trading simulator and trading education platform that helps beginners learn and practice trading with live market simulations.",
   },
   about: {
-    title: "About Us | Crypto Learning Platform",
-    description: "Learn about our mission to make crypto trading education practical, interactive, and risk-free.",
+    title: "About Us | Stock/Crypto Learning Platform",
+    description: "Learn about our mission to make stock/crypto trading education practical, interactive, and risk-free.",
   },
   learn: {
-    title: "Learn Crypto Trading | Beginner to Advanced",
-    description: "Explore crypto basics, candlestick patterns, futures trading, spot trading, and technical indicators.",
+    title: "Learn Stock/Crypto Trading | Beginner to Advanced",
+    description: "Explore stock/crypto basics, candlestick patterns, futures trading, spot trading, and technical indicators.",
   },
   auth: {
     title: "Sign In | TradeSeekho",
@@ -177,7 +177,7 @@ const SEO_BY_PAGE = {
   },
   dashboard: {
     title: "Portfolio | TradeSeekho",
-    description: "View your virtual crypto trading portfolio and simulation performance.",
+    description: "View your virtual stock/crypto trading portfolio and simulation performance.",
   },
 };
 
