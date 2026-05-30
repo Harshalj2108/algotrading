@@ -59,9 +59,16 @@
   transition:
     background-color 0.3s ease,
     color 0.3s ease,
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
   box-shadow: 0 0 0.5px 1.5px transparent;
   color: #d1d4dc;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+}
+
+.gooey-nav-container nav ul li:hover {
+  border-color: #8B5CF6;
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .gooey-nav-container nav ul li a {
