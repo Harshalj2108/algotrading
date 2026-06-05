@@ -31,12 +31,6 @@ TradeSeekho is an advanced synthetic cryptocurrency market simulator designed to
 - **Core Market Engine (`simulator_core.py` & `synthetic_market_simulator*.py`)**: Handling complex time-series price fabrication, multi-timeframe aggregation, decoupled portfolio management, and fee/margin structures.
 
 ## Included Trading Strategies
-
-### VETS (Volatility Expansion Trend Swing) Strategy
-- Evaluates volatility compression through Bollinger Band width percentile and Average True Range (ATR).
-- Tracks long-term macroeconomic alignment (EMA 50 vs EMA 200).
-- Dynamically manages stop-loss (SL) and take-profit (TP) multiples, complete with real-time logging and marker rendering on the UI.
-
 ### EMA Bollinger Scalper (v2 Hybrid)
 An adaptive, high-frequency mean-reversion and trend-following strategy heavily optimized for 5-minute candles.
 - **Trend Alignment**: Executes entries only when the short-term trend (EMA 30 crossing EMA 50) completely aligns with the macroeconomic trend (EMA 200).
