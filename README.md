@@ -1,5 +1,7 @@
 ﻿# TradeSeekho Market Simulator
 
+# Live website link - https://www.tradeseekho.live
+
 ## Overview
 TradeSeekho is an advanced synthetic cryptocurrency market simulator designed to replicate realistic market behaviors, order flow dynamics, and financial asset movements. Developed using Python, it offers a robust environment for evaluating algorithmic trading strategies under typical and extreme simulated conditions. The project uniquely combines sophisticated statistical models with a live, TradingView-style frontend dashboard built on React, powered by a robust Python/FastAPI trading engine and a secure Node/Express authentication server.
 
@@ -31,12 +33,6 @@ TradeSeekho is an advanced synthetic cryptocurrency market simulator designed to
 - **Core Market Engine (`simulator_core.py` & `synthetic_market_simulator*.py`)**: Handling complex time-series price fabrication, multi-timeframe aggregation, decoupled portfolio management, and fee/margin structures.
 
 ## Included Trading Strategies
-
-### VETS (Volatility Expansion Trend Swing) Strategy
-- Evaluates volatility compression through Bollinger Band width percentile and Average True Range (ATR).
-- Tracks long-term macroeconomic alignment (EMA 50 vs EMA 200).
-- Dynamically manages stop-loss (SL) and take-profit (TP) multiples, complete with real-time logging and marker rendering on the UI.
-
 ### EMA Bollinger Scalper (v2 Hybrid)
 An adaptive, high-frequency mean-reversion and trend-following strategy heavily optimized for 5-minute candles.
 - **Trend Alignment**: Executes entries only when the short-term trend (EMA 30 crossing EMA 50) completely aligns with the macroeconomic trend (EMA 200).
@@ -44,70 +40,3 @@ An adaptive, high-frequency mean-reversion and trend-following strategy heavily 
 - **Entry Logic**: Triggers long positions upon a bullish EMA trend configuration while price breaks below the lower Bollinger Band. Triggers short positions upon a bearish trend configuration while price breaks above the upper extreme.
 - **Dynamic Risk Management**: Standard Stop-Loss is placed at 2.0x ATR. Trailing logic shifts SL to breakeven when profitable, trailing at 75% of max unrealized profit. TP is set at a 1.5 R:R.
 - **Capital Preservation Protocols**: Introduces a 3-bar entry cooldown after a Stop-Loss, and a circuit breaker disabling entries after three back-to-back losses. A kill switch terminates the strategy if a 10% max drawdown is sustained.
-
-## Getting Started
-
-### Prerequisites
-- Python 3.9+
-- Node.js & npm
-- PostgreSQL database
-
-### Installation
-1. Clone the repository and navigate into the `synthetic_market` directory.
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Install frontend dependencies:
-   ```bash
-   cd auth-client
-   npm install
-   ```
-4. Install Auth Server dependencies:
-   ```bash
-   cd auth-server
-   npm install
-   ```
-
-### Configuration
-1. Create a `.env` file in the `auth-server` directory:
-   ```env
-   PORT=3001
-   DATABASE_URL=postgresql://username:password@localhost:5432/tradeseekho
-   JWT_SECRET=your_secret_key
-   GOOGLE_CLIENT_ID=your_google_id
-   GOOGLE_CLIENT_SECRET=your_google_secret
-   GOOGLE_REDIRECT_URI=http://localhost:3001/api/auth/google/callback
-   CLIENT_URL=http://localhost:5173
-   SIMULATOR_URL=http://localhost:8000
-   
-   # For OTP Emails
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USER=your_email@gmail.com
-   SMTP_PASS=your_google_app_password
-   ```
-
-### Running the Application
-
-You will need to run all three services concurrently:
-
-1. **Start the FastAPI Backend** (Simulator Engine):
-   ```bash
-   # From the root synthetic_market directory
-   uvicorn simulator_api:app --host 0.0.0.0 --port 8000
-   ```
-
-2. **Start the Node.js Auth Server** (Database & Accounts):
-   ```bash
-   # From the auth-server directory
-   npm run dev
-   ```
-
-3. **Start the React Frontend**:
-   ```bash
-   # From the auth-client directory
-   npm run dev
-   ```
-
-Open your browser and navigate to the frontend URL (typically `http://localhost:5173`).
