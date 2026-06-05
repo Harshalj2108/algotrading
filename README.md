@@ -1,6 +1,6 @@
 ﻿# TradeSeekho Market Simulator
 
-# Live website link - https://www.tradeseekho.live
+### Live website link - https://www.tradeseekho.live
 
 ## Overview
 TradeSeekho is an advanced synthetic cryptocurrency market simulator designed to replicate realistic market behaviors, order flow dynamics, and financial asset movements. Developed using Python, it offers a robust environment for evaluating algorithmic trading strategies under typical and extreme simulated conditions. The project uniquely combines sophisticated statistical models with a live, TradingView-style frontend dashboard built on React, powered by a robust Python/FastAPI trading engine and a secure Node/Express authentication server.
